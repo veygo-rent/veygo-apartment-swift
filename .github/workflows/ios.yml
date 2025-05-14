@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build and Test on iPhone Simulator
-    runs-on: macos-latest
+    runs-on: macos-15
     strategy:
       matrix:
         xcode-version: [16.3]
