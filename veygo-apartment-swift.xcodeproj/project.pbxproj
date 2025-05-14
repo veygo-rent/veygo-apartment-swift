@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADBE2DD44DA9007148E6 /* Stripe */; };
+		8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADC02DD44DA9007148E6 /* StripeCardScan */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "veygo-apartment-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */,
+				8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = "veygo-apartment-swift";
 			packageProductDependencies = (
+				8EA1ADBE2DD44DA9007148E6 /* Stripe */,
+				8EA1ADC02DD44DA9007148E6 /* StripeCardScan */,
 			);
 			productName = "veygo-apartment-swift";
 			productReference = 8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = 8EA1ADA62DD44C53007148E6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8EA1ADB02DD44C53007148E6 /* Products */;
 			projectDirPath = "";
@@ -324,6 +336,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stripe/stripe-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.13.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8EA1ADBE2DD44DA9007148E6 /* Stripe */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = Stripe;
+		};
+		8EA1ADC02DD44DA9007148E6 /* StripeCardScan */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripeCardScan;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8EA1ADA72DD44C53007148E6 /* Project object */;
 }
