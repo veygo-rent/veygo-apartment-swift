@@ -15,7 +15,7 @@ struct LaunchScreenView: View {
     var body: some View {
         ZStack {
             // 背景颜色铺满屏幕
-            Color("MainLoginBG")
+            Color("MainBG")
                 .ignoresSafeArea()
 
             VStack {
