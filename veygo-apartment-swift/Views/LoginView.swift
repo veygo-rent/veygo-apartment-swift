@@ -8,16 +8,54 @@
 import SwiftUI
 
 struct LoginView: View {
+    @State private var email: String = ""
+    @State private var password: String = ""
+
     var body: some View {
         VStack {
-            Text("Login Page")
-                .font(.largeTitle)
-                .padding()
-            Text("This is a placeholder for the login screen.")
-                .foregroundColor(.gray)
+            Spacer()
+
+            // Logo
+            Image("VeygoDraft")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 250, height: 250)
+                .padding(.bottom, -20)
+
+            // Email 输入框
+            TextInputField(placeholder: "Email", text: $email)
+
+            // 间距调整
+            Spacer().frame(height: 15)
+
+            // Password 输入框
+            TextInputField(placeholder: "Password", text: $password, isSecure: true)
+
+            // 登录按钮
+            LoginButton(text: "Login") {
+                print("Log In Pressed")
+            }
+
+            // 忘记密码
+            ForgotPasswordButton {
+                print("Forgot Password Pressed")
+            }
+
+            Spacer()
+
+            // 注册按钮
+            CreateButton(text: "Create New Account") {
+                print("Create Account Pressed")
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 10)
+
+            // Terms
+            LegalText()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
         .background(Color.white)
+        .ignoresSafeArea()
     }
 }
 
