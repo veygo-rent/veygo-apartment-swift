@@ -32,7 +32,7 @@ struct LoginView: View {
             TextInputField(placeholder: "Password", text: $password, isSecure: true)
 
             // 登录按钮
-            LoginButton(text: "Login") {
+            PrimaryButtonLg(text: "Login") {
                 print("Log In Pressed")
             }
 
@@ -44,7 +44,7 @@ struct LoginView: View {
             Spacer()
 
             // 注册按钮
-            CreateButton(text: "Create New Account") {
+            SecondaryButtonLg(text: "Create New Account") {
                 print("Create Account Pressed")
             }
             .padding(.top, 10)
