@@ -37,9 +37,10 @@ struct LoginView: View {
             }
 
             // 忘记密码
-            ForgotPasswordButton {
+            ShortTextLink(text: "Forgot Password?") {
                 print("Forgot Password Pressed")
             }
+            .frame(width: 338)
 
             Spacer()
 

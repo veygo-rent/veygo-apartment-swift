@@ -21,12 +21,12 @@ struct TextInputField: View {
 
             if isSecure {
                 SecureField(placeholder, text: $text)
-                    .frame(width: .infinity, height: 42)
+                    .frame(height: 42)
                     .foregroundColor(.black)
                     .padding(.leading, 16)
             } else {
                 TextField(placeholder, text: $text)
-                    .frame(width: .infinity, height: 42)
+                    .frame(height: 42)
                     .foregroundColor(.black)
                     .padding(.leading, 16)
             }

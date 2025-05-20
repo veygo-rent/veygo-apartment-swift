@@ -7,26 +7,25 @@
 
 import SwiftUI
 
-struct ForgotPasswordButton: View {
+struct ShortTextLink: View {
+    var text: String
     var action: () -> Void
 
     var body: some View {
         Button(action: {
             action()
         }) {
-            Text("Forgot Password?")
+            Text(text)
                 .font(.custom("SF Pro", size: 14))
                 .foregroundColor(Color("HighLightText"))
                 .underline()
         }
-        .padding(.top, 5)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, 50) // 左侧对齐
     }
 }
 
 #Preview {
-    ForgotPasswordButton {
+    ShortTextLink(text: "Forgot Password?") {
         print("Forgot Password Pressed")
     }
 }
