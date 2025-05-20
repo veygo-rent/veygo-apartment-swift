@@ -10,53 +10,58 @@ import SwiftUI
 struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var goToNameView = false
 
     var body: some View {
-        VStack {
-            Spacer()
+        NavigationStack {
+            VStack {
+                Spacer()
 
-            // Logo
-            Image("VeygoDraft")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 250, height: 250)
-                .padding(.bottom, -20)
+                // Logo
+                Image("VeygoDraft")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 250, height: 250)
+                    .padding(.bottom, -20)
 
-            // Email 输入框
-            TextInputField(placeholder: "Email", text: $email)
+                // Email 输入框
+                TextInputField(placeholder: "Email", text: $email)
 
-            // 间距调整
-            Spacer().frame(height: 15)
+                // 间距调整
+                Spacer().frame(height: 15)
 
-            // Password 输入框
-            TextInputField(placeholder: "Password", text: $password, isSecure: true)
+                // Password 输入框
+                TextInputField(placeholder: "Password", text: $password, isSecure: true)
 
-            // 登录按钮
-            PrimaryButtonLg(text: "Login") {
-                print("Log In Pressed")
-            }
+                // 登录按钮
+                PrimaryButtonLg(text: "Login") {
+                    print("Log In Pressed")
+                }
 
-            // 忘记密码
-            ShortTextLink(text: "Forgot Password?") {
-                print("Forgot Password Pressed")
-            }
+                // 忘记密码
+                ShortTextLink(text: "Forgot Password?") {
+                    print("Forgot Password Pressed")
+                }
 
-            Spacer()
+                Spacer()
 
-            // 注册按钮
-            NavigationLink(destination: NameView()) {
+                // 注册按钮
                 SecondaryButtonLg(text: "Create New Account") {
                     print("Create Account Pressed")
+                    goToNameView = true
                 }
-            }
-            .padding(.top, 10)
-            .padding(.bottom, 10)
+                .padding(.top, 10)
+                .padding(.bottom, 10)
 
-            // Terms
-            LegalText()
+                // Terms
+                LegalText()
+            }
+            .padding(.horizontal, 32)
+            .background(Color.white)
+            .navigationDestination(isPresented: $goToNameView) {
+                NameView()
+            }
         }
-        .padding(.horizontal, 32)
-        .background(Color.white)
     }
 }
 
