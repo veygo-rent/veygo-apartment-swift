@@ -8,29 +8,40 @@
 import SwiftUI
 
 struct ArrowButton: View {
+    var isDisabled: Bool = false
     var action: () -> Void
 
     var body: some View {
         Button(action: {
-            action()
+            if !isDisabled {
+                action()
+            }
         }) {
             ZStack {
                 Circle()
-                    .fill(Color("Primary1"))
-                    .frame(width: 60, height: 60)
-                    .shadow(color: Color.black.opacity(0.2), radius: 4, x: 2, y: 2)
+                    .fill(isDisabled ? Color("Terms") : Color("Primary1"))
+                    .frame(width: 80, height: 80)
+                    .shadow(
+                        color: isDisabled ? .clear : Color.black.opacity(0.25),
+                        radius: 4, x: 0, y: 4
+                    )
 
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundColor(Color("MainBG"))
             }
         }
-        .padding(.top, 20)
+        .disabled(isDisabled)
     }
 }
 
 #Preview {
-    ArrowButton {
-        print("Arrow Pressed")
+    VStack(spacing: 20) {
+        ArrowButton {
+            print("Enabled")
+        }
+        ArrowButton(isDisabled: true) {
+            print("Disabled")
+        }
     }
 }

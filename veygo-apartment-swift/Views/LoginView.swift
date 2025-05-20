@@ -44,8 +44,10 @@ struct LoginView: View {
             Spacer()
 
             // 注册按钮
-            SecondaryButtonLg(text: "Create New Account") {
-                print("Create Account Pressed")
+            NavigationLink(destination: NameView()) {
+                SecondaryButtonLg(text: "Create New Account") {
+                    print("Create Account Pressed")
+                }
             }
             .padding(.top, 10)
             .padding(.bottom, 10)

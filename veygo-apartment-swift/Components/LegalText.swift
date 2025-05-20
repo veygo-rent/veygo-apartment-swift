@@ -10,7 +10,7 @@ import SwiftUI
 struct LegalText: View {
     var body: some View {
         Text(makeAttributedString())
-            .font(.custom("SF Pro", size: 12))
+            .font(.system(size: 11, weight: .regular, design: .default)) // 使用 SF Pro 字体
             .foregroundColor(Color("Terms"))
             .frame(maxWidth: .infinity, alignment: .leading)
     }
