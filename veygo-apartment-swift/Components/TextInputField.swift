@@ -17,7 +17,8 @@ struct TextInputField: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color("TextFieldFrame"), lineWidth: 1) // 边框颜色
                 .background(Color.white) // 背景透明
-                .frame(width: 338, height: 42)
+                .frame(maxWidth: .infinity)
+                .frame(height: 42)
 
             if isSecure {
                 SecureField(placeholder, text: $text)
@@ -31,7 +32,6 @@ struct TextInputField: View {
                     .padding(.leading, 16)
             }
         }
-        .frame(width: 338, height: 42)
     }
 }
 

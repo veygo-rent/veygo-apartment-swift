@@ -16,7 +16,7 @@ struct ShortTextLink: View {
             action()
         }) {
             Text(text)
-                .font(.custom("SF Pro", size: 14))
+                .font(.system(size: 14, weight: .regular, design: .default))
                 .foregroundColor(Color("HighLightText"))
                 .underline()
         }

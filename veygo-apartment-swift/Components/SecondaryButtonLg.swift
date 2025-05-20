@@ -19,7 +19,8 @@ struct SecondaryButtonLg: View {
             Text(text)
                 .font(.system(size: 17, weight: .semibold, design: .default)) // SF Pro 字体
                 .foregroundColor(Color("LoginPageButton1BG")) // 使用自定义颜色
-                .frame(width: 338, height: 45)
+                .frame(maxWidth: .infinity)
+                .frame(height: 45)
                 .background(Color.white)
                 .cornerRadius(16)
                 .overlay(

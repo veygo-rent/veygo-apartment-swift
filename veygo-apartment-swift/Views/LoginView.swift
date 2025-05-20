@@ -40,7 +40,6 @@ struct LoginView: View {
             ShortTextLink(text: "Forgot Password?") {
                 print("Forgot Password Pressed")
             }
-            .frame(width: 338)
 
             Spacer()
 
@@ -54,7 +53,7 @@ struct LoginView: View {
             // Terms
             LegalText()
         }
-        .padding()
+        .padding(.horizontal, 32)
         .background(Color.white)
         .ignoresSafeArea()
     }
