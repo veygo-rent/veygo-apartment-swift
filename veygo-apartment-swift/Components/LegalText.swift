@@ -13,7 +13,6 @@ struct LegalText: View {
             .font(.custom("SF Pro", size: 12))
             .foregroundColor(Color("Terms"))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 40)
     }
 
     private func makeAttributedString() -> AttributedString {

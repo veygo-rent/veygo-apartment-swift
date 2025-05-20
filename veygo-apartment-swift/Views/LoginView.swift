@@ -55,7 +55,6 @@ struct LoginView: View {
         }
         .padding(.horizontal, 32)
         .background(Color.white)
-        .ignoresSafeArea()
     }
 }
 
