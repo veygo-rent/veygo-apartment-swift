@@ -25,14 +25,29 @@ struct NameView: View {
                         .padding(.bottom, 90)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    // Input + Description
-                    InputWithLabel(
-                        label: "Your Full Legal Name",
-                        placeholder: "John Appleseed",
-                        text: $fullName,
-                        description1: fullName.isEmpty ? "" : "You must enter your full name",
-                        description2: fullName.isEmpty ? "" : "Your name must match the name appears on your official documents"
-                    )
+                    // Input field without description1
+                    VStack(alignment: .leading, spacing: 5) {
+                        InputWithLabel(
+                            label: "Your Full Legal Name",
+                            placeholder: "John Appleseed",
+                            text: $fullName,
+                            description1: "",
+                            description2: ""
+                        )
+
+                        if !fullName.isEmpty {
+                            Text("You must enter your full name")
+                                .font(.system(size: 12, weight: .light))
+                                .foregroundColor(
+                                    fullName.contains(" ")
+                                    ? Color("Black1")
+                                    : Color("InvalidRed1")
+                                )
+                            Text("Your name must match the name appears on your official documents")
+                                .font(.system(size: 12, weight: .light))
+                                .foregroundColor(Color("Black1"))
+                        }
+                    }
                     .padding(.horizontal, 32)
 
                     Spacer()
