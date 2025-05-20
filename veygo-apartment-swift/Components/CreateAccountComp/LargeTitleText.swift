@@ -12,10 +12,9 @@ struct LargeTitleText: View {
 
     var body: some View {
         Text(text)
-            .font(.custom("SF Pro", size: 32).weight(.bold))
+            .font(.system(size: 38, weight: .semibold, design: .default))
             .foregroundColor(.black)
             .multilineTextAlignment(.center)
-            .padding(.vertical, 10)
     }
 }
 

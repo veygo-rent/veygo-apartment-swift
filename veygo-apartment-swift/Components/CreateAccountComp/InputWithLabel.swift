@@ -17,20 +17,19 @@ struct InputWithLabel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label)
-                .font(.custom("SF Pro", size: 18).weight(.bold))
-                .foregroundColor(.black)
-
+                .font(.system(size: 14, weight: .semibold, design: .default))
+                .foregroundColor(Color("Black1"))
+            
             TextInputField(placeholder: placeholder, text: $text)
-
-            Text(description1)
-                .font(.custom("SF Pro", size: 12))
-                .foregroundColor(.black)
-
-            Text(description2)
-                .font(.custom("SF Pro", size: 12))
-                .foregroundColor(.black)
+                Text(description1)
+                    .font(.system(size: 12, weight: .light, design: .default))
+                    .foregroundColor(text.contains(" ") ? .black : Color("InvalidRed1"))
+                    
+            
+                Text(description2)
+                    .font(.system(size: 12, weight: .light, design: .default))
+                    .foregroundColor(.black)
         }
-        .padding(.horizontal, 20)
     }
 }
 
