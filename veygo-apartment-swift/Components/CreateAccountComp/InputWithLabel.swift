@@ -1,10 +1,3 @@
-//
-//  InputWithLabel.swift
-//  veygo-apartment-swift
-//
-//  Created by Sardine on 5/19/25.
-//
-
 import SwiftUI
 
 struct InputWithLabel: View {
@@ -19,26 +12,18 @@ struct InputWithLabel: View {
             Text(label)
                 .font(.system(size: 14, weight: .semibold, design: .default))
                 .foregroundColor(Color("Black1"))
-            
+
             TextInputField(placeholder: placeholder, text: $text)
+
+            if !description1.isEmpty {
                 Text(description1)
                     .font(.system(size: 12, weight: .light, design: .default))
-                    .foregroundColor(text.contains(" ") ? .black : Color("InvalidRed1"))
-                    
-            
+            }
+
+            if !description2.isEmpty {
                 Text(description2)
                     .font(.system(size: 12, weight: .light, design: .default))
-                    .foregroundColor(.black)
+            }
         }
     }
-}
-
-#Preview {
-    InputWithLabel(
-        label: "Your Full Legal Name",
-        placeholder: "John Appleseed",
-        text: .constant(""),
-        description1: "You must enter your full name",
-        description2: "Your name must match the name appears on your official documents"
-    )
 }
