@@ -54,7 +54,7 @@ struct NameView: View {
                 }
                 .padding(.top, 40)
             }
-            .background(Color.white)
+            .background(Color("MainBG"))
             .ignoresSafeArea()
             .navigationDestination(isPresented: $goToAgeView) {
                 AgeView()
