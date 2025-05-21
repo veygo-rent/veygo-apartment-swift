@@ -18,14 +18,14 @@ struct SecondaryButtonLg: View {
         }) {
             Text(text)
                 .font(.system(size: 17, weight: .semibold, design: .default)) // SF Pro 字体
-                .foregroundColor(Color("LoginPageButton1BG")) // 使用自定义颜色
+                .foregroundColor(Color("SecondaryButtonText")) // 使用自定义颜色
                 .frame(maxWidth: .infinity)
                 .frame(height: 45)
-                .background(Color.white)
+                .background(Color("SecondaryButtonBg"))
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.black, lineWidth: 1) // 黑色细边框
+                        .stroke(Color("SecondaryButtonOutline"), lineWidth: 1) // 黑色细边框
                 )
         }
     }

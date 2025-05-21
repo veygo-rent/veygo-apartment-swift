@@ -56,7 +56,11 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        LaunchScreenView()
+        ZStack {
+            Color("MainBG")
+                .ignoresSafeArea()
+            LaunchScreenView()
+        }
     }
 }
 

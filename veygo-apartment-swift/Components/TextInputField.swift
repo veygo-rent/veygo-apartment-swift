@@ -13,23 +13,22 @@ struct TextInputField: View {
     
     var body: some View {
         ZStack {
-            // 背景透明
             RoundedRectangle(cornerRadius: 14)
+                .fill(Color("TextFieldBg"))
                 .stroke(Color("TextFieldFrame"), lineWidth: 1) // 边框颜色
-                .background(Color.white) // 背景透明
                 .frame(maxWidth: .infinity)
                 .frame(height: 42)
             
             if isSecure {
                 SecureField(placeholder, text: $text)
                     .frame(height: 42)
-                    .foregroundColor(.black)
+                    .foregroundColor(Color("TextFieldWordColor"))
                     .padding(.leading, 16)
                     .kerning(2)
             } else {
                 TextField(placeholder, text: $text)
                     .frame(height: 42)
-                    .foregroundColor(.black)
+                    .foregroundColor(Color("TextFieldWordColor"))
                     .padding(.leading, 16)
                     .kerning(1.5)
             }
