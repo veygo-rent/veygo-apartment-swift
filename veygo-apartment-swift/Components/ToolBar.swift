@@ -13,24 +13,30 @@ struct ToolBar: View {
     @State private var navigateTo: Destination? = nil
 
     var body: some View {
-        HStack(spacing: 40) {
+        HStack {
             // Tool Bar Item: RENTAL
             ToolBarItem(icon: "car.fill", title: "RENTAL", isSelected: selectedTab == "RENTAL") {
                 selectedTab = "RENTAL"
                 navigateTo = .rental
             }
+            
+            Spacer()
 
             // Tool Bar Item: PLANS
             ToolBarItem(icon: "arrow.2.squarepath", title: "PLANS", isSelected: selectedTab == "PLANS") {
                 selectedTab = "PLANS"
                 navigateTo = .plans
             }
+            
+            Spacer()
 
             // Tool Bar Item: ACCOUNT
             ToolBarItem(icon: "person.crop.circle", title: "ACCOUNT", isSelected: selectedTab == "ACCOUNT") {
                 selectedTab = "ACCOUNT"
                 navigateTo = .account
             }
+            
+            Spacer()
 
             // Tool Bar Item: SETTINGS
             ToolBarItem(icon: "gearshape.fill", title: "SETTINGS", isSelected: selectedTab == "SETTINGS") {
@@ -38,8 +44,9 @@ struct ToolBar: View {
                 navigateTo = .settings
             }
         }
-        .frame(width: 370, height: 50)
-        .background(Color.white.opacity(0.6))
+        .frame(width: 300, height: 50)
+        .padding(.horizontal, 24)
+        .background(.ultraThinMaterial)
         .cornerRadius(25)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 2, y: 2)
         .fullScreenCover(item: $navigateTo) { destination in
@@ -80,5 +87,40 @@ struct ToolBarItem: View {
 }
 
 #Preview {
-    ToolBar()
+    ZStack {
+        ScrollView(.vertical, showsIndicators: false) {
+            Image("VeygoLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .ignoresSafeArea(edges: .all)
+            Image("VeygoLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .ignoresSafeArea(edges: .all)
+            Image("VeygoLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .ignoresSafeArea(edges: .all)
+            Image("VeygoLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .ignoresSafeArea(edges: .all)
+            Image("VeygoLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .ignoresSafeArea(edges: .all)
+            Image("VeygoLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .ignoresSafeArea(edges: .all)
+            
+        }
+        ToolBar()
+    }
 }
