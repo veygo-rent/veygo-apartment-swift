@@ -20,7 +20,7 @@ struct LaunchScreenView: View {
 
             VStack {
                 Spacer()
-                Image("VeygoDraft")  // logo name
+                Image("VeygoLogo")  // logo name
                     .resizable()
                     .scaledToFit()
                     .frame(width: 250, height: 250)

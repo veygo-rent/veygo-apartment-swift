@@ -18,7 +18,7 @@ struct LoginView: View {
                 Spacer()
 
                 // Logo
-                Image("VeygoDraft")
+                Image("VeygoLogo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 250, height: 250)
