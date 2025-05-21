@@ -10,7 +10,7 @@ struct TextInputField: View {
     var placeholder: String
     @Binding var text: String
     var isSecure: Bool = false
-
+    
     var body: some View {
         ZStack {
             // 背景透明
@@ -19,17 +19,19 @@ struct TextInputField: View {
                 .background(Color.white) // 背景透明
                 .frame(maxWidth: .infinity)
                 .frame(height: 42)
-
+            
             if isSecure {
                 SecureField(placeholder, text: $text)
                     .frame(height: 42)
                     .foregroundColor(.black)
                     .padding(.leading, 16)
+                    .kerning(2)
             } else {
                 TextField(placeholder, text: $text)
                     .frame(height: 42)
                     .foregroundColor(.black)
                     .padding(.leading, 16)
+                    .kerning(1.5)
             }
         }
     }
@@ -38,4 +40,3 @@ struct TextInputField: View {
 #Preview {
     TextInputField(placeholder: "Email", text: .constant(""))
 }
-
