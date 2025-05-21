@@ -75,10 +75,10 @@ struct ToolBarItem: View {
         VStack {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(isSelected ? Color("Primary1") : Color.gray)
+                .foregroundColor(isSelected ? Color("AccentColor") : Color.gray)
             Text(title)
                 .font(.system(size: 8, weight: .semibold))
-                .foregroundColor(isSelected ? Color("Primary1") : Color.gray)
+                .foregroundColor(isSelected ? Color("AccentColor") : Color.gray)
         }
         .onTapGesture {
             action()

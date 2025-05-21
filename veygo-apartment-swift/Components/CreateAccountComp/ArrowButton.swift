@@ -19,7 +19,7 @@ struct ArrowButton: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(isDisabled ? Color("Terms") : Color("Primary1"))
+                    .fill(isDisabled ? Color("Terms") : Color("AccentColor"))
                     .frame(width: 80, height: 80)
                     .shadow(
                         color: isDisabled ? .clear : Color.black.opacity(0.25),
