@@ -59,7 +59,7 @@ struct NameView: View {
             .navigationDestination(isPresented: $goToAgeView) {
                 AgeView()
             }
-        }
+        }.navigationBarBackButtonHidden(true)
     }
 }
 
