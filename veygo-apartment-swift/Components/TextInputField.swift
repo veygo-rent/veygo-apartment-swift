@@ -9,7 +9,7 @@ import SwiftUI
 struct TextInputField: View {
     let placeholder: String
     @Binding var text: String
-    let isSecure: Bool = false
+    var isSecure: Bool = false
     
     var body: some View {
         ZStack {
