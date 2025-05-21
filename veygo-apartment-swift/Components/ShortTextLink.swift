@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ShortTextLink: View {
-    var text: String
+    let text: String
     var action: () -> Void
 
     var body: some View {

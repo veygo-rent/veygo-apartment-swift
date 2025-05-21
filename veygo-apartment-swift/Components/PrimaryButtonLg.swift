@@ -16,7 +16,7 @@ import SwiftUI
 
 struct PrimaryButtonLg: View {
     // 接收按钮文本和点击事件
-    var text: String
+    let text: String
     var action: () -> Void
 
     var body: some View {
