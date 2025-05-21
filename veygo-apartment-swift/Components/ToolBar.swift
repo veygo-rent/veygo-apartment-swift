@@ -48,7 +48,7 @@ struct ToolBar: View {
         .padding(.horizontal, 24)
         .background(.ultraThinMaterial)
         .cornerRadius(25)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 2, y: 2)
+        .shadow(color: Color("Shadow").opacity(0.4), radius: 8, x: 0, y: 2)
         .fullScreenCover(item: $navigateTo) { destination in
             switch destination {
             case .rental:
