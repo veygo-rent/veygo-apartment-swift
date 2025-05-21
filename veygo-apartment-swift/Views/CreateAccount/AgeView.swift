@@ -4,9 +4,13 @@ struct AgeView: View {
     @State private var dob: String = ""
     @Environment(\.dismiss) private var dismiss
     @State private var goToPhoneView = false
+    @State private var descriptions: [(String, Bool)] = [("You must be at least 18 years old to rent from Veygo", false)]
 
     // 算日期
     private var parsedDate: Date? {
+        if (dob.count != 10) {
+            return nil
+        }
         let formatter = DateFormatter()
         formatter.dateFormat = "MM/dd/yyyy"
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -57,8 +61,7 @@ struct AgeView: View {
                         label: "Date of Birth",
                         placeholder: "MM/DD/YYYY",
                         text: $dob,
-                        description1: showDescription ? "You must be at least 18 years old to rent from Veygo" : "",
-                        description2: ""
+                        descriptions: $descriptions
                     )
                     .foregroundColor(
                         showDescription
@@ -66,6 +69,9 @@ struct AgeView: View {
                         : Color("Black1")
                     )
                     .padding(.horizontal, 32)
+                    .onChange(of: dob) { oldValue, newValue in
+                        descriptions[0].1 = !isOver18
+                    }
 
                     Spacer()
 
@@ -84,7 +90,7 @@ struct AgeView: View {
             .navigationDestination(isPresented: $goToPhoneView) {
                 PhoneView()
             }
-        }
+        }.navigationBarBackButtonHidden(true)
     }
 }
 

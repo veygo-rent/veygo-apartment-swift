@@ -4,6 +4,10 @@ struct NameView: View {
     @State private var fullName: String = ""
     @Environment(\.dismiss) private var dismiss
     @State private var goToAgeView = false
+    @State private var descriptions: [(String, Bool)] = [
+        ("You must enter your full name", false),
+        ("Your name must match the name appears on your official documents", false)
+    ]
 
     var body: some View {
         NavigationStack {
@@ -31,22 +35,8 @@ struct NameView: View {
                             label: "Your Full Legal Name",
                             placeholder: "John Appleseed",
                             text: $fullName,
-                            description1: "",
-                            description2: ""
+                            descriptions: $descriptions
                         )
-
-                        if !fullName.isEmpty {
-                            Text("You must enter your full name")
-                                .font(.system(size: 12, weight: .light))
-                                .foregroundColor(
-                                    fullName.contains(" ")
-                                    ? Color("Black1")
-                                    : Color("InvalidRed1")
-                                )
-                            Text("Your name must match the name appears on your official documents")
-                                .font(.system(size: 12, weight: .light))
-                                .foregroundColor(Color("Black1"))
-                        }
                     }
                     .padding(.horizontal, 32)
 
@@ -58,6 +48,9 @@ struct NameView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
+                }
+                .onChange(of: fullName) { oldValue, newValue in
+                    descriptions[0].1 = !(newValue.contains(" ") && !newValue.isEmpty)
                 }
                 .padding(.top, 40)
             }

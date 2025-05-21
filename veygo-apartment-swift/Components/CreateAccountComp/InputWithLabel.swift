@@ -1,28 +1,29 @@
 import SwiftUI
 
 struct InputWithLabel: View {
-    var label: String
-    var placeholder: String
+    let label: Optional<String>
+    let placeholder: String
     @Binding var text: String
-    var description1: String
-    var description2: String
+    @Binding var descriptions: [(String, Bool)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(label)
-                .font(.system(size: 14, weight: .semibold, design: .default))
-                .foregroundColor(Color("Black1"))
+            if let label = label {
+                Text(label)
+                    .font(.system(size: 14, weight: .semibold, design: .default))
+                    .foregroundColor(Color("Black1"))
+            }
 
             TextInputField(placeholder: placeholder, text: $text)
 
-            if !description1.isEmpty {
-                Text(description1)
-                    .font(.system(size: 12, weight: .light, design: .default))
-            }
-
-            if !description2.isEmpty {
-                Text(description2)
-                    .font(.system(size: 12, weight: .light, design: .default))
+            ForEach(descriptions, id: \.0) { item in
+                Text(item.0)
+                    .font(.system(size: 12, weight: !item.1 ? .light : .regular, design: .default))
+                    .foregroundColor(
+                        !item.1
+                        ? Color("Black1")
+                        : Color("InvalidRed1")
+                    )
             }
         }
     }
