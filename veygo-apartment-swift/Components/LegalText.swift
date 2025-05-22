@@ -8,17 +8,20 @@
 import SwiftUI
 
 struct LegalText: View {
+    var fullText: String = "By continuing, you acknowledge and agree to Veygo’s legal terms, which we recommend reviewing"
+    var highlightedText: String = "legal terms"
+
     var body: some View {
         Text(makeAttributedString())
-            .font(.system(size: 11, weight: .regular, design: .default)) // 使用 SF Pro 字体
+            .font(.system(size: 11, weight: .regular, design: .default))
             .foregroundColor(Color("Terms"))
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity)
     }
 
     private func makeAttributedString() -> AttributedString {
-        var fullString = AttributedString("By continuing, you acknowledge and agree to Veygo’s legal terms, which we recommend reviewing")
-        
-        if let range = fullString.range(of: "legal terms") {
+        var fullString = AttributedString(fullText)
+
+        if let range = fullString.range(of: highlightedText) {
             fullString[range].foregroundColor = Color("HighLightText")
             fullString[range].underlineStyle = .single
         }

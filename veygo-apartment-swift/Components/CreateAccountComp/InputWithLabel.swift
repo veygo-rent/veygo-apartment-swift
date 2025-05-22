@@ -3,6 +3,7 @@ import SwiftUI
 struct InputWithLabel: View {
     let label: Optional<String>
     let placeholder: String
+    var alignment: TextAlignment = .leading
     @Binding var text: String
     @Binding var descriptions: [(String, Bool)]
 
@@ -15,6 +16,7 @@ struct InputWithLabel: View {
             }
 
             TextInputField(placeholder: placeholder, text: $text)
+                .multilineTextAlignment(alignment)
 
             ForEach(descriptions, id: \.0) { item in
                 Text(item.0)
