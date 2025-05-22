@@ -58,19 +58,12 @@ struct PasswordView: View {
                     .padding(.bottom, 30)
 
                     // Terms text (draft just for now)
-                    (
-                        Text("By joining, you agree to Veygo’s ")
-                            .foregroundColor(Color("Terms"))
-                        +
-                        Text("Terms and Conditions")
-                            .foregroundColor(Color("AccentColor"))
+                    LegalText(
+                        fullText: "By joining, you agree to Veygo’s Terms and Conditions",
+                        highlightedText: "Terms and Conditions"
                     )
-                    .font(.system(size: 11, weight: .semibold, design: .default))
-                    .lineSpacing(7)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
                     .padding(.horizontal, 32)
-                    .offset(y: -20)
+                    .offset(y: -25)
                 }
                 .onChange(of: password) { _, newValue in
                     descriptions[0].1 = false // 永远灰色
