@@ -50,4 +50,5 @@ struct LaunchScreenView: View {
 
 #Preview {
     LaunchScreenView()
+        .environmentObject(UserSession())
 }
