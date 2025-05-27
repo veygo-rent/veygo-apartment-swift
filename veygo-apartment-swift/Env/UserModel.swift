@@ -18,5 +18,14 @@ struct PublishRenter: Codable, Identifiable {
 // EnvironmentObject
 class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
-}
 
+    func restoreFromStorage() {
+        if let data = UserDefaults.standard.data(forKey: "user"),
+           let renter = try? JSONDecoder().decode(PublishRenter.self, from: data) {
+            self.user = renter
+            print("✅ Restored user from storage: \(renter.name)")
+        } else {
+            print("⚠️ No saved user found in storage")
+        }
+    }
+}

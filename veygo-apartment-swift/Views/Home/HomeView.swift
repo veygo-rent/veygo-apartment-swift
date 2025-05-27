@@ -17,6 +17,16 @@ struct HomeView: View {
                 .foregroundColor(.blue)
                 .onAppear {
                     print("User entered HomeView.")
+                    if let user = session.user {
+                        print("User Info:")
+                        print("- Token: \(token)")
+                        print("- Name: \(user.name)")
+                        print("- Email: \(user.student_email)")
+                        print("- Phone: \(user.phone)")
+                        print("- DOB: \(user.date_of_birth)")
+                    } else {
+                        print("session.user is nil")
+                    }
                 }
 
             Button("Clear Token") {

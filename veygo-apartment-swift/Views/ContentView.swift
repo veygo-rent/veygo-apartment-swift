@@ -16,8 +16,8 @@ struct ContentView: View {
             HomeView()
                 .environmentObject(session)
                 .onAppear {
-                    print("Now we have your token: \(token)")
-                }
+                            session.restoreFromStorage()
+                        }
         }
     }
 }

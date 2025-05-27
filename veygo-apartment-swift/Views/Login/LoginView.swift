@@ -138,6 +138,11 @@ struct LoginView: View {
                     DispatchQueue.main.async {
                         self.token = extractToken(from: response) ?? ""
                         self.session.user = decodedUser
+
+                        if let encoded = try? JSONEncoder().encode(decodedUser) {
+                            UserDefaults.standard.set(encoded, forKey: "user")
+                        }
+
                         print("Login successful, extracted token: \(self.token)")
                         print("Decoded user: \(String(describing: decodedUser))")
                         self.goToHomeView = true
@@ -170,4 +175,5 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
+        .environmentObject(UserSession())
 }
