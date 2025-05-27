@@ -19,6 +19,9 @@ struct LoginView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
 
+    @AppStorage("token") var token: String = ""
+    @EnvironmentObject var session: UserSession
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -127,13 +130,20 @@ struct LoginView: View {
             }
 
             if httpResponse.statusCode == 200 {
-                DispatchQueue.main.async {
-                    goToHomeView = true
+                let responseJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+                if let renterData = responseJSON?["renter"] {
+                    let renterJSON = try? JSONSerialization.data(withJSONObject: renterData)
+                    let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterJSON!)
+
+                    DispatchQueue.main.async {
+                        self.token = extractToken(from: response) ?? ""
+                        self.session.user = decodedUser
+                        print("Login successful, extracted token: \(self.token)")
+                        print("Decoded user: \(String(describing: decodedUser))")
+                        self.goToHomeView = true
+                    }
                 }
             } else if httpResponse.statusCode == 401 {
-                let responseJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-                _ = responseJSON?["error"] as? String ?? "Credentials invalid"
-
                 DispatchQueue.main.async {
                     alertMessage = "Email or password is incorrect"
                     showAlert = true
@@ -145,6 +155,16 @@ struct LoginView: View {
                 }
             }
         }.resume()
+    }
+
+    func extractToken(from response: URLResponse?) -> String? {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("Failed to cast response to HTTPURLResponse")
+            return nil
+        }
+        let token = httpResponse.value(forHTTPHeaderField: "token")
+        print("Extracted token from header: \(token ?? "nil")")
+        return token
     }
 }
 

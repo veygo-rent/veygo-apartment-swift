@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LaunchScreenView: View {
+    @EnvironmentObject var session: UserSession
     @State private var isActive = false
     @State private var scale: CGFloat = 1.0   // 缩放比例
     @State private var opacity: Double = 1.0  // 透明度
@@ -42,6 +43,7 @@ struct LaunchScreenView: View {
         }
         .fullScreenCover(isPresented: $isActive) {
             LoginView()  // 进入登录页
+                .environmentObject(session)
         }
     }
 }
