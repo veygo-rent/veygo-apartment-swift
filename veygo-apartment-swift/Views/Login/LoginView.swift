@@ -20,29 +20,24 @@ struct LoginView: View {
     @State private var alertMessage = ""
 
     @AppStorage("token") var token: String = ""
-    @EnvironmentObject var session: UserSession
+    @AppStorage("user_id") var userId: Int = 0
+    @EnvironmentObject var session: UserSession // this page can check envObj
 
     var body: some View {
         NavigationStack {
             VStack {
                 Spacer()
 
-                // Logo
                 Image("VeygoLogo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 250, height: 250)
                     .padding(.bottom, -20)
 
-                // Email 输入框
                 TextInputField(placeholder: "Email", text: $email)
-
                 Spacer().frame(height: 15)
-
-                // Password 输入框
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
 
-                // 登录按钮
                 PrimaryButtonLg(text: "Login") {
                     if email.isEmpty {
                         alertMessage = "Please enter your email"
@@ -55,28 +50,21 @@ struct LoginView: View {
                     }
                 }
                 .alert(isPresented: $showAlert) {
-                    Alert(
-                        title: Text("Login Failed"),
-                        message: Text(alertMessage),
-                        dismissButton: .default(Text("OK"))
-                    )
+                    Alert(title: Text("Login Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                 }
 
-                // 忘记密码
                 ShortTextLink(text: "Forgot Password?") {
                     goToResetView = true
                 }
 
                 Spacer()
 
-                // 注册按钮
                 SecondaryButtonLg(text: "Create New Account") {
                     goToNameView = true
                 }
                 .padding(.top, 10)
                 .padding(.bottom, 10)
 
-                // Terms
                 LegalText()
             }
             .padding(.horizontal, 32)
@@ -99,11 +87,7 @@ struct LoginView: View {
             return
         }
 
-        let body: [String: String] = [
-            "email": email,
-            "password": password
-        ]
-
+        let body: [String: String] = ["email": email, "password": password]
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
 
         var request = URLRequest(url: url)
@@ -120,8 +104,7 @@ struct LoginView: View {
                 return
             }
 
-            guard let httpResponse = response as? HTTPURLResponse,
-                  let data = data else {
+            guard let httpResponse = response as? HTTPURLResponse, let data = data else {
                 DispatchQueue.main.async {
                     alertMessage = "Invalid server response."
                     showAlert = true
@@ -131,20 +114,20 @@ struct LoginView: View {
 
             if httpResponse.statusCode == 200 {
                 let responseJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-                if let renterData = responseJSON?["renter"] {
-                    let renterJSON = try? JSONSerialization.data(withJSONObject: renterData)
-                    let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterJSON!)
+                if let renterData = responseJSON?["renter"],
+                   let renterJSON = try? JSONSerialization.data(withJSONObject: renterData),
+                   let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterJSON) {
 
                     DispatchQueue.main.async {
                         self.token = extractToken(from: response) ?? ""
+                        self.userId = decodedUser.id
                         self.session.user = decodedUser
 
                         if let encoded = try? JSONEncoder().encode(decodedUser) {
                             UserDefaults.standard.set(encoded, forKey: "user")
                         }
 
-                        print("Login successful, extracted token: \(self.token)")
-                        print("Decoded user: \(String(describing: decodedUser))")
+                        print("✅ Login successful: \(decodedUser.name)")
                         self.goToHomeView = true
                     }
                 }
