@@ -33,7 +33,7 @@ struct ContentView: View {
                 if isValid {
                     print("🔐 Token is valid. Proceeding to home.")
                     DispatchQueue.main.async {
-                                    shouldShowLogin = false
+                        shouldShowLogin = false
                     }
                 } else {
                     print("🚪 Token invalid. Redirecting to login.")
