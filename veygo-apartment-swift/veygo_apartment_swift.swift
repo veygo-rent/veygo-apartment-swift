@@ -25,6 +25,7 @@ import Stripe
 @main
 struct veygo_apartment_swift: App {
     @StateObject var session = UserSession()
+    @StateObject var signupSession = SignupSession()
     @AppStorage("token") var token: String = ""
 
     init() {
@@ -35,6 +36,7 @@ struct veygo_apartment_swift: App {
         WindowGroup {
             ContentView()
                 .environmentObject(session)  // 所有页面可访问 session.user
+                .environmentObject(signupSession) // 所有页面可访问 signupSession.user
         }
     }
 }

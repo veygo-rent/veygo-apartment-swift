@@ -5,6 +5,7 @@ struct AgeView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var goToPhoneView = false
     @State private var descriptions: [(String, Bool)] = [("Your age needs to be in the correct format", false), ("You must be at least 18 years old to rent from Veygo", false)]
+    @EnvironmentObject var signup: SignupSession
     
     var body: some View {
         NavigationStack {
@@ -60,6 +61,7 @@ struct AgeView: View {
                     // 箭头按钮 — 满18岁且格式对了才能启用
                     let validator = AgeValidator(dob: dob)
                     ArrowButton(isDisabled: !validator.isOver18) {
+                        signup.date_of_birth = dob
                         goToPhoneView = true
                         print("Proceed with DOB: \(dob)")
                     }

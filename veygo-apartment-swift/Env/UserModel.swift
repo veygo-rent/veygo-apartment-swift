@@ -18,6 +18,14 @@ struct PublishRenter: Codable, Identifiable {
     let apartment_id: Int
 }
 
+class SignupSession: ObservableObject {
+    @Published var name: String = ""
+    @Published var date_of_birth: String = ""  // MM/DD/YYYY
+    @Published var phone: String = ""
+    @Published var student_email: String = ""
+    @Published var password: String = ""
+}
+
 class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
 

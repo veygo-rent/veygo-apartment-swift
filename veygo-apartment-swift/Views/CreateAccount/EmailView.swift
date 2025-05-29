@@ -15,6 +15,7 @@ struct EmailView: View {
         ("Your email has to be in the correct format", false),
         ("Your email will also be used for communication of important account updates.", false)
     ]
+    @EnvironmentObject var signup: SignupSession
 
     var body: some View {
         NavigationStack {
@@ -51,6 +52,7 @@ struct EmailView: View {
 
                     // 下一步按钮
                     ArrowButton(isDisabled: !EmailValidator(email: email).isValidEmail) {
+                        signup.student_email = email //??
                         goToPasswordView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)

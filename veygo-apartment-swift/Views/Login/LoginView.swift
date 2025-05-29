@@ -15,6 +15,7 @@ struct LoginView: View {
     @State private var goToNameView = false
     @State private var goToHomeView = false
     @State private var goToResetView = false
+    
 
     @State private var showAlert = false
     @State private var alertMessage = ""

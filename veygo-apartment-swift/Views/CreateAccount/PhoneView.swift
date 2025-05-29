@@ -16,6 +16,7 @@ struct PhoneView: View {
         ("Phone number has to be in the correct format", false),
         ("Your phone number will be used for communication of important account updates.", false)
     ]
+    @EnvironmentObject var signup: SignupSession
 
     var body: some View {
         NavigationStack {
@@ -52,6 +53,7 @@ struct PhoneView: View {
 
                     // 下一步按钮
                     ArrowButton(isDisabled: !PhoneNumberValidator(number: phoneNumber).isValidNumber) {
+                        signup.phone = PhoneNumberValidator(number: phoneNumber).normalizedNumber
                         goToEmailView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)

@@ -8,6 +8,7 @@ struct NameView: View {
         ("You must enter your full name", false),
         ("Your name must match the name appears on your official documents", false)
     ]
+    @EnvironmentObject var signup: SignupSession
 
     var body: some View {
         NavigationStack {
@@ -44,6 +45,7 @@ struct NameView: View {
 
                     // Arrow Button
                     ArrowButton(isDisabled: !(NameValidator(name: fullName).isValidName)) {
+                        signup.name = fullName
                         goToAgeView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
