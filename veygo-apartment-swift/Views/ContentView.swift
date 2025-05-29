@@ -87,7 +87,7 @@ struct ContentView: View {
                 return
             }
 
-            session.validateTokenAndFetchUser(token: token, userId: userId) { isValid in
+            session.validateTokenAndFetchUser(token: token, userId: userId) { isValid in //这里check token是不是valid。valid就refresh进home，否则进login
                 DispatchQueue.main.async {
                     isLoading = false
                     if isValid {

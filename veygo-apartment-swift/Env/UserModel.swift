@@ -21,7 +21,7 @@ struct PublishRenter: Codable, Identifiable {
 class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
 
-    /// 用 token 和 user_id 调用后端 API 验证并查找用户信息 对了—>200, 不对—>re-login
+    // 用 token 和 user_id 调用后端 API 验证并查找用户信息 对了—>200, 不对—>re-login
     func validateTokenAndFetchUser(token: String, userId: Int, completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: "https://dev.veygo.rent/api/v1/user/retrieve") else {
             print("Invalid /user/retrieve URL")

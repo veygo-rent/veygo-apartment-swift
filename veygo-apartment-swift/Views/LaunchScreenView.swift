@@ -10,8 +10,8 @@ import SwiftUI
 struct LaunchScreenView: View {
     @EnvironmentObject var session: UserSession
     @State private var isActive = false
-    @State private var scale: CGFloat = 1.0   // 缩放比例
-    @State private var opacity: Double = 1.0  // 透明度
+    @State private var scale: CGFloat = 1.0
+    @State private var opacity: Double = 1.0 
     
     var body: some View {
         VStack {
@@ -28,13 +28,11 @@ struct LaunchScreenView: View {
             Spacer()
         }
         .onAppear {
-            // 动画效果：放大 + 淡出
             withAnimation(.easeInOut(duration: 2)) {
-                scale = 1.2    // 放大1.2倍
-                opacity = 0.0  // 渐变消失
+                scale = 1.2
+                opacity = 0.0
             }
             
-            // 延迟2秒后跳转到登录页面
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 withAnimation {
                     isActive = true
@@ -43,7 +41,6 @@ struct LaunchScreenView: View {
         }
         .fullScreenCover(isPresented: $isActive) {
             LoginView()  // 进入登录页
-                //.environmentObject(session)
         }
     }
 }
