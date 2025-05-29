@@ -21,17 +21,6 @@ struct PublishRenter: Codable, Identifiable {
 class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
 
-//    /// 读取用户信息
-//    func restoreUserFromDisk() {
-//        if let data = UserDefaults.standard.data(forKey: "user"),
-//           let decoded = try? JSONDecoder().decode(PublishRenter.self, from: data) {
-//            self.user = decoded
-//            print("Restored user from disk: \(decoded.name)")
-//        } else {
-//            print("Failed to restore user from disk")
-//        }
-//    }
-
     /// 用 token 和 user_id 调用后端 API 验证并查找用户信息 对了—>200, 不对—>re-login
     func validateTokenAndFetchUser(token: String, userId: Int, completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: "https://dev.veygo.rent/api/v1/user/retrieve") else {

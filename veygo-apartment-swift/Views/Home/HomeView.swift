@@ -33,7 +33,7 @@ struct HomeView: View {
                 Text("📧 Email: \(user.student_email)")
                 Text("📱 Phone: \(user.phone)")
             } else {
-                Text("⚠️ No user loaded.")
+                Text("No user loaded.")
                     .foregroundColor(.orange)
             }
 
@@ -47,15 +47,15 @@ struct HomeView: View {
         }
         .padding()
         .onAppear {
-            print("🏠 Entered HomeView")
-            print("📦 Token: \(token)")
-            print("📦 User ID: \(userId)")
+            print("Entered HomeView")
+            print("Token: \(token)")
+            print("User ID: \(userId)")
             if let user = session.user {
                 print("- Name: \(user.name)")
                 print("- Email: \(user.student_email)")
                 print("- Phone: \(user.phone)")
             } else {
-                print("❌ session.user is nil")
+                print("session.user is nil")
             }
         }
     }
@@ -63,5 +63,4 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
-        .environmentObject(UserSession())
 }
