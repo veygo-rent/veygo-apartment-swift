@@ -50,14 +50,14 @@ struct EmailView: View {
                     Spacer()
 
                     // 下一步按钮
-                    ArrowButton(isDisabled: !isEmailValid(email)) {
+                    ArrowButton(isDisabled: !EmailValidator(email: email).isValidEmail) {
                         goToPasswordView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
                 }
                 .onChange(of: email) { oldValue, newValue in
-                    descriptions[0].1 = !isEmailValid(newValue)
+                    descriptions[0].1 = !EmailValidator(email: newValue).isValidEmail
                     descriptions[1].1 = false // 始终灰色
                 }
                 .padding(.top, 40)
@@ -69,13 +69,6 @@ struct EmailView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-    }
-
-    // 验证email格式
-    private func isEmailValid(_ email: String) -> Bool {
-        guard let atRange = email.range(of: "@") else { return false }
-        let domainPart = email[atRange.upperBound...]
-        return domainPart.contains(".")
     }
 }
 

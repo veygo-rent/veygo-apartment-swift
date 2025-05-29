@@ -44,3 +44,26 @@ public struct EmailValidator {
         return regex?.firstMatch(in: email, options: [], range: range) != nil
     }
 }
+
+public struct NameValidator {
+    let name: String
+    var isValidName: Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let parts = trimmed.split(separator: " ")
+        
+        // Must have at least two parts (e.g., first and last name)
+        guard parts.count >= 2 else { return false }
+        
+        // Each part must start with an uppercase letter followed by lowercase letters
+        for (index, part) in parts.enumerated() {
+            if index == 0 || index == parts.count - 1 {
+                guard part.count >= 2 else { return false }
+            }
+            guard let first = part.first, first.isUppercase else { return false }
+            let rest = part.dropFirst()
+            guard rest.allSatisfy({ $0.isLowercase }) else { return false }
+        }
+        
+        return true
+    }
+}

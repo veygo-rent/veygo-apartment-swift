@@ -44,4 +44,23 @@ struct veygo_apartment_swift_tests {
             #expect(EmailValidator(email: "username@sub.domain.com").isValidEmail)
         }
     }
+    
+    @Suite("Name Validator")
+    struct name_validator_tests {
+        @Test func nameValidation() async throws {
+            #expect(!NameValidator(name: "").isValidName)
+            #expect(!NameValidator(name: "john").isValidName) // Only one name
+            #expect(!NameValidator(name: "john doe").isValidName) // Lowercase
+            #expect(!NameValidator(name: "J Doe").isValidName) // Too short
+            #expect(!NameValidator(name: "Jo D").isValidName) // Last name too short
+            #expect(!NameValidator(name: "Jo Do3").isValidName) // Contains number
+            #expect(!NameValidator(name: "Jo ").isValidName) // Not full name
+            
+            #expect(NameValidator(name: "John Doe").isValidName)
+            #expect(NameValidator(name: "Alice Smith").isValidName)
+            #expect(NameValidator(name: "Mary Jane").isValidName)
+            #expect(NameValidator(name: "Steve Paul Jobs").isValidName)
+            #expect(NameValidator(name: "Steve P Jobs").isValidName)
+        }
+    }
 }

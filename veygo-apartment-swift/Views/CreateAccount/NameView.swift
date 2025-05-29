@@ -43,14 +43,14 @@ struct NameView: View {
                     Spacer()
 
                     // Arrow Button
-                    ArrowButton(isDisabled: !(fullName.contains(" ") && !fullName.isEmpty)) {
+                    ArrowButton(isDisabled: !(NameValidator(name: fullName).isValidName)) {
                         goToAgeView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
                 }
                 .onChange(of: fullName) { oldValue, newValue in
-                    descriptions[0].1 = !(newValue.contains(" ") && !newValue.isEmpty)
+                    descriptions[0].1 = !(NameValidator(name: fullName).isValidName)
                 }
                 .padding(.top, 40)
             }
