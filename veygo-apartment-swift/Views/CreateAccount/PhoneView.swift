@@ -51,14 +51,20 @@ struct PhoneView: View {
                     Spacer()
 
                     // 下一步按钮
-                    ArrowButton(isDisabled: !isPhoneNumberValid(phoneNumber)) {
+                    ArrowButton(isDisabled: !PhoneNumberValidator(number: phoneNumber).isValidNumber) {
                         goToEmailView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
                 }
                 .onChange(of: phoneNumber) { oldValue, newValue in
-                    descriptions[0].1 = !isPhoneNumberValid(newValue)
+                    let digits = newValue.filter { $0.isNumber }
+                    var formatted = ""
+                    if digits.count > 0 { formatted += String(digits.prefix(3)) }
+                    if digits.count > 3 { formatted += "-" + String(digits.dropFirst(3).prefix(3)) }
+                    if digits.count > 6 { formatted += "-" + String(digits.dropFirst(6).prefix(4)) }
+                    phoneNumber = formatted
+                    descriptions[0].1 = !PhoneNumberValidator(number: formatted).isValidNumber
                     descriptions[1].1 = false // 始终灰色
                 }
                 .padding(.top, 40)
@@ -70,11 +76,6 @@ struct PhoneView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-    }
-
-    // 验证手机号码格式
-    private func isPhoneNumberValid(_ number: String) -> Bool {
-        return number.contains("-") && number.count == 12
     }
 }
 

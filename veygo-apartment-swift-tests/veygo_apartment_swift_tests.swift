@@ -63,4 +63,21 @@ struct veygo_apartment_swift_tests {
             #expect(NameValidator(name: "Steve P Jobs").isValidName)
         }
     }
+    
+    @Suite("Phone Number Validator")
+    struct phone_number_validator_tests {
+        @Test func phoneNumberValidation() async throws {
+            #expect(!PhoneNumberValidator(number: "").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "1234567890").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "123-4567-890").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "123-456-789").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "123-456-78900").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "123-456-789!").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "123-45A-7890").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "ABC-DEF-GHIJ").isValidNumber)
+            #expect(!PhoneNumberValidator(number: "12a-456-7890").isValidNumber)
+            
+            #expect(PhoneNumberValidator(number: "123-456-7890").isValidNumber)
+        }
+    }
 }
