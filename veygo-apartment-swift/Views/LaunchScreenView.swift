@@ -43,12 +43,11 @@ struct LaunchScreenView: View {
         }
         .fullScreenCover(isPresented: $isActive) {
             LoginView()  // 进入登录页
-                .environmentObject(session)
+                //.environmentObject(session)
         }
     }
 }
 
 #Preview {
     LaunchScreenView()
-        .environmentObject(UserSession())
 }

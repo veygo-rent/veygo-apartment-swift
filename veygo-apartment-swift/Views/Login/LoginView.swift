@@ -127,7 +127,7 @@ struct LoginView: View {
                             UserDefaults.standard.set(encoded, forKey: "user")
                         }
 
-                        print("✅ Login successful: \(decodedUser.name)")
+                        print("Login successful: \(decodedUser.name)")
                         self.goToHomeView = true
                     }
                 }
@@ -158,5 +158,4 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
-        .environmentObject(UserSession())
 }
