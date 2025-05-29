@@ -8,8 +8,8 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var session: UserSession
-    @AppStorage("token") var token: String = "" // 读 token
-    @AppStorage("user_id") var userId: Int = 0  // 读 user_id
+    @AppStorage("token") var token: String = ""
+    @AppStorage("user_id") var userId: Int = 0
 
     var body: some View {
         VStack(spacing: 16) {
@@ -17,7 +17,7 @@ struct HomeView: View {
                 .font(.largeTitle)
                 .foregroundColor(.blue)
 
-            // ✅ Debug 输出
+            // Debug 输出
             Text("🔑 Token: \(token)")
                 .font(.caption)
                 .foregroundColor(.gray)
