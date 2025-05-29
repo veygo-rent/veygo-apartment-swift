@@ -27,4 +27,21 @@ struct veygo_apartment_swift_tests {
         }
     }
     
+    @Suite("Email Validator")
+    struct email_validator_tests {
+        @Test func emailFormatValidation() async throws {
+            #expect(!EmailValidator(email: "").isValidEmail)
+            #expect(!EmailValidator(email: "plainaddress").isValidEmail)
+            #expect(!EmailValidator(email: "@missingusername.com").isValidEmail)
+            #expect(!EmailValidator(email: "username@.com").isValidEmail)
+            #expect(!EmailValidator(email: "username@com").isValidEmail)
+            #expect(!EmailValidator(email: "username@domain..com").isValidEmail)
+            #expect(!EmailValidator(email: "username@domain.").isValidEmail)
+            
+            #expect(EmailValidator(email: "example@example.com").isValidEmail)
+            #expect(EmailValidator(email: "user.name+tag+sorting@example.com").isValidEmail)
+            #expect(EmailValidator(email: "user_name@example.co.uk").isValidEmail)
+            #expect(EmailValidator(email: "username@sub.domain.com").isValidEmail)
+        }
+    }
 }

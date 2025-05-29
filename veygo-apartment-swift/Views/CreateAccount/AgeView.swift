@@ -1,30 +1,5 @@
 import SwiftUI
 
-struct AgeValidator {
-    let dob: String
-    
-    var parsedDate: Date? {
-        guard dob.count == 10 else { return nil }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yyyy"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter.date(from: dob)
-    }
-    
-    var isValidFormat: Bool {
-        parsedDate != nil
-    }
-    
-    var isOver18: Bool {
-        guard let birthDate = parsedDate else { return false }
-        let calendar = Calendar.current
-        if let eighteenYearsLater = calendar.date(byAdding: .year, value: 18, to: birthDate) {
-            return Date() >= eighteenYearsLater
-        }
-        return false
-    }
-}
-
 struct AgeView: View {
     @State private var dob: String = ""
     @Environment(\.dismiss) private var dismiss
