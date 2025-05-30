@@ -59,6 +59,7 @@ struct EmailView: View {
                     .padding(.bottom, 50)
                 }
                 .onChange(of: email) { oldValue, newValue in
+                    email = newValue.lowercased()
                     descriptions[0].1 = !EmailValidator(email: newValue).isValidEmail
                     descriptions[1].1 = false // 始终灰色
                 }

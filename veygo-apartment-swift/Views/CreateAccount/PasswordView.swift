@@ -98,12 +98,6 @@ struct PasswordView: View {
 
     // MARK: - Register User API
     func registerUser() {
-        guard let url = URL(string: "https://dev.veygo.rent/api/v1/user/create") else {
-            alertMessage = "Invalid URL"
-            showAlert = true
-            return
-        }
-
         let formatter = DateFormatter()
         formatter.dateFormat = "MM/dd/yyyy"
         guard let dobDate = formatter.date(from: signup.date_of_birth) else {
@@ -129,10 +123,8 @@ struct PasswordView: View {
         }
 
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
+        
+        let request = veygoCurlRequest(url: "/api/v1/user/create", method: "POST", body: jsonData)
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {

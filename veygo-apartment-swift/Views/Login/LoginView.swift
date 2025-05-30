@@ -36,6 +36,9 @@ struct LoginView: View {
                     .padding(.bottom, -20)
 
                 TextInputField(placeholder: "Email", text: $email)
+                    .onChange(of: email) { oldValue, newValue in
+                        email = newValue.lowercased()
+                    }
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
 
@@ -83,18 +86,10 @@ struct LoginView: View {
     }
 
     func loginUser() {
-        guard let url = URL(string: "\(BASE_PATH)/api/v1/user/login") else {
-            print("Invalid URL")
-            return
-        }
-
         let body: [String: String] = ["email": email, "password": password]
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
+        
+        let request = veygoCurlRequest(url: "/api/v1/user/login", method: "POST", body: jsonData)
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
