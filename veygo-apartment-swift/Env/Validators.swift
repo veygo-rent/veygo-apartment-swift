@@ -68,22 +68,14 @@ public struct NameValidator {
     }
 }
 
-//public struct PhoneNumberValidator {
-//    let number: String
-//    var isValidNumber: Bool {
-//        let pattern = #"^\d{3}-\d{3}-\d{4}$"#
-//        let regex = try? NSRegularExpression(pattern: pattern)
-//        let range = NSRange(number.startIndex..<number.endIndex, in: number)
-//        return regex?.firstMatch(in: number, options: [], range: range) != nil
-//    }
-//}
 public struct PhoneNumberValidator {
     let number: String
     var isValidNumber: Bool {
-        let digits = number.filter { $0.isNumber }
-        return digits.count == 10
+        let pattern = #"^\d{3}-\d{3}-\d{4}$"#
+        let regex = try? NSRegularExpression(pattern: pattern)
+        let range = NSRange(number.startIndex..<number.endIndex, in: number)
+        return regex?.firstMatch(in: number, options: [], range: range) != nil
     }
-
     var normalizedNumber: String {
         number.filter { $0.isNumber }
     }

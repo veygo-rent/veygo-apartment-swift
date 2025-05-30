@@ -10,7 +10,7 @@ import Testing
 
 struct veygo_apartment_swift_tests {
     
-    @Suite("Front End Age Check")
+    @Suite("Age Validator")
     struct front_end_age_check {
         @Test func dateValidating() async throws {
             var validator = AgeValidator(dob: "09")
@@ -77,7 +77,10 @@ struct veygo_apartment_swift_tests {
             #expect(!PhoneNumberValidator(number: "ABC-DEF-GHIJ").isValidNumber)
             #expect(!PhoneNumberValidator(number: "12a-456-7890").isValidNumber)
             
+            #expect(PhoneNumberValidator(number: "123-45A-7890").normalizedNumber == "123457890")
+            
             #expect(PhoneNumberValidator(number: "123-456-7890").isValidNumber)
+            #expect(PhoneNumberValidator(number: "123-456-7890").normalizedNumber == "1234567890")
         }
     }
 }

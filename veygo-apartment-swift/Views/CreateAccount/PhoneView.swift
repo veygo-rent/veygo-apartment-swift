@@ -67,7 +67,7 @@ struct PhoneView: View {
                     if digits.count > 6 { formatted += "-" + String(digits.dropFirst(6).prefix(4)) }
                     phoneNumber = formatted
                     descriptions[0].1 = !PhoneNumberValidator(number: formatted).isValidNumber
-                    descriptions[1].1 = false // 始终灰色
+                    descriptions[1].1 = false
                 }
                 .padding(.top, 40)
             }
