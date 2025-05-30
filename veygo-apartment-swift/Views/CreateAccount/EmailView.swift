@@ -9,19 +9,21 @@ import SwiftUI
 struct EmailView: View {
     @State private var email: String = ""
     @Environment(\.dismiss) private var dismiss
-    @State private var goToPasswordView = false
 
     @State private var descriptions: [(String, Bool)] = [
         ("Your email has to be in the correct format", false),
         ("Your email will also be used for communication of important account updates.", false)
     ]
-    @EnvironmentObject var signup: SignupSession
+    @ObservedObject var signup: SignupSession
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .topLeading) {
                 // 返回按钮
                 Button(action: {
+                    signup.name = nil
+                    signup.date_of_birth = nil
+                    signup.phone = nil
                     dismiss()
                 }) {
                     BackButton()
@@ -41,7 +43,7 @@ struct EmailView: View {
                     VStack(alignment: .leading, spacing: 5) {
                         InputWithLabel(
                             label: "Your Email Address",
-                            placeholder: "info@Veygo.rent",
+                            placeholder: "info@veygo.rent",
                             text: $email,
                             descriptions: $descriptions
                         )
@@ -52,8 +54,7 @@ struct EmailView: View {
 
                     // 下一步按钮
                     ArrowButton(isDisabled: !EmailValidator(email: email).isValidEmail) {
-                        signup.student_email = email //??
-                        goToPasswordView = true
+                        signup.student_email = email
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
@@ -67,8 +68,11 @@ struct EmailView: View {
             }
             .background(Color("MainBG"))
             .ignoresSafeArea()
-            .navigationDestination(isPresented: $goToPasswordView) {
-                PasswordView()
+            .navigationDestination(isPresented: Binding(
+                get: { signup.student_email != nil },
+                set: { _ in }
+            )) {
+                PasswordView(signup: signup)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -76,7 +80,7 @@ struct EmailView: View {
 }
 
 #Preview {
-    EmailView()
+    EmailView(signup: .init())
 }
 
 

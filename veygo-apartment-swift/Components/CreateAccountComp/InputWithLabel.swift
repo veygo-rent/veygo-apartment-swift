@@ -4,6 +4,7 @@ struct InputWithLabel: View {
     let label: Optional<String>
     let placeholder: String
     var alignment: TextAlignment = .leading
+    var isSecure: Bool = false
     @Binding var text: String
     @Binding var descriptions: [(String, Bool)]
 
@@ -15,7 +16,7 @@ struct InputWithLabel: View {
                     .foregroundColor(Color("Black1"))
             }
 
-            TextInputField(placeholder: placeholder, text: $text)
+            TextInputField(placeholder: placeholder, text: $text, isSecure: isSecure)
                 .multilineTextAlignment(alignment)
 
             ForEach(descriptions, id: \.0) { item in

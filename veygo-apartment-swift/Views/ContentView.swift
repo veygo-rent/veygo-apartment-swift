@@ -6,7 +6,7 @@
 //    @AppStorage("user_id") var userId: Int = 0
 //
 //    @State private var shouldShowLogin = false
-//    
+//
 //    var body: some View {
 //        Group {
 //            if shouldShowLogin || token.isEmpty {
@@ -57,12 +57,15 @@ struct ContentView: View {
     @AppStorage("user_id") var userId: Int = 0
 
     var body: some View {
-        Group {
+        ZStack {
             if session.user == nil {
                 LoginView()
+                    .transition(.move(edge: .leading)) // or .opacity, .slide, etc.
             } else {
                 HomeView()
+                    .transition(.move(edge: .trailing))
             }
         }
+        .animation(.bouncy, value: session.user)
     }
 }

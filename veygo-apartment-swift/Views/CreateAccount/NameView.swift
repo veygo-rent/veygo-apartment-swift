@@ -3,12 +3,11 @@ import SwiftUI
 struct NameView: View {
     @State private var fullName: String = ""
     @Environment(\.dismiss) private var dismiss
-    @State private var goToAgeView = false
     @State private var descriptions: [(String, Bool)] = [
         ("You must enter your full name", false),
         ("Your name must match the name appears on your official documents", false)
     ]
-    @EnvironmentObject var signup: SignupSession
+    @ObservedObject var signup: SignupSession
 
     var body: some View {
         NavigationStack {
@@ -46,7 +45,6 @@ struct NameView: View {
                     // Arrow Button
                     ArrowButton(isDisabled: !(NameValidator(name: fullName).isValidName)) {
                         signup.name = fullName
-                        goToAgeView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
@@ -58,13 +56,16 @@ struct NameView: View {
             }
             .background(Color("MainBG"))
             .ignoresSafeArea()
-            .navigationDestination(isPresented: $goToAgeView) {
-                AgeView()
+            .navigationDestination(isPresented: Binding(
+                get: { signup.name != nil },
+                set: { _ in }
+            )) {
+                AgeView(signup: signup)
             }
         }.navigationBarBackButtonHidden(true)
     }
 }
 
 #Preview {
-    NameView()
+    NameView(signup: .init())
 }

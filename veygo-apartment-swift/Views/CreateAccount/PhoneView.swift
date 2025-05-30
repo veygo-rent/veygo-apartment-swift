@@ -10,19 +10,20 @@ import SwiftUI
 struct PhoneView: View {
     @State private var phoneNumber: String = ""
     @Environment(\.dismiss) private var dismiss
-    @State private var goToEmailView = false
 
     @State private var descriptions: [(String, Bool)] = [
         ("Phone number has to be in the correct format", false),
         ("Your phone number will be used for communication of important account updates.", false)
     ]
-    @EnvironmentObject var signup: SignupSession
+    @ObservedObject var signup: SignupSession
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .topLeading) {
                 // 返回按钮
                 Button(action: {
+                    signup.name = nil
+                    signup.date_of_birth = nil
                     dismiss()
                 }) {
                     BackButton()
@@ -54,7 +55,6 @@ struct PhoneView: View {
                     // 下一步按钮
                     ArrowButton(isDisabled: !PhoneNumberValidator(number: phoneNumber).isValidNumber) {
                         signup.phone = PhoneNumberValidator(number: phoneNumber).normalizedNumber
-                        goToEmailView = true
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
@@ -73,8 +73,11 @@ struct PhoneView: View {
             }
             .background(Color("MainBG"))
             .ignoresSafeArea()
-            .navigationDestination(isPresented: $goToEmailView) {
-                EmailView()
+            .navigationDestination(isPresented: Binding(
+                get: { signup.phone != nil },
+                set: { _ in }
+            )) {
+                EmailView(signup: signup)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -82,5 +85,5 @@ struct PhoneView: View {
 }
 
 #Preview {
-    PhoneView()
+    PhoneView(signup: .init())
 }

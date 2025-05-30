@@ -3,14 +3,14 @@ import SwiftUI
 struct AgeView: View {
     @State private var dob: String = ""
     @Environment(\.dismiss) private var dismiss
-    @State private var goToPhoneView = false
     @State private var descriptions: [(String, Bool)] = [("Your age needs to be in the correct format", false), ("You must be at least 18 years old to rent from Veygo", false)]
-    @EnvironmentObject var signup: SignupSession
+    @ObservedObject var signup: SignupSession
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .topLeading) {
                 Button(action: {
+                    signup.name = nil
                     dismiss()
                 }) {
                     BackButton()
@@ -62,7 +62,6 @@ struct AgeView: View {
                     let validator = AgeValidator(dob: dob)
                     ArrowButton(isDisabled: !validator.isOver18) {
                         signup.date_of_birth = dob
-                        goToPhoneView = true
                         print("Proceed with DOB: \(dob)")
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -72,13 +71,16 @@ struct AgeView: View {
             }
             .background(Color("MainBG"))
             .ignoresSafeArea()
-            .navigationDestination(isPresented: $goToPhoneView) {
-                PhoneView()
+            .navigationDestination(isPresented:  Binding(
+                get: { signup.date_of_birth != nil },
+                set: { _ in }
+            )) {
+                PhoneView(signup: signup)
             }
         }.navigationBarBackButtonHidden(true)
     }
 }
 
 #Preview {
-    AgeView()
+    AgeView(signup: .init())
 }

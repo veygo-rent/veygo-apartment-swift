@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 
-struct PublishRenter: Codable, Identifiable {
+struct PublishRenter: Codable, Identifiable, Equatable {
     let id: Int
     let name: String
     let student_email: String
@@ -19,11 +19,11 @@ struct PublishRenter: Codable, Identifiable {
 }
 
 class SignupSession: ObservableObject {
-    @Published var name: String = ""
-    @Published var date_of_birth: String = ""  // MM/DD/YYYY
-    @Published var phone: String = ""
-    @Published var student_email: String = ""
-    @Published var password: String = ""
+    @Published var name: Optional<String> = nil
+    @Published var date_of_birth: Optional<String> = nil  // MM/DD/YYYY
+    @Published var phone: Optional<String> = nil
+    @Published var student_email: Optional<String> = nil
+    @Published var password: Optional<String> = nil
 }
 
 class UserSession: ObservableObject {

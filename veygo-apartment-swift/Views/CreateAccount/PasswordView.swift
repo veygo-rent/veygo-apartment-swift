@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PasswordView: View {
+    @State var renter: Optional<PublishRenter> = nil
     @State private var password: String = ""
     @Environment(\.dismiss) private var dismiss
     @State private var goToCongratsView = false
@@ -13,8 +14,7 @@ struct PasswordView: View {
         ("· at least one number and one special character\n  eg. (!@#$%^&*_+=?/~';,<>\u{7C})", false)
     ]
 
-    @EnvironmentObject var signup: SignupSession
-    @EnvironmentObject var session: UserSession
+    @ObservedObject var signup: SignupSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
 
@@ -22,6 +22,10 @@ struct PasswordView: View {
         NavigationStack {
             ZStack(alignment: .topLeading) {
                 Button(action: {
+                    signup.name = nil
+                    signup.date_of_birth = nil
+                    signup.phone = nil
+                    signup.student_email = nil
                     dismiss()
                 }) {
                     BackButton()
@@ -39,7 +43,8 @@ struct PasswordView: View {
                     VStack(alignment: .leading, spacing: 5) {
                         InputWithLabel(
                             label: "Your Account Password",
-                            placeholder: "iloveveygo",
+                            placeholder: "veygo2022!",
+                            isSecure: true,
                             text: $password,
                             descriptions: $descriptions
                         )
@@ -72,7 +77,7 @@ struct PasswordView: View {
             .background(Color("MainBG"))
             .ignoresSafeArea()
             .navigationDestination(isPresented: $goToCongratsView) {
-                CongratsView()
+                CongratsView(user: $renter)
             }
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
@@ -100,7 +105,7 @@ struct PasswordView: View {
     func registerUser() {
         let formatter = DateFormatter()
         formatter.dateFormat = "MM/dd/yyyy"
-        guard let dobDate = formatter.date(from: signup.date_of_birth) else {
+        guard let dobDate = formatter.date(from: signup.date_of_birth!) else {
             alertMessage = "Invalid date format"
             showAlert = true
             return
@@ -109,10 +114,10 @@ struct PasswordView: View {
         let dobFormatted = formatter.string(from: dobDate)
 
         let body: [String: String] = [
-            "name": signup.name,
-            "student_email": signup.student_email,
-            "password": signup.password,
-            "phone": signup.phone,
+            "name": signup.name!,
+            "student_email": signup.student_email!,
+            "password": signup.password!,
+            "phone": signup.phone!,
             "date_of_birth": dobFormatted
         ]
 
@@ -165,7 +170,7 @@ struct PasswordView: View {
                let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterData) {
 
                 DispatchQueue.main.async {
-                    session.user = decodedUser
+                    self.renter = decodedUser
                     self.token = token
                     self.userId = decodedUser.id
 
@@ -189,5 +194,5 @@ struct PasswordView: View {
 }
 
 #Preview {
-    PasswordView()
+    PasswordView(signup: .init())
 }

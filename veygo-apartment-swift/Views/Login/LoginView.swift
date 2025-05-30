@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct LoginView: View {
+    
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var goToNameView = false
-    @State private var goToHomeView = false
+    @StateObject private var signup = SignupSession()
+    
+    @State private var goToRegisterView = false
     @State private var goToResetView = false
     
 
@@ -20,8 +22,9 @@ struct LoginView: View {
 
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
-    @EnvironmentObject var session: UserSession // this page can check envObj
-
+    
+    @EnvironmentObject var session: UserSession
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -62,7 +65,7 @@ struct LoginView: View {
                 Spacer()
 
                 SecondaryButtonLg(text: "Create New Account") {
-                    goToNameView = true
+                    goToRegisterView = true
                 }
                 .padding(.top, 10)
                 .padding(.bottom, 10)
@@ -70,12 +73,9 @@ struct LoginView: View {
                 LegalText()
             }
             .padding(.horizontal, 32)
-            .background(Color("MainBG"))
-            .navigationDestination(isPresented: $goToNameView) {
-                NameView()
-            }
-            .navigationDestination(isPresented: $goToHomeView) {
-                HomeView()
+            .background(Color("MainBG").ignoresSafeArea())
+            .navigationDestination(isPresented: $goToRegisterView) {
+                NameView(signup: signup)
             }
             .navigationDestination(isPresented: $goToResetView) {
                 ResetView()
@@ -120,7 +120,7 @@ struct LoginView: View {
                     }
                     print("\nLogin successful: \(self.token) \(decodedUser.id)\n")
                     DispatchQueue.main.async {
-                        self.goToHomeView = true
+                        self.session.user = decodedUser
                     }
                 }
             } else if httpResponse.statusCode == 401 {

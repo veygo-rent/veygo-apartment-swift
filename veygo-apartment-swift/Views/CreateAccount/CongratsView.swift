@@ -7,14 +7,24 @@
 import SwiftUI
 
 struct CongratsView: View {
+    @Binding var user: Optional<PublishRenter>
+    @EnvironmentObject var session: UserSession
     var body: some View {
-        Text("Yey Page")
-            .font(.largeTitle)
-            .foregroundColor(.blue)
+        VStack {
+            Text("Yey Page")
+                .font(.largeTitle)
+                .foregroundColor(.blue)
+            ArrowButton(isDisabled: user == nil) {
+                session.user = user
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.bottom, 50)
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
 #Preview {
-    CongratsView()
+    CongratsView(user: .constant(nil))
 }
 
