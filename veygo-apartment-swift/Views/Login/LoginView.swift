@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-let BASE_PATH = "https://dev.veygo.rent"
-
 struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
