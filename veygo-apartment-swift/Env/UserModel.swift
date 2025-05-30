@@ -28,19 +28,18 @@ class SignupSession: ObservableObject {
 
 class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
+    
+    @AppStorage("token") var token: String = ""
+    @AppStorage("user_id") var userId: Int = 0
 
     // 用 token 和 user_id 调用后端 API 验证并查找用户信息 对了—>200, 不对—>re-login
-    func validateTokenAndFetchUser(token: String, userId: Int, completion: @escaping (Bool) -> Void) {
-        guard let url = URL(string: "https://dev.veygo.rent/api/v1/user/retrieve") else {
-            print("Invalid /user/retrieve URL")
+    func validateTokenAndFetchUser(completion: @escaping (Bool) -> Void) {
+        let request = veygoCurlRequest(url: "/api/v1/user/retrieve", method: "GET", headers: ["auth": "\(token)$\(userId)"])
+        
+        if (token == "" || userId == 0) {
             completion(false)
             return
         }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue(token, forHTTPHeaderField: "token")
-        request.setValue(String(userId), forHTTPHeaderField: "user_id")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -61,19 +60,15 @@ class UserSession: ObservableObject {
                let renter = json["renter"],
                let renterData = try? JSONSerialization.data(withJSONObject: renter),
                let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterData) {
-
-                let newToken = httpResponse.value(forHTTPHeaderField: "token")
-
+                let newToken: String = httpResponse.value(forHTTPHeaderField: "token")!
                 DispatchQueue.main.async {
                     self.user = decodedUser
-                    UserDefaults.standard.set(try? JSONEncoder().encode(decodedUser), forKey: "user")
-                    if let newToken = newToken {
-                        UserDefaults.standard.set(newToken, forKey: "token")
-                        print("New token refreshed.")
-                    }
-                    print("User loaded via token: \(decodedUser.name)")
-                    completion(true)
                 }
+                UserDefaults.standard.set(newToken, forKey: "token")
+                UserDefaults.standard.set(decodedUser.id, forKey: "user_id")
+                print("New token refreshed.")
+                print("User loaded via token: \(decodedUser.name)")
+                completion(true)
             } else {
                 print("Failed to parse user from response")
                 completion(false)

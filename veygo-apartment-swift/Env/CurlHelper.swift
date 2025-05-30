@@ -18,17 +18,13 @@ public func veygoCurlRequest (url: String, method: String, headers: [String: Str
     request.allHTTPHeaderFields = headers
     request.httpBody = body
     
-    if headers["Content-Type"] == nil {
+    if headers["Content-Type"] == nil && method != "GET" {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
     
-    if headers["x-client-type"] == nil {
-        request.setValue("veygo-app", forHTTPHeaderField: "x-client-type")
-    }
-    
-    for (key, value) in headers {
-        request.addValue(value, forHTTPHeaderField: key)
-    }
+    // if headers["x-client-type"] == nil {
+    //     request.setValue("veygo-app", forHTTPHeaderField: "x-client-type")
+    // }
 
     return request
 }

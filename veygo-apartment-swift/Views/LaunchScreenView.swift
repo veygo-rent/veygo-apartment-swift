@@ -7,11 +7,13 @@
 
 import SwiftUI
 
-struct LaunchScreenView: View {
-    @EnvironmentObject var session: UserSession
+struct LaunchScreenView<Destination: View>: View {
     @State private var isActive = false
     @State private var scale: CGFloat = 1.0
-    @State private var opacity: Double = 1.0 
+    @State private var opacity: Double = 1.0
+    @Binding var didLoad: Bool
+    
+    let destination: () -> Destination
     
     var body: some View {
         VStack {
@@ -27,7 +29,7 @@ struct LaunchScreenView: View {
                 .animation(.easeInOut(duration: 2), value: opacity)
             Spacer()
         }
-        .onAppear {
+        .onChange(of: didLoad) {
             withAnimation(.easeInOut(duration: 2)) {
                 scale = 1.2
                 opacity = 0.0
@@ -40,11 +42,13 @@ struct LaunchScreenView: View {
             }
         }
         .fullScreenCover(isPresented: $isActive) {
-            LoginView()  // 进入登录页
+            destination()  // 进入登录页
         }
     }
 }
 
 #Preview {
-    LaunchScreenView()
+    LaunchScreenView(didLoad: .constant(true)){
+        ContentView()
+    }
 }

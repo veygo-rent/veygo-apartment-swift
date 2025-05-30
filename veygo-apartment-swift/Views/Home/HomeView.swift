@@ -39,6 +39,7 @@ struct HomeView: View {
 
             Button("Clear Token") {
                 token = ""
+                userId = 0
                 session.user = nil
                 print("🧼 Token cleared")
             }

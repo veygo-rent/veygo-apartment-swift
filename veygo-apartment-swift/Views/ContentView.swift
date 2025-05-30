@@ -56,51 +56,12 @@ struct ContentView: View {
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
 
-    @State private var shouldShowLogin = false
-    @State private var userLoaded = false
-    @State private var isLoading = true
-
     var body: some View {
         Group {
-            if shouldShowLogin || token.isEmpty {
-                LaunchScreenView()
-            } else if userLoaded {
+            if session.user == nil {
+                LoginView()
+            } else {
                 HomeView()
-            } else if isLoading {
-                ZStack {
-                    Color("MainBG")
-                        .ignoresSafeArea()
-                    LaunchScreenView()
-                }
-            }
-        }
-        .onAppear {
-            // 第一次启动时打印 token 和 userId
-            print("ContentView onAppear")
-            print("Token: \(token)")
-            print("User ID: \(userId)")
-
-            guard !token.isEmpty else {
-                print("🚪 Token is empty. Going to login.")
-                shouldShowLogin = true
-                isLoading = false
-                return
-            }
-
-            session.validateTokenAndFetchUser(token: token, userId: userId) { isValid in //这里check token是不是valid。valid就refresh进home，否则进login
-                DispatchQueue.main.async {
-                    isLoading = false
-                    if isValid {
-                        print("User loaded. Proceeding to HomeView.")
-                        userLoaded = true
-                        shouldShowLogin = false
-                    } else {
-                        print("Token invalid. Going to login.")
-                        token = ""
-                        session.user = nil
-                        shouldShowLogin = true
-                    }
-                }
             }
         }
     }

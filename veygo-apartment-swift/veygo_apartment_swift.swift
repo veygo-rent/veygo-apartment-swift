@@ -24,9 +24,13 @@ import Stripe
 
 @main
 struct veygo_apartment_swift: App {
-    @StateObject var session = UserSession()
     @StateObject var signupSession = SignupSession()
+    
     @AppStorage("token") var token: String = ""
+    @AppStorage("user_id") var userId: Int = 0
+    @StateObject var session = UserSession()
+    
+    @State private var didLoad = false
 
     init() {
         StripeAPI.defaultPublishableKey = "pk_live_51QzCjkL87NN9tQEdbASm7SXLCkcDPiwlEbBpOVQk5wZcjOPISrtTVFfK1SFKIlqyoksRIHusp5UcRYJLvZwkyK0a00kdPmuxhM"
@@ -34,10 +38,17 @@ struct veygo_apartment_swift: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(session)  // 所有页面可访问 session.user
-                .environmentObject(signupSession) // 所有页面可访问 signupSession.user
+            LaunchScreenView(didLoad: $didLoad) {
+                ContentView()
+            }
+            .onAppear() {
+                session.validateTokenAndFetchUser { completion in
+                    // do someting if pull successfully
+                }
+                didLoad.toggle()
+            }
         }
+        .environmentObject(session)
     }
 }
 

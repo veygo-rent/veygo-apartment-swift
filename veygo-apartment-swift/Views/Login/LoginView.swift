@@ -111,17 +111,15 @@ struct LoginView: View {
                 if let renterData = responseJSON?["renter"],
                    let renterJSON = try? JSONSerialization.data(withJSONObject: renterData),
                    let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterJSON) {
-
+                    // Update AppStorage
+                    self.token = extractToken(from: response)!
+                    self.userId = decodedUser.id
                     DispatchQueue.main.async {
-                        self.token = extractToken(from: response) ?? ""
-                        self.userId = decodedUser.id
+                        // Update UserSession
                         self.session.user = decodedUser
-
-                        if let encoded = try? JSONEncoder().encode(decodedUser) {
-                            UserDefaults.standard.set(encoded, forKey: "user")
-                        }
-
-                        print("Login successful: \(decodedUser.name)")
+                    }
+                    print("\nLogin successful: \(self.token) \(decodedUser.id)\n")
+                    DispatchQueue.main.async {
                         self.goToHomeView = true
                     }
                 }
