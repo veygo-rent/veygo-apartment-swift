@@ -34,6 +34,7 @@ public struct AgeValidator {
 
 public struct EmailValidator {
     let email: String
+    let acceptedDomains: [String]
     var isValidEmail: Bool {
         // RFC 5321 limit (commonly used threshold)
         guard email.count <= 254 else { return false }
@@ -42,6 +43,12 @@ public struct EmailValidator {
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
         let range = NSRange(email.startIndex..<email.endIndex, in: email)
         return regex?.firstMatch(in: email, options: [], range: range) != nil
+    }
+    var isValidUniversity: Bool {
+        guard let domain = email.split(separator: "@").last.map(String.init) else {
+            return false
+        }
+        return acceptedDomains.contains(domain)
     }
 }
 
@@ -80,16 +87,3 @@ public struct PhoneNumberValidator {
         number.filter { $0.isNumber }
     }
 }
-
-public struct UniversityDomainValidator {
-    let email: String
-    let acceptedDomains: [String]
-
-    var isValidUniversity: Bool {
-        guard let domain = email.split(separator: "@").last.map(String.init) else {
-            return false
-        }
-        return acceptedDomains.contains(domain)
-    }
-}
-

@@ -30,36 +30,25 @@ struct veygo_apartment_swift_tests {
     @Suite("Email Validator")
     struct email_validator_tests {
         @Test func emailFormatValidation() async throws {
-            #expect(!EmailValidator(email: "").isValidEmail)
-            #expect(!EmailValidator(email: "plainaddress").isValidEmail)
-            #expect(!EmailValidator(email: "@missingusername.com").isValidEmail)
-            #expect(!EmailValidator(email: "username@.com").isValidEmail)
-            #expect(!EmailValidator(email: "username@com").isValidEmail)
-            #expect(!EmailValidator(email: "username@domain..com").isValidEmail)
-            #expect(!EmailValidator(email: "username@domain.").isValidEmail)
+            #expect(!EmailValidator(email: "", acceptedDomains: []).isValidEmail)
+            #expect(!EmailValidator(email: "plainaddress", acceptedDomains: []).isValidEmail)
+            #expect(!EmailValidator(email: "@missingusername.com", acceptedDomains: []).isValidEmail)
+            #expect(!EmailValidator(email: "username@.com", acceptedDomains: []).isValidEmail)
+            #expect(!EmailValidator(email: "username@com", acceptedDomains: []).isValidEmail)
+            #expect(!EmailValidator(email: "username@domain..com", acceptedDomains: []).isValidEmail)
+            #expect(!EmailValidator(email: "username@domain.", acceptedDomains: []).isValidEmail)
             
-            #expect(EmailValidator(email: "example@example.com").isValidEmail)
-            #expect(EmailValidator(email: "user.name+tag+sorting@example.com").isValidEmail)
-            #expect(EmailValidator(email: "user_name@example.co.uk").isValidEmail)
-            #expect(EmailValidator(email: "username@sub.domain.com").isValidEmail)
+            #expect(EmailValidator(email: "example@example.com", acceptedDomains: []).isValidEmail)
+            #expect(EmailValidator(email: "user.name+tag+sorting@example.com", acceptedDomains: []).isValidEmail)
+            #expect(EmailValidator(email: "user_name@example.co.uk", acceptedDomains: []).isValidEmail)
+            #expect(EmailValidator(email: "username@sub.domain.com", acceptedDomains: []).isValidEmail)
+        }
+        @Test func domainAcceptanceValidation() async throws {
+            let acceptedDomains = ["purdue.edu","veygo.rent"]
+            #expect(EmailValidator(email: "user@purdue.edu", acceptedDomains: acceptedDomains).isValidUniversity)
+            #expect(!EmailValidator(email: "user@gmail.com", acceptedDomains: acceptedDomains).isValidUniversity)
         }
     }
-    
-//    @Suite("Email Domain Acceptance")
-//    struct email_domain_acceptance_tests {
-//        @Test func domainAcceptanceValidation() async throws {
-//            let acceptedDomains = ["purdue.edu","veygo.rent"] // see if contain() works
-//
-//            let acceptedEmail = "user@purdue.edu" // accept
-//            let acceptedDomain = acceptedEmail.split(separator: "@").last.map(String.init)!
-//            #expect(acceptedDomains.contains(acceptedDomain))
-//
-//            let unacceptedEmail = "user@gmail.com" // nono
-//            let unacceptedDomain = unacceptedEmail.split(separator: "@").last.map(String.init)!
-//            #expect(!acceptedDomains.contains(unacceptedDomain))
-//        }
-//    }
-
     
     @Suite("Name Validator")
     struct name_validator_tests {

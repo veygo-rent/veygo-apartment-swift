@@ -66,10 +66,10 @@ struct EmailView: View {
                 }
                 .onChange(of: email) { oldValue, newValue in
                     email = newValue.lowercased()
-                    descriptions[0].1 = !EmailValidator(email: email).isValidEmail
+                    descriptions[0].1 = !EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail
                     descriptions[1].1 = false
 
-                    let validator = UniversityDomainValidator(email: email, acceptedDomains: acceptedDomains)
+                    let validator = EmailValidator(email: email, acceptedDomains: acceptedDomains)
                     isAcceptedDomain = validator.isValidUniversity
                     descriptions[2].1 = !validator.isValidUniversity
                 }
@@ -88,7 +88,7 @@ struct EmailView: View {
     }
 
     private var canProceed: Bool {
-        EmailValidator(email: email).isValidEmail && (isAcceptedDomain ?? false)
+        EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail && (isAcceptedDomain ?? false)
     }
 
 
