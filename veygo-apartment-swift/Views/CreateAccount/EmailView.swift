@@ -12,14 +12,19 @@ struct EmailView: View {
 
     @State private var descriptions: [(String, Bool)] = [
         ("Your email has to be in the correct format", false),
-        ("Your email will also be used for communication of important account updates.", false)
+        ("Your email will also be used for communication of important account updates.", false),
+        ("University email domain must be accepted", false)
     ]
+
     @ObservedObject var signup: SignupSession
+
+    @State private var acceptedDomains: [String] = []
+    @State private var isAcceptedDomain: Bool? = nil
+    //nil=还没检查，true=接受，false=不接受
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .topLeading) {
-                // 返回按钮
                 Button(action: {
                     signup.name = nil
                     signup.date_of_birth = nil
@@ -34,12 +39,10 @@ struct EmailView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Spacer()
 
-                    // 标题
                     LargeTitleText(text: "Send Letters\nThe Old Way")
                         .padding(.bottom, 90)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    // 输入框与说明
                     VStack(alignment: .leading, spacing: 5) {
                         InputWithLabel(
                             label: "Your Email Address",
@@ -52,17 +55,23 @@ struct EmailView: View {
 
                     Spacer()
 
-                    // 下一步按钮
-                    ArrowButton(isDisabled: !EmailValidator(email: email).isValidEmail) {
+                    ArrowButton(isDisabled: !canProceed) {
                         signup.student_email = email
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 50)
                 }
+                .onAppear {
+                    fetchAcceptedDomains()
+                }
                 .onChange(of: email) { oldValue, newValue in
                     email = newValue.lowercased()
-                    descriptions[0].1 = !EmailValidator(email: newValue).isValidEmail
-                    descriptions[1].1 = false // 始终灰色
+                    descriptions[0].1 = !EmailValidator(email: email).isValidEmail
+                    descriptions[1].1 = false
+
+                    let validator = UniversityDomainValidator(email: email, acceptedDomains: acceptedDomains)
+                    isAcceptedDomain = validator.isValidUniversity
+                    descriptions[2].1 = !validator.isValidUniversity
                 }
                 .padding(.top, 40)
             }
@@ -74,13 +83,60 @@ struct EmailView: View {
             )) {
                 PasswordView(signup: signup)
             }
+            .navigationBarBackButtonHidden(true)
         }
-        .navigationBarBackButtonHidden(true)
     }
+
+    private var canProceed: Bool {
+        EmailValidator(email: email).isValidEmail && (isAcceptedDomain ?? false)
+    }
+
+
+    private func fetchAcceptedDomains() {
+        let request = veygoCurlRequest(
+            url: "/api/v1/apartment/get-universities",
+            method: "GET"
+        )
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let data = data else {
+                print("No data received.")
+                return
+            }
+            // for testing
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw JSON response:\n\(jsonString)")
+            }
+
+            do {
+                if let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let universities = jsonObject["universities"] as? [[String: Any]] {
+
+                    let domains = universities.compactMap { uni in
+                        uni["accepted_school_email_domain"] as? String
+                    } // gets accecpt domains
+
+                    DispatchQueue.main.async {
+                        self.acceptedDomains = domains
+                        print("Parsed accepted domains: \(domains)") //print it out for testing
+                    }
+
+                } else {
+                    print("Failed to parse 'universities' from JSON.")
+                }
+            } catch {
+                print("JSON parsing error: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+
 }
 
 #Preview {
     EmailView(signup: .init())
 }
-
-

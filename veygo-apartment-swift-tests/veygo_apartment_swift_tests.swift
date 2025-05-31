@@ -45,6 +45,22 @@ struct veygo_apartment_swift_tests {
         }
     }
     
+//    @Suite("Email Domain Acceptance")
+//    struct email_domain_acceptance_tests {
+//        @Test func domainAcceptanceValidation() async throws {
+//            let acceptedDomains = ["purdue.edu","veygo.rent"] // see if contain() works
+//
+//            let acceptedEmail = "user@purdue.edu" // accept
+//            let acceptedDomain = acceptedEmail.split(separator: "@").last.map(String.init)!
+//            #expect(acceptedDomains.contains(acceptedDomain))
+//
+//            let unacceptedEmail = "user@gmail.com" // nono
+//            let unacceptedDomain = unacceptedEmail.split(separator: "@").last.map(String.init)!
+//            #expect(!acceptedDomains.contains(unacceptedDomain))
+//        }
+//    }
+
+    
     @Suite("Name Validator")
     struct name_validator_tests {
         @Test func nameValidation() async throws {

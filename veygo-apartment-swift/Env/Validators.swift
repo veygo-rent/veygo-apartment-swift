@@ -80,3 +80,16 @@ public struct PhoneNumberValidator {
         number.filter { $0.isNumber }
     }
 }
+
+public struct UniversityDomainValidator {
+    let email: String
+    let acceptedDomains: [String]
+
+    var isValidUniversity: Bool {
+        guard let domain = email.split(separator: "@").last.map(String.init) else {
+            return false
+        }
+        return acceptedDomains.contains(domain)
+    }
+}
+
