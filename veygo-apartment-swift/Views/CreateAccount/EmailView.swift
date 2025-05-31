@@ -12,8 +12,8 @@ struct EmailView: View {
 
     @State private var descriptions: [(String, Bool)] = [
         ("Your email has to be in the correct format", false),
-        ("Your email will also be used for communication of important account updates.", false),
-        ("University email domain must be accepted", false)
+        ("You must enroll in a participating university", false),
+        ("Your email will also be used for communication of important account updates.", false)
     ]
 
     @ObservedObject var signup: SignupSession
@@ -45,7 +45,7 @@ struct EmailView: View {
 
                     VStack(alignment: .leading, spacing: 5) {
                         InputWithLabel(
-                            label: "Your Email Address",
+                            label: "Your School Email",
                             placeholder: "info@veygo.rent",
                             text: $email,
                             descriptions: $descriptions
@@ -67,11 +67,11 @@ struct EmailView: View {
                 .onChange(of: email) { oldValue, newValue in
                     email = newValue.lowercased()
                     descriptions[0].1 = !EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail
-                    descriptions[1].1 = false
+                    descriptions[2].1 = false
 
                     let validator = EmailValidator(email: email, acceptedDomains: acceptedDomains)
                     isAcceptedDomain = validator.isValidUniversity
-                    descriptions[2].1 = !validator.isValidUniversity
+                    descriptions[1].1 = !validator.isValidUniversity
                 }
                 .padding(.top, 40)
             }
