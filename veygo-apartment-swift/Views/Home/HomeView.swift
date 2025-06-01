@@ -38,10 +38,22 @@ struct HomeView: View {
             }
 
             Button("Clear Token") {
-                token = ""
-                userId = 0
-                session.user = nil
-                print("🧼 Token cleared")
+                let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
+                URLSession.shared.dataTask(with: request) { data, response, error in
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        print("Invalid server response.")
+                        return
+                    }
+                    if httpResponse.statusCode == 200 {
+                        token = ""
+                        userId = 0
+                        DispatchQueue.main.async {
+                            // Update UserSession
+                            self.session.user = nil
+                        }
+                        print("🧼 Token cleared")
+                    }
+                }.resume()
             }
             .foregroundColor(.red)
             .padding(.top, 20)
