@@ -8,89 +8,84 @@ import SwiftUI
 
 struct EmailView: View {
     @State private var email: String = ""
-    @Environment(\.dismiss) private var dismiss
-
     @State private var descriptions: [(String, Bool)] = [
         ("Your email has to be in the correct format", false),
         ("You must enroll in a participating university", false),
         ("Your email will also be used for communication of important account updates.", false)
     ]
-
     @ObservedObject var signup: SignupSession
+    @Binding var path: NavigationPath
 
     @State private var acceptedDomains: [String] = []
     @State private var isAcceptedDomain: Bool? = nil
-    //nil=还没检查，true=接受，false=不接受
 
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .topLeading) {
-                Button(action: {
-                    signup.name = nil
-                    signup.date_of_birth = nil
-                    signup.phone = nil
-                    dismiss()
-                }) {
-                    BackButton()
-                }
-                .padding(.top, 90)
-                .padding(.leading, 30)
+        ZStack(alignment: .topLeading) {
+            Button(action: {
+                path.removeLast()
+            }) {
+                BackButton()
+            }
+            .padding(.top, 90)
+            .padding(.leading, 30)
 
-                VStack(alignment: .leading, spacing: 20) {
-                    Spacer()
+            VStack(alignment: .leading, spacing: 20) {
+                Spacer()
 
-                    LargeTitleText(text: "Send Letters\nThe Old Way")
-                        .padding(.bottom, 90)
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                    VStack(alignment: .leading, spacing: 5) {
-                        InputWithLabel(
-                            label: "Your School Email",
-                            placeholder: "info@veygo.rent",
-                            text: $email,
-                            descriptions: $descriptions
-                        )
-                    }
-                    .padding(.horizontal, 32)
-
-                    Spacer()
-
-                    ArrowButton(isDisabled: !canProceed) {
-                        signup.student_email = email
-                    }
+                LargeTitleText(text: "Send Letters\nThe Old Way")
+                    .padding(.bottom, 90)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 50)
-                }
-                .onAppear {
-                    fetchAcceptedDomains()
-                }
-                .onChange(of: email) { oldValue, newValue in
-                    email = newValue.lowercased()
-                    descriptions[0].1 = !EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail
-                    descriptions[2].1 = false
 
-                    let validator = EmailValidator(email: email, acceptedDomains: acceptedDomains)
-                    isAcceptedDomain = validator.isValidUniversity
-                    descriptions[1].1 = !validator.isValidUniversity
+                VStack(alignment: .leading, spacing: 5) {
+                    InputWithLabel(
+                        label: "Your School Email",
+                        placeholder: "info@veygo.rent",
+                        text: $email,
+                        descriptions: $descriptions
+                    )
                 }
-                .padding(.top, 40)
+                .padding(.horizontal, 32)
+
+                Spacer()
+
+                ArrowButton(isDisabled: !canProceed) {
+                    signup.student_email = email
+                    path.append(SignupRoute.password)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.bottom, 50)
             }
-            .background(Color("MainBG"))
-            .ignoresSafeArea()
-            .navigationDestination(isPresented: Binding(
-                get: { signup.student_email != nil },
-                set: { _ in }
-            )) {
-                PasswordView(signup: signup)
+            .onChange(of: email) { oldValue, newValue in
+                email = newValue.lowercased()
+                descriptions[0].1 = !EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail
+                descriptions[2].1 = false
+
+                let validator = EmailValidator(email: email, acceptedDomains: acceptedDomains)
+                isAcceptedDomain = validator.isValidUniversity
+                descriptions[1].1 = !validator.isValidUniversity
             }
-            .navigationBarBackButtonHidden(true)
+            .onChange(of: acceptedDomains, { oldValue, newValue in
+                let validator = EmailValidator(email: email, acceptedDomains: acceptedDomains)
+                isAcceptedDomain = validator.isValidUniversity
+                descriptions[1].1 = !validator.isValidUniversity
+            })
+            .padding(.top, 40)
+        }
+        .background(Color("MainBG"))
+        .ignoresSafeArea()
+        .navigationBarBackButtonHidden(true)
+        .onAppear() {
+            fetchAcceptedDomains()
+            if let email = signup.student_email {
+                self.email = email
+                self.descriptions[1].1 = false
+            }
         }
     }
 
     private var canProceed: Bool {
         EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail && (isAcceptedDomain ?? false)
     }
-
 
     private func fetchAcceptedDomains() {
         let request = veygoCurlRequest(
@@ -108,7 +103,7 @@ struct EmailView: View {
                 print("No data received.")
                 return
             }
-            // for testing
+
             if let jsonString = String(data: data, encoding: .utf8) {
                 print("Raw JSON response:\n\(jsonString)")
             }
@@ -119,11 +114,11 @@ struct EmailView: View {
 
                     let domains = universities.compactMap { uni in
                         uni["accepted_school_email_domain"] as? String
-                    } // gets accecpt domains
+                    }
 
                     DispatchQueue.main.async {
                         self.acceptedDomains = domains
-                        print("Parsed accepted domains: \(domains)") //print it out for testing
+                        print("Parsed accepted domains: \(domains)")
                     }
 
                 } else {
@@ -134,9 +129,8 @@ struct EmailView: View {
             }
         }.resume()
     }
-
 }
 
 #Preview {
-    EmailView(signup: .init())
+    EmailView(signup: .init(), path: .constant(.init()))
 }

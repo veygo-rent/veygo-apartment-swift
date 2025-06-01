@@ -3,7 +3,6 @@ import SwiftUI
 struct PasswordView: View {
     @State var renter: Optional<PublishRenter> = nil
     @State private var password: String = ""
-    @Environment(\.dismiss) private var dismiss
     @State private var goToCongratsView = false
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -15,78 +14,73 @@ struct PasswordView: View {
     ]
 
     @ObservedObject var signup: SignupSession
+    @Binding var path: NavigationPath
+
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
 
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .topLeading) {
-                Button(action: {
-                    signup.name = nil
-                    signup.date_of_birth = nil
-                    signup.phone = nil
-                    signup.student_email = nil
-                    dismiss()
-                }) {
-                    BackButton()
-                }
-                .padding(.top, 90)
-                .padding(.leading, 30)
+        ZStack(alignment: .topLeading) {
+            Button(action: {
+                path.removeLast()
+            }) {
+                BackButton()
+            }
+            .padding(.top, 90)
+            .padding(.leading, 30)
 
-                VStack(alignment: .leading, spacing: 20) {
-                    Spacer()
+            VStack(alignment: .leading, spacing: 20) {
+                Spacer()
 
-                    LargeTitleText(text: "Keep Your\nAccount Safe")
-                        .padding(.bottom, 90)
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                    VStack(alignment: .leading, spacing: 5) {
-                        InputWithLabel(
-                            label: "Your Account Password",
-                            placeholder: "veygo2022!",
-                            isSecure: true,
-                            text: $password,
-                            descriptions: $descriptions
-                        )
-                    }
-                    .padding(.horizontal, 32)
-
-                    Spacer()
-
-                    ArrowButton(isDisabled: !isPasswordValid(password)) {
-                        signup.password = password
-                        registerUser()
-                    }
+                LargeTitleText(text: "Keep Your\nAccount Safe")
+                    .padding(.bottom, 90)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 30)
 
-                    LegalText(
-                        fullText: "By joining, you agree to Veygo’s Terms and Conditions",
-                        highlightedText: "Terms and Conditions"
+                VStack(alignment: .leading, spacing: 5) {
+                    InputWithLabel(
+                        label: "Your Account Password",
+                        placeholder: "veygo2022!",
+                        isSecure: true,
+                        text: $password,
+                        descriptions: $descriptions
                     )
-                    .padding(.horizontal, 32)
-                    .offset(y: -25)
                 }
-                .onChange(of: password) { _, newValue in
-                    descriptions[0].1 = false
-                    descriptions[1].1 = newValue.count < 8
-                    descriptions[2].1 = !(containsNumber(newValue) && containsSpecialChar(newValue))
+                .padding(.horizontal, 32)
+
+                Spacer()
+
+                ArrowButton(isDisabled: !isPasswordValid(password)) {
+                    signup.password = password
+                    registerUser()
                 }
-                .padding(.top, 40)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.bottom, 30)
+
+                LegalText(
+                    fullText: "By joining, you agree to Veygo’s Terms and Conditions",
+                    highlightedText: "Terms and Conditions"
+                )
+                .padding(.horizontal, 32)
+                .offset(y: -25)
             }
-            .background(Color("MainBG"))
-            .ignoresSafeArea()
-            .navigationDestination(isPresented: $goToCongratsView) {
-                CongratsView(user: $renter)
+            .onChange(of: password) { _, newValue in
+                descriptions[0].1 = false
+                descriptions[1].1 = newValue.count < 8
+                descriptions[2].1 = !(containsNumber(newValue) && containsSpecialChar(newValue))
             }
-            .alert(isPresented: $showAlert) {
-                Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-            }
+            .padding(.top, 40)
+        }
+        .background(Color("MainBG"))
+        .ignoresSafeArea()
+        .navigationDestination(isPresented: $goToCongratsView) {
+            CongratsView(user: $renter)
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
         .navigationBarBackButtonHidden(true)
     }
 
-    // MARK: - Validation Helpers
     private func containsNumber(_ text: String) -> Bool {
         let numberRegex = ".*[0-9].*"
         return NSPredicate(format: "SELF MATCHES %@", numberRegex).evaluate(with: text)
@@ -101,7 +95,6 @@ struct PasswordView: View {
         return password.count >= 8 && containsNumber(password) && containsSpecialChar(password)
     }
 
-    // MARK: - Register User API
     func registerUser() {
         let formatter = DateFormatter()
         formatter.dateFormat = "MM/dd/yyyy"
@@ -128,7 +121,6 @@ struct PasswordView: View {
         }
 
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        
         let request = veygoCurlRequest(url: "/api/v1/user/create", method: "POST", body: jsonData)
 
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -194,5 +186,5 @@ struct PasswordView: View {
 }
 
 #Preview {
-    PasswordView(signup: .init())
+    PasswordView(signup: .init(), path: .constant(.init()))
 }

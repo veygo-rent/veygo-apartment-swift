@@ -7,15 +7,23 @@
 
 import SwiftUI
 
+enum SignupRoute: Hashable {
+    case name
+    case age
+    case phone
+    case email
+    case password
+}
+
 struct LoginView: View {
     
     @State private var email: String = ""
     @State private var password: String = ""
+    
+    @State private var path = NavigationPath()
     @StateObject private var signup = SignupSession()
     
-    @State private var goToRegisterView = false
     @State private var goToResetView = false
-    
 
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -26,7 +34,7 @@ struct LoginView: View {
     @EnvironmentObject var session: UserSession
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack {
                 Spacer()
 
@@ -65,7 +73,7 @@ struct LoginView: View {
                 Spacer()
 
                 SecondaryButtonLg(text: "Create New Account") {
-                    goToRegisterView = true
+                    path.append(SignupRoute.name)
                 }
                 .padding(.top, 10)
                 .padding(.bottom, 10)
@@ -74,8 +82,19 @@ struct LoginView: View {
             }
             .padding(.horizontal, 32)
             .background(Color("MainBG").ignoresSafeArea())
-            .navigationDestination(isPresented: $goToRegisterView) {
-                NameView(signup: signup)
+            .navigationDestination(for: SignupRoute.self) { route in
+                switch route {
+                case .name:
+                    NameView(signup: signup, path: $path)
+                case .age:
+                    AgeView(signup: signup, path: $path)
+                case .phone:
+                    PhoneView(signup: signup, path: $path)
+                case .email:
+                    EmailView(signup: signup, path: $path)
+                case .password:
+                    PasswordView(signup: signup, path: $path)
+                }
             }
             .navigationDestination(isPresented: $goToResetView) {
                 ResetView()
