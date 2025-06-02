@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C1745A92DEE4B1E00A51DCA /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745A82DEE4B1E00A51DCA /* StripePaymentSheet */; };
+		4C1745AB2DEE4B3200A51DCA /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745AA2DEE4B3200A51DCA /* StripeCardScan */; };
+		4C1745AD2DEE4B6B00A51DCA /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745AC2DEE4B6B00A51DCA /* StripePaymentSheet */; };
+		4C1745AF2DEE4B7200A51DCA /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745AE2DEE4B7200A51DCA /* Stripe */; };
+		4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */; };
+		4C1745B32DEE4FF400A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B22DEE4FF400A51DCA /* StripePaymentsUI */; };
 		8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADBE2DD44DA9007148E6 /* Stripe */; };
 		8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADC02DD44DA9007148E6 /* StripeCardScan */; };
 /* End PBXBuildFile section */
@@ -58,6 +64,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */,
+				4C1745AD2DEE4B6B00A51DCA /* StripePaymentSheet in Frameworks */,
+				4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */,
 				8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,17 +74,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C1745AB2DEE4B3200A51DCA /* StripeCardScan in Frameworks */,
+				4C1745A92DEE4B1E00A51DCA /* StripePaymentSheet in Frameworks */,
+				4C1745B32DEE4FF400A51DCA /* StripePaymentsUI in Frameworks */,
+				4C1745AF2DEE4B7200A51DCA /* Stripe in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4C1745A72DEE4B1E00A51DCA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8EA1ADA62DD44C53007148E6 = {
 			isa = PBXGroup;
 			children = (
 				8EA1ADB12DD44C53007148E6 /* veygo-apartment-swift */,
 				8EA1ADE82DD850DA007148E6 /* veygo-apartment-swift-tests */,
+				4C1745A72DEE4B1E00A51DCA /* Frameworks */,
 				8EA1ADB02DD44C53007148E6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +132,8 @@
 			packageProductDependencies = (
 				8EA1ADBE2DD44DA9007148E6 /* Stripe */,
 				8EA1ADC02DD44DA9007148E6 /* StripeCardScan */,
+				4C1745AC2DEE4B6B00A51DCA /* StripePaymentSheet */,
+				4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */,
 			);
 			productName = "veygo-apartment-swift";
 			productReference = 8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */;
@@ -135,6 +157,10 @@
 			);
 			name = "veygo-apartment-swift-tests";
 			packageProductDependencies = (
+				4C1745A82DEE4B1E00A51DCA /* StripePaymentSheet */,
+				4C1745AA2DEE4B3200A51DCA /* StripeCardScan */,
+				4C1745AE2DEE4B7200A51DCA /* Stripe */,
+				4C1745B22DEE4FF400A51DCA /* StripePaymentsUI */,
 			);
 			productName = "veygo-apartment-swift-tests";
 			productReference = 8EA1ADE72DD850DA007148E6 /* veygo-apartment-swift-tests.xctest */;
@@ -502,6 +528,36 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4C1745A82DEE4B1E00A51DCA /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
+		};
+		4C1745AA2DEE4B3200A51DCA /* StripeCardScan */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripeCardScan;
+		};
+		4C1745AC2DEE4B6B00A51DCA /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
+		};
+		4C1745AE2DEE4B7200A51DCA /* Stripe */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = Stripe;
+		};
+		4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentsUI;
+		};
+		4C1745B22DEE4FF400A51DCA /* StripePaymentsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentsUI;
+		};
 		8EA1ADBE2DD44DA9007148E6 /* Stripe */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
