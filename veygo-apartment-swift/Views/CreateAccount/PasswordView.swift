@@ -21,7 +21,6 @@ struct PasswordView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            EnableSwipeBackGesture() 
             Button(action: {
                 path.removeLast()
             }) {
@@ -80,6 +79,9 @@ struct PasswordView: View {
             Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
         .navigationBarBackButtonHidden(true)
+        .swipeBackGesture {
+            path.removeLast()
+        }
     }
 
     private func containsNumber(_ text: String) -> Bool {

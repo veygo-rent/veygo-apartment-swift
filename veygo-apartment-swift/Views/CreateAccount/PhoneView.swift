@@ -18,7 +18,6 @@ struct PhoneView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            EnableSwipeBackGesture()
             Button(action: {
                 path.removeLast()
             }) {
@@ -75,6 +74,9 @@ struct PhoneView: View {
             if let phone = signup.phone {
                 phoneNumber = phone
             }
+        }
+        .swipeBackGesture {
+            path.removeLast()
         }
     }
 }

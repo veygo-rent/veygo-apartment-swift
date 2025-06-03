@@ -21,7 +21,6 @@ struct EmailView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            EnableSwipeBackGesture() 
             Button(action: {
                 path.removeLast()
             }) {
@@ -81,6 +80,9 @@ struct EmailView: View {
                 self.email = email
                 self.descriptions[1].1 = false
             }
+        }
+        .swipeBackGesture {
+            path.removeLast()
         }
     }
 

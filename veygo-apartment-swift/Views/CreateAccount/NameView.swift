@@ -11,7 +11,6 @@ struct NameView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            EnableSwipeBackGesture() 
             // Back Button 左上角固定
             Button(action: {
                 path.removeLast()
@@ -62,6 +61,9 @@ struct NameView: View {
             if let name = signup.name {
                 fullName = name
             }
+        }
+        .swipeBackGesture {
+            path.removeLast()
         }
     }
 }
