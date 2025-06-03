@@ -15,7 +15,6 @@ struct LegalText: View {
         Text(makeAttributedString())
             .font(.system(size: 11, weight: .regular, design: .default))
             .foregroundColor(Color("Terms"))
-            .frame(maxWidth: .infinity)
     }
 
     private func makeAttributedString() -> AttributedString {

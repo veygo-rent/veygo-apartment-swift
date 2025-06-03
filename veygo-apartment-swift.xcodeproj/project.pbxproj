@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E62DABE2DEEB13100CFA652 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 8E62DABD2DEEB13100CFA652 /* StripePaymentSheet */; };
+		8E62DAC02DEEB13600CFA652 /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8E62DABF2DEEB13600CFA652 /* StripePaymentsUI */; };
+		8E62DAC22DEEB16B00CFA652 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8E62DAC12DEEB16B00CFA652 /* Stripe */; };
+		8E62DAC42DEEB16B00CFA652 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8E62DAC32DEEB16B00CFA652 /* StripeCardScan */; };
+		8E62DAC62DEEB16B00CFA652 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = 8E62DAC52DEEB16B00CFA652 /* StripePaymentSheet */; };
+		8E62DAC82DEEB16B00CFA652 /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8E62DAC72DEEB16B00CFA652 /* StripePaymentsUI */; };
 		8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADBE2DD44DA9007148E6 /* Stripe */; };
 		8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADC02DD44DA9007148E6 /* StripeCardScan */; };
 /* End PBXBuildFile section */
@@ -58,6 +64,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */,
+				8E62DABE2DEEB13100CFA652 /* StripePaymentSheet in Frameworks */,
+				8E62DAC02DEEB13600CFA652 /* StripePaymentsUI in Frameworks */,
 				8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,17 +74,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E62DAC42DEEB16B00CFA652 /* StripeCardScan in Frameworks */,
+				8E62DAC62DEEB16B00CFA652 /* StripePaymentSheet in Frameworks */,
+				8E62DAC82DEEB16B00CFA652 /* StripePaymentsUI in Frameworks */,
+				8E62DAC22DEEB16B00CFA652 /* Stripe in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8E62DABC2DEEB13100CFA652 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8EA1ADA62DD44C53007148E6 = {
 			isa = PBXGroup;
 			children = (
 				8EA1ADB12DD44C53007148E6 /* veygo-apartment-swift */,
 				8EA1ADE82DD850DA007148E6 /* veygo-apartment-swift-tests */,
+				8E62DABC2DEEB13100CFA652 /* Frameworks */,
 				8EA1ADB02DD44C53007148E6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +132,8 @@
 			packageProductDependencies = (
 				8EA1ADBE2DD44DA9007148E6 /* Stripe */,
 				8EA1ADC02DD44DA9007148E6 /* StripeCardScan */,
+				8E62DABD2DEEB13100CFA652 /* StripePaymentSheet */,
+				8E62DABF2DEEB13600CFA652 /* StripePaymentsUI */,
 			);
 			productName = "veygo-apartment-swift";
 			productReference = 8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */;
@@ -135,6 +157,10 @@
 			);
 			name = "veygo-apartment-swift-tests";
 			packageProductDependencies = (
+				8E62DAC12DEEB16B00CFA652 /* Stripe */,
+				8E62DAC32DEEB16B00CFA652 /* StripeCardScan */,
+				8E62DAC52DEEB16B00CFA652 /* StripePaymentSheet */,
+				8E62DAC72DEEB16B00CFA652 /* StripePaymentsUI */,
 			);
 			productName = "veygo-apartment-swift-tests";
 			productReference = 8EA1ADE72DD850DA007148E6 /* veygo-apartment-swift-tests.xctest */;
@@ -433,9 +459,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.veygo-rent.veygo-apartment-swift-tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/veygo-apartment-swift.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/veygo-apartment-swift";
 			};
 			name = Debug;
@@ -451,9 +481,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.veygo-rent.veygo-apartment-swift-tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/veygo-apartment-swift.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/veygo-apartment-swift";
 			};
 			name = Release;
@@ -502,6 +536,36 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		8E62DABD2DEEB13100CFA652 /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
+		};
+		8E62DABF2DEEB13600CFA652 /* StripePaymentsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentsUI;
+		};
+		8E62DAC12DEEB16B00CFA652 /* Stripe */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = Stripe;
+		};
+		8E62DAC32DEEB16B00CFA652 /* StripeCardScan */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripeCardScan;
+		};
+		8E62DAC52DEEB16B00CFA652 /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
+		};
+		8E62DAC72DEEB16B00CFA652 /* StripePaymentsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentsUI;
+		};
 		8EA1ADBE2DD44DA9007148E6 /* Stripe */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
