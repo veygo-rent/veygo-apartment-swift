@@ -10,6 +10,8 @@ struct HomeView: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
+    
+    @State private var showScanner = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -57,6 +59,22 @@ struct HomeView: View {
             }
             .foregroundColor(.red)
             .padding(.top, 20)
+            Button("Scan Card") {
+                        showScanner = true
+                    }
+                    .fullScreenCover(isPresented: $showScanner) {
+                        CardScanView { result in
+                            switch result {
+                            case .completed(let scannedCard):
+                                print("Card number: \(scannedCard.pan)")
+                            case .canceled:
+                                print("Scan canceled")
+                            case .failed(let error):
+                                print("Scan failed: \(error.localizedDescription)")
+                            }
+                            showScanner = false
+                        }
+                    }
         }
         .padding()
         .onAppear {

@@ -16,7 +16,6 @@ struct TextInputField: View {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color("TextFieldBg"))
                 .stroke(Color("TextFieldFrame"), lineWidth: 1) // 边框颜色
-                .frame(maxWidth: .infinity)
                 .frame(height: 42)
             
             if isSecure {
