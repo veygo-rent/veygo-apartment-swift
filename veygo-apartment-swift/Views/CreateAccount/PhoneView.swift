@@ -18,7 +18,7 @@ struct PhoneView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // 返回按钮
+            EnableSwipeBackGesture()
             Button(action: {
                 path.removeLast()
             }) {

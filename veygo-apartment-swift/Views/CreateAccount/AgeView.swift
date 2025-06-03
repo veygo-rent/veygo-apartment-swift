@@ -8,6 +8,7 @@ struct AgeView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
+            EnableSwipeBackGesture() 
             Button(action: {
                 path.removeLast()
             }) {

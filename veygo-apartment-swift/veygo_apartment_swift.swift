@@ -52,3 +52,18 @@ struct veygo_apartment_swift: App {
     }
 }
 
+extension UINavigationBar {
+    static func makeTransparent() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
+        appearance.shadowColor = .clear
+        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
+        appearance.setBackIndicatorImage(UIImage(), transitionMaskImage: UIImage())
+
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
+    }
+}
+
