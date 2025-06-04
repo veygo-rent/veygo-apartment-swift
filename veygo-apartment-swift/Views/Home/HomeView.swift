@@ -12,6 +12,7 @@ struct HomeView: View {
     @AppStorage("user_id") var userId: Int = 0
     
     @State private var showScanner = false
+    @State private var showSignaturePad = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -75,6 +76,9 @@ struct HomeView: View {
                             showScanner = false
                         }
                     }
+            Button("Sign Documents Now") {
+                           showSignaturePad = true
+                       }
         }
         .padding()
         .onAppear {
@@ -89,6 +93,9 @@ struct HomeView: View {
                 print("session.user is nil")
             }
         }
+        .sheet(isPresented: $showSignaturePad) {
+                    SignatureView(isPresented: $showSignaturePad)
+                }
     }
 }
 
