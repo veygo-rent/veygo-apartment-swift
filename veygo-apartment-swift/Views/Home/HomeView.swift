@@ -13,6 +13,8 @@ struct HomeView: View {
     
     @State private var showScanner = false
     @State private var showSignaturePad = false
+    
+    @State var signature: Image? = nil
 
     var body: some View {
         VStack(spacing: 16) {
@@ -77,8 +79,8 @@ struct HomeView: View {
                         }
                     }
             Button("Sign Documents Now") {
-                           showSignaturePad = true
-                       }
+                showSignaturePad = true
+            }
         }
         .padding()
         .onAppear {
@@ -94,8 +96,8 @@ struct HomeView: View {
             }
         }
         .sheet(isPresented: $showSignaturePad) {
-                    SignatureView(isPresented: $showSignaturePad)
-                }
+            SignatureView(savedImage: $signature, isPresented: $showSignaturePad)
+        }
     }
 }
 

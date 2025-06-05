@@ -8,7 +8,7 @@ import SwiftUI
 //这个功能组件内所有UI皆为draft，只是为了测试功能，待改动UI
 struct SignatureView: View {
     @State private var lines: [[CGPoint]] = []
-    @State private var savedImage: Image? = nil
+    @Binding var savedImage: Image?
 
     @Binding var isPresented: Bool
 
@@ -34,6 +34,7 @@ struct SignatureView: View {
                 }
                 .stroke(Color.black, lineWidth: 2)
             }
+            .clipped()
             .frame(height: 200)
             .gesture(
                 DragGesture(minimumDistance: 0)
@@ -50,36 +51,27 @@ struct SignatureView: View {
             )
 
             HStack {
-                Button("Clean") {
+                SecondaryButtonLg(text: "Clear") {
                     lines.removeAll()
                     savedImage = nil
                 }
-                .padding()
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(8)
 
-                Button("Save") {
+                PrimaryButtonLg(text: "Save") {
                     if let image = renderSignatureImage() {
                         savedImage = Image(uiImage: image)
-                        print("Signature Saved!")
+                        let data = image.pngData()!
+                        print("Signature Saved! Datasize: \(data)")
+                        let seconds = 0.2
+                        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+                            // Put your code which should be executed with a delay here
+                            isPresented = false
+                        }
                     }
                 }
-                .padding()
-                .background(Color.blue.opacity(0.8))
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-
-            if let savedImage = savedImage {
-                Text("Saved signature:")
-                savedImage
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 100)
-                    .border(Color.black, width: 1)
             }
 
             Button("Close") {
+                savedImage = nil
                 isPresented = false
             }
             .padding()
@@ -126,5 +118,5 @@ struct SignatureView: View {
 }
 
 #Preview {
-    SignatureView(isPresented: .constant(true))
+    SignatureView(savedImage: .constant(nil as Image?), isPresented: .constant(true))
 }
