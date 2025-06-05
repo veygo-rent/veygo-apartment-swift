@@ -19,8 +19,8 @@ struct LargerSecondaryButtonLg: View {
             Text(text)
                 .font(.system(size: 22, weight: .semibold, design: .default)) // SF Pro 字体
                 .foregroundColor(Color("SecondaryButtonText")) // 使用自定义颜色
-                //.frame(maxWidth: .infinity)
-                .frame(width: 100, height: 53)
+                .frame(maxWidth: .infinity)
+                .frame(height: 53)
                 .background(Color("SecondaryButtonBg"))
                 .cornerRadius(16)
                 .overlay(
