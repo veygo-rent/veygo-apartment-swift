@@ -17,7 +17,8 @@ struct Dropdown: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("Frame"), lineWidth: 1)
+                .stroke(Color("TextFieldFrame"), lineWidth: 1)
+                .fill(Color("TextFieldBg"))
                 .frame(width: 338, height: 53)
                 .background(Color("MainBG"))
             
@@ -44,7 +45,7 @@ struct Dropdown: View {
                         Image(systemName: "chevron.down")
                             .resizable()
                             .frame(width: 15, height: 7)
-                            .foregroundColor(Color("TextFieldWordColor"))
+                            .foregroundColor(Color("Dropdown"))
                             .font(.system(size: 18, weight: .bold))
                     }
                     .offset(x: 28, y: -4)
