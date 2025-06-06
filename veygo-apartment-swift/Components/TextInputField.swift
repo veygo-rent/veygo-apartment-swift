@@ -15,7 +15,7 @@ struct TextInputField: View {
         ZStack {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color("TextFieldBg"))
-                .stroke(Color("TextFieldFrame"), lineWidth: 1) // 边框颜色
+                .stroke(Color("TextFieldFrame"), lineWidth: 2) // 边框颜色
                 .frame(height: 42)
             
             if isSecure {

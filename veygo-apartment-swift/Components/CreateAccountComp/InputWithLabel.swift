@@ -13,7 +13,7 @@ struct InputWithLabel: View {
             if let label = label {
                 Text(label)
                     .font(.system(size: 14, weight: .semibold, design: .default))
-                    .foregroundColor(Color("Black1"))
+                    .foregroundColor(Color("TextBlackPrimary"))
             }
 
             TextInputField(placeholder: placeholder, text: $text, isSecure: isSecure)
@@ -24,8 +24,8 @@ struct InputWithLabel: View {
                     .font(.system(size: 12, weight: !item.1 ? .light : .regular, design: .default))
                     .foregroundColor(
                         !item.1
-                        ? Color("Black1")
-                        : Color("InvalidRed1")
+                        ? Color("TextBlackSecondary")
+                        : Color("InvalidRed")
                     )
             }
         }

@@ -14,14 +14,14 @@ struct LegalText: View {
     var body: some View {
         Text(makeAttributedString())
             .font(.system(size: 11, weight: .regular, design: .default))
-            .foregroundColor(Color("Terms"))
+            .foregroundColor(Color("FootNote"))
     }
 
     private func makeAttributedString() -> AttributedString {
         var fullString = AttributedString(fullText)
 
         if let range = fullString.range(of: highlightedText) {
-            fullString[range].foregroundColor = Color("HighLightText")
+            fullString[range].foregroundColor = Color("TextLink")
             fullString[range].underlineStyle = .single
         }
 

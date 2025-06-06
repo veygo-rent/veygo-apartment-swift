@@ -19,5 +19,5 @@ struct Title: View {
 }
 
 #Preview {
-    Title(text: "Welcome to Veygo", fontSize: 24, color: Color("Black1"))
+    Title(text: "Welcome to Veygo", fontSize: 24, color: Color("TextBlackPrimary"))
 }

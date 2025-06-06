@@ -17,16 +17,15 @@ struct Dropdown: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("TextFieldFrame"), lineWidth: 1)
+                .stroke(Color("TextFieldFrame"), lineWidth: 2)
                 .fill(Color("TextFieldBg"))
                 .frame(width: 338, height: 53)
-                .background(Color("MainBG"))
             
             VStack(spacing: 4) {
                 // rental location
                 Text(labelText)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color("Terms"))
+                    .foregroundColor(Color("FootNote"))
                     .frame(width: 261.09, height: 10, alignment: .leading)
                     .padding(.leading, -26)
                 

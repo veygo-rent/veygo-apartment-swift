@@ -42,7 +42,6 @@ struct LoginView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 250, height: 250)
-                    .padding(.bottom, -20)
 
                 TextInputField(placeholder: "Email", text: $email)
                     .onChange(of: email) { oldValue, newValue in
@@ -50,7 +49,7 @@ struct LoginView: View {
                     }
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
-
+                Spacer().frame(height: 25)
                 PrimaryButtonLg(text: "Login") {
                     if email.isEmpty {
                         alertMessage = "Please enter your email"
@@ -66,19 +65,21 @@ struct LoginView: View {
                     Alert(title: Text("Login Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                 }
 
+                Spacer().frame(height: 20)
                 ShortTextLink(text: "Forgot Password?") {
                     goToResetView = true
-                }
+                }.padding(.leading, 10)
 
                 Spacer()
 
                 SecondaryButtonLg(text: "Create New Account") {
                     path.append(SignupRoute.name)
                 }
-                .padding(.top, 10)
+                .padding(.top, 50)
                 .padding(.bottom, 10)
 
                 LegalText()
+                Spacer().frame(height: 15)
             }
             .padding(.horizontal, 32)
             .background(Color("MainBG").ignoresSafeArea())

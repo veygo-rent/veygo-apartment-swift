@@ -22,25 +22,25 @@ struct PanelView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Reservation Number: \(reservationNumber)")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color("Black1"))
+                    .foregroundColor(Color("TextBlackPrimary"))
                     .padding(.leading, -20)
                     .padding(.bottom, 13)
                 
                 Text(dateTime)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color("Black1"))
+                    .foregroundColor(Color("TextBlackSecondary"))
                     .padding(.leading, -20)
                     .padding(.bottom, 5)
                 
                 Text(location)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color("Black1"))
+                    .foregroundColor(Color("TextBlackSecondary"))
                     .padding(.leading, -20)
                     .padding(.bottom, 5)
                 
                 Text(locationNote)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color("Black1"))
+                    .foregroundColor(Color("TextBlackSecondary"))
                     .padding(.leading, -20)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
@@ -49,7 +49,7 @@ struct PanelView: View {
             
             Divider()
                 .frame(height: 1)
-                .background(Color("Terms"))
+                .background(Color("FootNote"))
             
             // 下半部分
             HStack(spacing: 50) {
@@ -69,7 +69,7 @@ struct PanelView: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("Terms"), lineWidth: 1)
+                .stroke(Color("FootNote"), lineWidth: 1)
         )
     }
 }

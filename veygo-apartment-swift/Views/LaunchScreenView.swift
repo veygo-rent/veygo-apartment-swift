@@ -29,6 +29,8 @@ struct LaunchScreenView<Destination: View>: View {
                 .animation(.easeInOut(duration: 2), value: opacity)
             Spacer()
         }
+        .frame(maxWidth: .infinity)
+        .background(Color("MainBG"))
         .onChange(of: didLoad) {
             withAnimation(.easeInOut(duration: 2)) {
                 scale = 1.2
