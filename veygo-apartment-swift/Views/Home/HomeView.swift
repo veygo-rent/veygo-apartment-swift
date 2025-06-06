@@ -1,102 +1,108 @@
-//
-//  HomeView.swift
-//  veygo-apartment-swift
-//
-//  Created by 魔法玛丽大炮 on 5/27/25.
-//
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject var session: UserSession
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
+    @State private var userName: String = "JUSTIN"
+    @State private var selectedToggle = "University"
+    @State private var selectedLocation = "Purdue University"
+    @State private var startDate: Date = Date()
+    @State private var endDate: Date = Date().addingTimeInterval(3600)
+    @State private var promoCode: String = ""
     
-    @State private var showScanner = false
-    @State private var showSignaturePad = false
+    @State private var selectedTab = 0
     
-    @State var signature: Image? = nil
-
     var body: some View {
-        VStack(spacing: 16) {
-            Text("Home Page")
-                .font(.largeTitle)
-                .foregroundColor(.blue)
-
-            // Debug 输出
-            Text("🔑 Token: \(token)")
-                .font(.caption)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            Text("🆔 User ID: \(userId)")
-                .font(.caption)
-                .foregroundColor(.gray)
-
-            if let user = session.user {
-                Text("👤 Name: \(user.name)")
-                Text("📧 Email: \(user.student_email)")
-                Text("📱 Phone: \(user.phone)")
-            } else {
-                Text("No user loaded.")
-                    .foregroundColor(.orange)
-            }
-
-            Button("Clear Token") {
-                let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
-                URLSession.shared.dataTask(with: request) { data, response, error in
-                    guard let httpResponse = response as? HTTPURLResponse else {
-                        print("Invalid server response.")
-                        return
-                    }
-                    if httpResponse.statusCode == 200 {
-                        token = ""
-                        userId = 0
-                        DispatchQueue.main.async {
-                            // Update UserSession
-                            self.session.user = nil
+        TabView(selection: $selectedTab) {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // 顶部图片 + 文字
+                    ZStack(alignment: .bottomLeading) {
+                        Image("HomePageImage")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(maxWidth: .infinity, maxHeight: 150)
+                            .clipped()
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Title(text: "Good Morning,", fontSize: 24, color: Color.white)
+                            Title(text: "\(userName)", fontSize: 24, color: Color.white)
+                            Title(text: "Diamond Member", fontSize: 13, color: Color.white)
                         }
-                        print("🧼 Token cleared")
+                        .padding()
                     }
-                }.resume()
-            }
-            .foregroundColor(.red)
-            .padding(.top, 20)
-            Button("Scan Card") {
-                        showScanner = true
+                    
+                    // Upcoming Trip
+                    VStack(alignment: .leading, spacing: 8) {
+                        Title(text: "Upcoming Trip", fontSize: 20, color: Color("TextBlackPrimary"))
+                        
+                        PanelView(
+                            reservationNumber: "PU28367359",
+                            dateTime: "Jun 17 at 12:00 PM",
+                            location: "Purdue University Main Campus",
+                            locationNote: "(Exact location will be provided 30 minutes\nbefore rental starts)",
+                            modifyAction: { print("Modify tapped") },
+                            cancelAction: { print("Cancel tapped") }
+                        )
                     }
-                    .fullScreenCover(isPresented: $showScanner) {
-                        CardScanView { result in
-                            switch result {
-                            case .completed(let scannedCard):
-                                print("Card number: \(scannedCard.pan)")
-                            case .canceled:
-                                print("Scan canceled")
-                            case .failed(let error):
-                                print("Scan failed: \(error.localizedDescription)")
+                    
+                    // Make a Reservation & others
+                    VStack(alignment: .leading, spacing: 8) {
+                        Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
+                        
+                        SlidingToggleButton(selectedOption: $selectedToggle)
+                        
+                        Dropdown(selectedOption: $selectedLocation, labelText: .constant("Rental location"))
+                        
+                        DatePanel(startDate: $startDate, endDate: $endDate)
+                        
+                        // Promo code + Apply
+                        HStack(spacing: 4) {
+                            InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCode)
+                                .frame(maxWidth: .infinity)
+                            
+                            LargerSecondaryButtonLg(text: "Apply") {
+                                print("Apply tapped with promo code: \(promoCode)")
                             }
-                            showScanner = false
+                            .frame(width: 92)
                         }
                     }
-            Button("Sign Documents Now") {
-                showSignaturePad = true
+                    
+                    // 底部按钮
+                    LargerPrimaryButtonLg(text: "Vehicle Look Up", action: {
+                        print("Vehicle Look Up tapped")
+                    })
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .center)
             }
-        }
-        .padding()
-        .onAppear {
-            print("Entered HomeView")
-            print("Token: \(token)")
-            print("User ID: \(userId)")
-            if let user = session.user {
-                print("- Name: \(user.name)")
-                print("- Email: \(user.student_email)")
-                print("- Phone: \(user.phone)")
-            } else {
-                print("session.user is nil")
+            .tabItem {
+                Image(systemName: "car.fill")
+                Text("Home")
             }
-        }
-        .sheet(isPresented: $showSignaturePad) {
-            SignatureView(savedImage: $signature, isPresented: $showSignaturePad)
+            .tag(0)
+            
+            // tabs
+            Text("Trips Page")
+                .tabItem {
+                    Image(systemName: "star")
+                    Text("Trips")
+                }
+                .tag(1)
+            
+            Text("Rewards Page")
+                .tabItem {
+                    Image(systemName: "star.fill")
+                    Text("Rewards")
+                }
+                .tag(2)
+            
+            Text("Settings Page")
+                .tabItem {
+                    Image(systemName: "gearshape")
+                    Text("Settings")// 这些都还没跳转
+                }
+                .tag(3)
         }
     }
 }

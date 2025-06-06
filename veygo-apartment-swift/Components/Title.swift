@@ -15,6 +15,7 @@ struct Title: View {
     var body: some View {
         Text(text)
             .font(.system(size: fontSize, weight: .semibold))
+            .foregroundColor(color)
     }
 }
 
