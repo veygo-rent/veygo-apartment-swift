@@ -19,6 +19,7 @@ struct Dropdown: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color("Frame"), lineWidth: 1)
                 .frame(width: 338, height: 53)
+                .background(Color("MainBG"))
             
             VStack(spacing: 4) {
                 // rental location
@@ -59,7 +60,7 @@ struct Dropdown: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(Color("TextFieldWordColor"))
                             .frame(width: 338, height: 44, alignment: .center)
-                            .background(Color.white)
+                            .background(Color("MainBG"))
                             .onTapGesture {
                                 selectedOption = option
                                 showOptions = false
