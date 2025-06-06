@@ -49,7 +49,7 @@ struct LoginView: View {
                     }
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
-                Spacer().frame(height: 25)
+                Spacer().frame(height: 20)
                 PrimaryButtonLg(text: "Login") {
                     if email.isEmpty {
                         alertMessage = "Please enter your email"

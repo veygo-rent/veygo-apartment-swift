@@ -13,6 +13,11 @@ struct NameView: View {
         ZStack(alignment: .topLeading) {
             // Back Button 左上角固定
             Button(action: {
+                signup.date_of_birth = nil
+                signup.phone = nil
+                signup.password = nil
+                signup.name = nil
+                signup.student_email = nil
                 path.removeLast()
             }) {
                 BackButton()
@@ -36,6 +41,14 @@ struct NameView: View {
                         text: $fullName,
                         descriptions: $descriptions
                     )
+                    .onSubmit {
+                        let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }
+                        let formatted = filtered
+                            .split(separator: " ")
+                            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+                            .joined(separator: " ")
+                        fullName = formatted
+                    }
                 }
                 .padding(.horizontal, 32)
 
@@ -63,6 +76,11 @@ struct NameView: View {
             }
         }
         .swipeBackGesture {
+            signup.date_of_birth = nil
+            signup.phone = nil
+            signup.password = nil
+            signup.name = nil
+            signup.student_email = nil
             path.removeLast()
         }
     }
