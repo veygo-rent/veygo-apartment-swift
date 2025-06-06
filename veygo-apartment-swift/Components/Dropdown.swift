@@ -15,44 +15,47 @@ struct Dropdown: View {
     private let options = ["Purdue University", "Indiana University"]
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("TextFieldFrame"), lineWidth: 2)
-                .fill(Color("TextFieldBg"))
-                .frame(width: 338, height: 53)
-            
-            VStack(spacing: 4) {
-                // rental location
-                Text(labelText)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color("FootNote"))
-                    .frame(width: 261.09, height: 10, alignment: .leading)
-                    .padding(.leading, -26)
+        VStack {
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color("TextFieldBg"))
+                    .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                    .frame(height: 53)
                 
-                HStack(spacing: 0) {
-                    // University name
-                    Text(selectedOption)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(Color("TextFieldWordColor"))
-                        .frame(width: 241, height: 24, alignment: .leading)
-                        .padding(.leading, -30)
-                    
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        // rental location
+                        Text(labelText)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color("FootNote"))
+                            .frame(height: 10, alignment: .leading)
+                        // University name
+                        Text(selectedOption)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(Color("TextFieldWordColor"))
+                            .frame(height: 24, alignment: .leading)
+                    }
+                    .frame(height: 53)
+                    .padding(.leading, 16)
+                    Spacer()
                     // DD Button
                     Button(action: {
-                        showOptions.toggle()
+                        withAnimation {
+                            showOptions.toggle()
+                        }
                     }) {
                         Image(systemName: "chevron.down")
                             .resizable()
                             .frame(width: 15, height: 7)
                             .foregroundColor(Color("Dropdown"))
                             .font(.system(size: 18, weight: .bold))
+                            .rotationEffect(.degrees(showOptions ? 180 : 0))
+                            .animation(.easeInOut, value: showOptions)
                     }
-                    .offset(x: 28, y: -4)
+                    .padding(.trailing, 16)
                 }
+                
             }
-            .frame(width: 338, height: 53)
-        }
-        .overlay(
             VStack(spacing: 0) {
                 if showOptions {
                     ForEach(options, id: \.self) { option in
@@ -63,14 +66,16 @@ struct Dropdown: View {
                             .background(Color("MainBG"))
                             .onTapGesture {
                                 selectedOption = option
-                                showOptions = false
+                                withAnimation {
+                                    showOptions = false
+                                }
                             }
                     }
                 }
             }
-            .offset(y: 53)
-            , alignment: .topLeading
-        )
+            .transition(.opacity)
+            .animation(.easeInOut, value: showOptions)
+        }
     }
 }
 

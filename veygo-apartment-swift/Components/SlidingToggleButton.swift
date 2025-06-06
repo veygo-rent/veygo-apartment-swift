@@ -13,46 +13,47 @@ struct SlidingToggleButton: View {
     private let options = ["University", "Apartment"]
     
     var body: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("TextBlackSecondary").opacity(0.3), lineWidth: 2)
-                .background(
-                    Color("MainBG").cornerRadius(16)
-                )
-                .frame(maxWidth: .infinity, maxHeight: 31)
-            
-            // 蓝色滑块
-            HStack {
-                if selectedOption == "Apartment" {
-                    Spacer()
-                }
-                
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color("PrimaryButtonBg"))
-                    .frame(width: 147, height: 31)
+                    .fill(Color("TextFieldBg"))
+                    .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                    .frame(maxWidth: .infinity, maxHeight: 34)
                 
-                if selectedOption == "University" {
-                    Spacer()
+                // 蓝色滑块
+                HStack {
+                    if selectedOption == "Apartment" {
+                        Spacer()
+                    }
+                    
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(Color("PrimaryButtonBg"))
+                        .frame(width: geometry.size.width / 2, height: 30).padding(.horizontal, 1)
+                    
+                    if selectedOption == "University" {
+                        Spacer()
+                    }
+                }
+                .animation(.easeInOut(duration: 0.3), value: selectedOption)
+                
+                // 文本按钮
+                HStack(spacing: 0) {
+                    Button("University") {
+                        selectedOption = "University"
+                    }
+                    .foregroundColor(selectedOption == "University" ? Color("PrimaryButtonText") : Color("TextBlackSecondary"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    Button("Apartment") {
+                        selectedOption = "Apartment"
+                    }
+                    .foregroundColor(selectedOption == "Apartment" ? Color("PrimaryButtonText") : Color("TextBlackSecondary"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .animation(.easeInOut(duration: 0.3), value: selectedOption)
-            
-            // 文本按钮
-            HStack(spacing: 0) {
-                Button("University") {
-                    selectedOption = "University"
-                }
-                .foregroundColor(selectedOption == "University" ? Color("PrimaryButtonText") : Color("TextBlackSecondary"))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                Button("Apartment") {
-                    selectedOption = "Apartment"
-                }
-                .foregroundColor(selectedOption == "Apartment" ? Color("PrimaryButtonText") : Color("TextBlackSecondary"))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
+            .frame(height: 31)
         }
-        .frame(width: 299, height: 31)
+        .frame(height: 31)
     }
 }
 

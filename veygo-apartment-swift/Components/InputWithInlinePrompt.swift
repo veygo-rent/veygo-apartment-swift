@@ -19,10 +19,10 @@ struct InputWithInlinePrompt: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("TextFieldFrame"), lineWidth: 2)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(Color("TextFieldBg"))
-                .frame(width: 238, height: 53)
+                .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                .frame(height: 53)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(promptText)
