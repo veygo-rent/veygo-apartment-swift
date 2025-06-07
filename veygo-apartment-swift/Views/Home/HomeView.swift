@@ -87,6 +87,7 @@ struct HomeView: View {
                 .padding(.bottom, 100)
             }
             .ignoresSafeArea(.container)
+            .background(Color("MainBG"))
             .tabItem {
                 Image(systemName: "car.fill")
                 Text("Home")
@@ -114,7 +115,7 @@ struct HomeView: View {
                     Text("Settings")// 这些都还没跳转
                 }
                 .tag(3)
-        }.background(Color("MainBG"))
+        }
     }
 }
 

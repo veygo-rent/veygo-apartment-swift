@@ -15,10 +15,10 @@ struct SlidingToggleButton: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 20)
                     .fill(Color("TextFieldBg"))
                     .stroke(Color("TextFieldFrame"), lineWidth: 2)
-                    .frame(maxWidth: .infinity, maxHeight: 34)
+                    .frame(maxWidth: .infinity, maxHeight: 42)
                 
                 // 蓝色滑块
                 HStack {
@@ -26,9 +26,9 @@ struct SlidingToggleButton: View {
                         Spacer()
                     }
                     
-                    RoundedRectangle(cornerRadius: 15)
+                    RoundedRectangle(cornerRadius: 19)
                         .fill(Color("PrimaryButtonBg"))
-                        .frame(width: geometry.size.width / 2, height: 30).padding(.horizontal, 1)
+                        .frame(width: geometry.size.width / 2, height: 38).padding(.horizontal, 2)
                     
                     if selectedOption == "University" {
                         Spacer()
@@ -41,19 +41,19 @@ struct SlidingToggleButton: View {
                     Button("University") {
                         selectedOption = "University"
                     }
-                    .foregroundColor(selectedOption == "University" ? Color("PrimaryButtonText") : Color("TextBlackSecondary"))
+                    .foregroundColor(selectedOption == "University" ? Color("PrimaryButtonText") : Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
                     Button("Apartment") {
                         selectedOption = "Apartment"
                     }
-                    .foregroundColor(selectedOption == "Apartment" ? Color("PrimaryButtonText") : Color("TextBlackSecondary"))
+                    .foregroundColor(selectedOption == "Apartment" ? Color("PrimaryButtonText") : Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(height: 31)
+            .frame(height: 42)
         }
-        .frame(height: 31)
+        .frame(height: 42)
     }
 }
 
