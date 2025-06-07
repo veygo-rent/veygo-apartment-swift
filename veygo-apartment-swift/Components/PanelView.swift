@@ -48,28 +48,27 @@ struct PanelView: View {
             .padding()
             
             Divider()
-                .frame(height: 1)
-                .background(Color("FootNote"))
+                .frame(height: 2)
+                .background(Color("TextFieldFrame"))
             
             // 下半部分
             HStack(spacing: 50) {
                 Button("Modify", action: modifyAction)
-                    .foregroundColor(Color("PrimaryButtonBg"))
+                    .foregroundColor(Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity)
                 
                 Button("Cancel", action: cancelAction)
-                    .foregroundColor(Color("PrimaryButtonBg"))
+                    .foregroundColor(Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
         }
-        .frame(width: 338, height: 170)
-        .background(Color("MainBG"))
+        .background(Color("TextFieldBg"))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("FootNote"), lineWidth: 1)
+                .stroke(Color("TextFieldFrame"), lineWidth: 2)
         )
     }
 }
