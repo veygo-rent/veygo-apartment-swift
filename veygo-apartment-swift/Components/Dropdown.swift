@@ -12,10 +12,10 @@ struct Dropdown: View {
     @Binding var labelText: String
     
     @State private var showOptions = false
-    private let options = ["Purdue University", "Indiana University"]
+    private let options = ["Purdue University", "Indiana University", "UC Los Angeles", "IUPUI"]
     
     var body: some View {
-        VStack {
+        VStack (spacing: 16) {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color("TextFieldBg"))
@@ -56,25 +56,46 @@ struct Dropdown: View {
                 }
                 
             }
-            VStack(spacing: 0) {
-                if showOptions {
-                    ForEach(options, id: \.self) { option in
-                        Text(option)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Color("TextFieldWordColor"))
-                            .frame(width: 338, height: 44, alignment: .center)
-                            .background(Color("MainBG"))
-                            .onTapGesture {
-                                selectedOption = option
-                                withAnimation {
-                                    showOptions = false
-                                }
+            if showOptions {
+                let renderedOptions = options.indices.map { index in
+                    VStack(spacing: 0) {
+                        Button(action: {
+                            selectedOption = options[index]
+                            withAnimation {
+                                showOptions = false
                             }
+                        }) {
+                            Text(options[index])
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Color("TextFieldWordColor"))
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
+                                .background(Color("TextFieldBg").opacity(0.01))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        Divider()
+                            .frame(height: 2)
+                            .background(Color("TextFieldFrame"))
                     }
                 }
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color("TextFieldBg"))
+                        .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                    
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(0..<renderedOptions.count, id: \.self) { index in
+                                renderedOptions[index]
+                            }
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .frame(height: 165)
+                    .transition(.opacity)
+                    .animation(.easeInOut, value: showOptions)
+                }
             }
-            .transition(.opacity)
-            .animation(.easeInOut, value: showOptions)
         }
     }
 }

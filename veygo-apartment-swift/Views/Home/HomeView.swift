@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var session: UserSession
+    @AppStorage("token") var token: String = ""
+    @AppStorage("user_id") var userId: Int = 0
+    
     @State private var userName: String = "JUSTIN"
     @State private var selectedToggle = "University"
     @State private var selectedLocation = "Purdue University"
@@ -26,6 +30,8 @@ struct HomeView: View {
                         Title(text: "\(userName)", fontSize: 24, color: Color.white)
                         Title(text: "Diamond Member", fontSize: 13, color: Color.white)
                     }
+                    .padding(.leading, 24)
+                    .padding(.bottom, 10)
                 }
                 VStack (alignment: .leading, spacing: 16) {
                     
@@ -58,6 +64,24 @@ struct HomeView: View {
                     LargerPrimaryButtonLg(text: "Vehicle Look Up", action: {
                         print("Vehicle Look Up tapped")
                     })
+                    ShortTextLink(text: "Log out...") {
+                        let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
+                        URLSession.shared.dataTask(with: request) { data, response, error in
+                            guard let httpResponse = response as? HTTPURLResponse else {
+                                print("Invalid server response.")
+                                return
+                            }
+                            if httpResponse.statusCode == 200 {
+                                token = ""
+                                userId = 0
+                                DispatchQueue.main.async {
+                                    // Update UserSession
+                                    self.session.user = nil
+                                }
+                                print("🧼 Token cleared")
+                            }
+                        }.resume()
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 100)

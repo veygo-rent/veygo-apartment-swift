@@ -52,17 +52,27 @@ struct PanelView: View {
                 .background(Color("TextFieldFrame"))
             
             // 下半部分
-            HStack(spacing: 50) {
+            HStack {
+                Spacer()
                 Button("Modify", action: modifyAction)
                     .foregroundColor(Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity)
+                    .padding(.trailing, 16)
+                Spacer()
                 
+                Divider()
+                    .frame(width: 2)
+                    .background(Color("TextFieldFrame"))
+                
+                Spacer()
                 Button("Cancel", action: cancelAction)
                     .foregroundColor(Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity)
+                    .padding(.leading, 16)
+                Spacer()
             }
+            .frame(height: 40)
             .padding(.horizontal, 20)
-            .padding(.vertical, 10)
         }
         .background(Color("TextFieldBg"))
         .cornerRadius(16)

@@ -28,13 +28,13 @@ struct InputWithInlinePrompt: View {
                 Text(promptText)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color("FootNote"))
-                    .padding(.leading, 10)
                 
                 TextField("", text: $userInput)
-                    .font(.system(size: 14))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(Color("TextFieldWordColor"))
-                    .padding(.leading, 10)
+                    .frame(height: 24, alignment: .leading)
             }
+            .padding(.leading, 16)
             .padding(.top, 6)
         }
     }

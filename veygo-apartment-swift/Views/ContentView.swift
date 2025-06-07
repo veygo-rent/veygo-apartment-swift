@@ -60,12 +60,15 @@ struct ContentView: View {
         ZStack {
             if session.user == nil {
                 LoginView()
-                    .transition(.move(edge: .leading)) // or .opacity, .slide, etc.
+                    .transition(.move(edge: .leading))
             } else {
                 HomeView()
                     .transition(.move(edge: .trailing))
             }
         }
         .animation(.bouncy, value: session.user)
+        .onChange(of: session.user) { old, new in
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 }
