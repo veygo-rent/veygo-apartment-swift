@@ -11,19 +11,22 @@ struct NameView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // Back Button 左上角固定
-            Button(action: {
-                signup.date_of_birth = nil
-                signup.phone = nil
-                signup.password = nil
-                signup.name = nil
-                signup.student_email = nil
-                path.removeLast()
-            }) {
-                BackButton()
+            if #unavailable(iOS 26) {
+                // Conditional for iOS 26
+                // Back Button 左上角固定
+                Button(action: {
+                    signup.date_of_birth = nil
+                    signup.phone = nil
+                    signup.password = nil
+                    signup.name = nil
+                    signup.student_email = nil
+                    path.removeLast()
+                }) {
+                    BackButton()
+                }
+                .padding(.top, 90)
+                .padding(.leading, 30)
             }
-            .padding(.top, 90)
-            .padding(.leading, 30)
 
             VStack(alignment: .leading, spacing: 20) {
                 Spacer()
@@ -69,7 +72,7 @@ struct NameView: View {
         }
         .background(Color("MainBG"))
         .ignoresSafeArea()
-        .navigationBarBackButtonHidden(true)
+        .modifier(BackButtonHiddenModifier())
         .onAppear() {
             if let name = signup.name {
                 fullName = name

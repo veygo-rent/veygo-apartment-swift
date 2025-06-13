@@ -21,13 +21,15 @@ struct PasswordView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Button(action: {
-                path.removeLast()
-            }) {
-                BackButton()
+            if #unavailable(iOS 26) {
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    BackButton()
+                }
+                .padding(.top, 90)
+                .padding(.leading, 30)
             }
-            .padding(.top, 90)
-            .padding(.leading, 30)
 
             VStack(alignment: .leading, spacing: 20) {
                 Spacer()
@@ -78,7 +80,7 @@ struct PasswordView: View {
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
-        .navigationBarBackButtonHidden(true)
+        .modifier(BackButtonHiddenModifier())
         .swipeBackGesture {
             path.removeLast()
         }
