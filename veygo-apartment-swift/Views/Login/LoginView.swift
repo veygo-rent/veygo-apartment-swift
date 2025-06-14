@@ -33,6 +33,8 @@ struct LoginView: View {
     
     @EnvironmentObject var session: UserSession
     
+    @FocusState private var focusedField: String?
+    
     var body: some View {
         NavigationStack(path: $path) {
             VStack {
@@ -47,16 +49,28 @@ struct LoginView: View {
                     .onChange(of: email) { oldValue, newValue in
                         email = newValue.lowercased()
                     }
+                    .focused($focusedField, equals: "email")
+                    .onSubmit {
+                        focusedField = "password"
+                    }
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
+                    .focused($focusedField, equals: "password")
+                    .onSubmit {
+                        if email.isEmpty {
+                            focusedField = "email"
+                        } else if password.isEmpty {
+                            focusedField = "password"
+                        } else {
+                            loginUser()
+                        }
+                    }
                 Spacer().frame(height: 20)
                 PrimaryButtonLg(text: "Login") {
                     if email.isEmpty {
-                        alertMessage = "Please enter your email"
-                        showAlert = true
+                        focusedField = "email"
                     } else if password.isEmpty {
-                        alertMessage = "Please enter your password"
-                        showAlert = true
+                        focusedField = "password"
                     } else {
                         loginUser()
                     }
