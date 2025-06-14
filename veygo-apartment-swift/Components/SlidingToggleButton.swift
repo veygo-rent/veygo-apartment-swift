@@ -7,10 +7,13 @@
 
 import SwiftUI
 
+enum RentalOption: String, CaseIterable, Identifiable {
+    case university, apartment
+    var id: Self { self }
+}
+
 struct SlidingToggleButton: View {
-    @Binding var selectedOption: String
-    
-    private let options = ["University", "Apartment"]
+    @Binding var selectedOption: RentalOption
     
     var body: some View {
         GeometryReader { geometry in
@@ -22,7 +25,7 @@ struct SlidingToggleButton: View {
                 
                 // 蓝色滑块
                 HStack {
-                    if selectedOption == "Apartment" {
+                    if selectedOption == .apartment {
                         Spacer()
                     }
                     
@@ -30,7 +33,7 @@ struct SlidingToggleButton: View {
                         .fill(Color("PrimaryButtonBg"))
                         .frame(width: geometry.size.width / 2, height: 38).padding(.horizontal, 2)
                     
-                    if selectedOption == "University" {
+                    if selectedOption == .university {
                         Spacer()
                     }
                 }
@@ -39,15 +42,15 @@ struct SlidingToggleButton: View {
                 // 文本按钮
                 HStack(spacing: 0) {
                     Button("University") {
-                        selectedOption = "University"
+                        selectedOption = .university
                     }
-                    .foregroundColor(selectedOption == "University" ? Color("PrimaryButtonText") : Color("SecondaryButtonText"))
+                    .foregroundColor(selectedOption == .university ? Color("PrimaryButtonText") : Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
                     Button("Apartment") {
-                        selectedOption = "Apartment"
+                        selectedOption = .apartment
                     }
-                    .foregroundColor(selectedOption == "Apartment" ? Color("PrimaryButtonText") : Color("SecondaryButtonText"))
+                    .foregroundColor(selectedOption == .apartment ? Color("PrimaryButtonText") : Color("SecondaryButtonText"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
@@ -58,7 +61,7 @@ struct SlidingToggleButton: View {
 }
 
 #Preview {
-    StatefulPreviewWrapper("University") { selected in
+    StatefulPreviewWrapper(RentalOption.university) { selected in
         SlidingToggleButton(selectedOption: selected)
     }
 }

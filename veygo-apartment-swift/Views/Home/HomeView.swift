@@ -6,7 +6,7 @@ struct HomeView: View {
     @AppStorage("user_id") var userId: Int = 0
     
     @State private var userName: String = "JUSTIN"
-    @State private var selectedToggle = "University"
+    @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation = "Purdue University"
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Date().addingTimeInterval(3600)
@@ -48,6 +48,11 @@ struct HomeView: View {
                     
                     // Make a Reservation & others
                     Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
+                    Picker("Rental Option", selection: $selectedToggle) {
+                        Text("University").tag(RentalOption.university)
+                        Text("Apartment").tag(RentalOption.apartment)
+                    }
+                    .pickerStyle(.segmented)
                     SlidingToggleButton(selectedOption: $selectedToggle)
                     Dropdown(selectedOption: $selectedLocation, labelText: .constant("Rental location"))
                     DatePanel(startDate: $startDate, endDate: $endDate)
