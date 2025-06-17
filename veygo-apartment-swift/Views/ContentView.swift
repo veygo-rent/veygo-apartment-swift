@@ -62,7 +62,7 @@ struct ContentView: View {
                 LoginView()
                     .transition(.move(edge: .leading))
             } else {
-                HomeView()
+                TabBar()
                     .transition(.move(edge: .trailing))
             }
         }

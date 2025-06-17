@@ -25,7 +25,7 @@ struct LargerSecondaryButtonLg: View {
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color("SecondaryButtonOutline"), lineWidth: 2) // 黑色细边框
+                        .stroke(Color("SecondaryButtonOutline"), lineWidth: 1) // 黑色细边框
                 )
         }
     }

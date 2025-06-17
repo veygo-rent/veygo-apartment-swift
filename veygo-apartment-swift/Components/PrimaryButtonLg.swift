@@ -16,7 +16,7 @@ struct PrimaryButtonLg: View {
                 .frame(height: 45)
                 .background(Color("PrimaryButtonBg"))
                 .cornerRadius(16)
-                .shadow(color: Color("ShadowPrimary").opacity(0.7), radius: 3, x: 2, y: 4)
+                .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
         }
     }
 }

@@ -48,7 +48,7 @@ struct PanelView: View {
             .padding()
             
             Divider()
-                .frame(height: 2)
+                .frame(height: 1)
                 .background(Color("TextFieldFrame"))
             
             // 下半部分
@@ -59,10 +59,6 @@ struct PanelView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.trailing, 16)
                 Spacer()
-                
-                Divider()
-                    .frame(width: 2)
-                    .background(Color("TextFieldFrame"))
                 
                 Spacer()
                 Button("Cancel", action: cancelAction)
@@ -78,7 +74,7 @@ struct PanelView: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                .stroke(Color("TextFieldFrame"), lineWidth: 1)
         )
     }
 }

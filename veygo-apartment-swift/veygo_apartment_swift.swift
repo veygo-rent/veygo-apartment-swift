@@ -24,8 +24,6 @@ import Stripe
 
 @main
 struct veygo_apartment_swift: App {
-    @StateObject var signupSession = SignupSession()
-    
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
     @StateObject var session = UserSession()

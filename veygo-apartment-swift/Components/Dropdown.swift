@@ -19,7 +19,7 @@ struct Dropdown: View {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color("TextFieldBg"))
-                    .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                    .stroke(Color("TextFieldFrame"), lineWidth: 1)
                     .frame(height: 53)
                 
                 HStack {
@@ -73,15 +73,15 @@ struct Dropdown: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         Divider()
-                            .frame(height: 2)
-                            .background(Color("TextFieldFrame"))
+                            .frame(height: 1)
+                            .background(Color("TextFieldFrame").opacity(0.6))
                     }
                 }
 
                 ZStack {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color("TextFieldBg"))
-                        .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                        .stroke(Color("TextFieldFrame"), lineWidth: 1)
                     
                     ScrollView {
                         VStack(spacing: 0) {

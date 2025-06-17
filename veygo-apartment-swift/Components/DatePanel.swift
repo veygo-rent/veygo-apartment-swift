@@ -18,7 +18,7 @@ struct DatePanel: View {
         ZStack {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color("TextFieldBg"))
-                .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                .stroke(Color("TextFieldFrame"), lineWidth: 1)
             HStack(spacing: 0) {
                 // 左
                 VStack(alignment: .center, spacing: 4) {
@@ -36,7 +36,7 @@ struct DatePanel: View {
                 // 中
                 Rectangle()
                     .fill(Color("TextFieldFrame"))
-                    .frame(width: 2, height: 71)
+                    .frame(width: 1, height: 71)
                 
                 // 右
                 VStack(alignment: .center, spacing: 4) {

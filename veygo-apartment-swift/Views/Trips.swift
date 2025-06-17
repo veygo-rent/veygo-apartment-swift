@@ -6,15 +6,15 @@
 //
 import SwiftUI
 
-struct Plans: View {
+struct Trips: View {
     var body: some View {
-        Text("Plans Page")
+        Text("Trips Page")
             .font(.largeTitle)
             .foregroundColor(.blue)
     }
 }
 
 #Preview {
-    Plans()
+    Trips()
 }
 

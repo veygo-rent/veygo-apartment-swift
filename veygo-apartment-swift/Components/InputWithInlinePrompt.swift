@@ -21,7 +21,7 @@ struct InputWithInlinePrompt: View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color("TextFieldBg"))
-                .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                .stroke(Color("TextFieldFrame"), lineWidth: 1)
                 .frame(height: 53)
             
             VStack(alignment: .leading, spacing: 4) {

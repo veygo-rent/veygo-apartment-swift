@@ -20,7 +20,7 @@ struct SlidingToggleButton: View {
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color("TextFieldBg"))
-                    .stroke(Color("TextFieldFrame"), lineWidth: 2)
+                    .stroke(Color("TextFieldFrame"), lineWidth: 1)
                     .frame(maxWidth: .infinity, maxHeight: 42)
                 
                 // 蓝色滑块
