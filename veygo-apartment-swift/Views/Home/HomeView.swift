@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct HomeView: View {
     @EnvironmentObject var session: UserSession
@@ -104,9 +105,25 @@ struct HomeView: View {
         }
         .ignoresSafeArea(.container)
         .background(Color("MainBG"))
-        
+        .onAppear {
+            NotificationManager.shared.requestPermission()
+            fetchNotiStatus { hasDraft in
+                if hasDraft {
+                    NotificationManager.shared.sendDraftNotification()
+                }
+            }
+        }
     }
 }
+
+func fetchNotiStatus(completion: @escaping (Bool) -> Void) {
+    // 可以改成真实Call API
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        let hasDraft = true
+        completion(hasDraft)
+    }
+}
+
 
 #Preview {
     HomeView()
