@@ -113,7 +113,6 @@ struct HomeView: View {
                     NotificationManager.shared.sendDraftNotification()
                 }
             }
-            print("APNs device token on home view: \(token)")
         }
     }
 }
