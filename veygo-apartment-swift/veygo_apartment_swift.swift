@@ -27,6 +27,7 @@ struct veygo_apartment_swift: App {
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
     @StateObject var session = UserSession()
+    //@UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     @State private var didLoad = false
 
