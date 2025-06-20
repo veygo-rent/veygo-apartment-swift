@@ -21,6 +21,10 @@ public func veygoCurlRequest (url: String, method: String, headers: [String: Str
     if headers["Content-Type"] == nil && method != "GET" {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
+    
+    #if DEBUG
+    request.setValue("ios", forHTTPHeaderField: "Debug-Mode")
+    #endif
 
     return request
 }
