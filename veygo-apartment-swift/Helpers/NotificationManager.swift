@@ -15,7 +15,7 @@ class NotificationManager {
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
-                print("Gets the Permission")
+                print("Getting Notificaton Permission")
             } else {
                 print("Permission Denied, error: \(error?.localizedDescription ?? "")")
             }
