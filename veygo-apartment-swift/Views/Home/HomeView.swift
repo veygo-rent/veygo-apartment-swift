@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
+    @AppStorage("apns_token") var apns_token: String = ""
     
     @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation = "Purdue University"
@@ -108,20 +109,22 @@ struct HomeView: View {
         .background(Color("MainBG"))
         .onAppear {
             NotificationManager.shared.requestPermission()
-            fetchNotiStatus { hasDraft in
-                if hasDraft {
-                    NotificationManager.shared.sendDraftNotification()
-                }
+            if !apns_token.isEmpty {
+                print("APNs device token: \(apns_token)")
+                let body: [String: String] = ["apns": apns_token]
+                let jsonData = try? JSONSerialization.data(withJSONObject: body)
+                let update_apns_request = veygoCurlRequest(url: "/api/v1/user/update-apns", method: "POST", headers: ["auth": "\(token)$\(userId)"], body: jsonData)
+                URLSession.shared.dataTask(with: update_apns_request) { data, response, error in
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        print("Invalid server response.")
+                        return
+                    }
+                    if httpResponse.statusCode == 200 {
+                        print("APNs Updated")
+                    }
+                }.resume()
             }
         }
-    }
-}
-
-func fetchNotiStatus(completion: @escaping (Bool) -> Void) {
-    // 可以改成真实Call API
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-        let hasDraft = true
-        completion(hasDraft)
     }
 }
 

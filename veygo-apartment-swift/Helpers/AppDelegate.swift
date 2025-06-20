@@ -6,8 +6,11 @@
 //
 import UIKit
 import UserNotifications
+import SwiftUI
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    
+    @AppStorage("apns_token") var apns_token: String = ""
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -25,7 +28,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        print("APNs device token: \(token)")
+        apns_token = token
 
         //uploadDeviceTokenToBackend(token: token) //这里上传后端
     }
