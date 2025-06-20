@@ -123,6 +123,7 @@ struct HomeView: View {
                         return
                     }
                     if httpResponse.statusCode == 200 {
+                        self.token = extractToken(from: response)!
                         print("APNs Updated")
                     }
                 }.resume()

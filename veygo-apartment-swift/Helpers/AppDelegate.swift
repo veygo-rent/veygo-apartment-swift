@@ -37,22 +37,5 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Fail to upload token to server: \(error.localizedDescription)")
     }
-
-//    func uploadDeviceTokenToBackend(token: String) {
-//        guard let url = URL(string: "https://your-backend.com/api/v1/user/device-token") else { return } //fake url for save token to server
-//
-//        var request = URLRequest(url: url)
-//        request.httpMethod = "POST"
-//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//        request.setValue("Bearer \(UserDefaults.standard.string(forKey: "token") ?? "")", forHTTPHeaderField: "Authorization")
-//
-//        let body: [String: Any] = [
-//            "deviceToken": token,
-//            "userId": UserDefaults.standard.integer(forKey: "user_id")
-//        ] 
-//        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-//
-//        URLSession.shared.dataTask(with: request).resume()
-//    }
 }
 

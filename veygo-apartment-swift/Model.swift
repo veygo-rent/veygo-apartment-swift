@@ -63,8 +63,8 @@ class UserSession: ObservableObject {
                 DispatchQueue.main.async {
                     self.user = decodedUser
                 }
-                UserDefaults.standard.set(newToken, forKey: "token")
-                UserDefaults.standard.set(decodedUser.id, forKey: "user_id")
+                self.token = newToken
+                self.userId = decodedUser.id
                 print("New token refreshed.")
                 print("User loaded via token: \(decodedUser.name)")
                 completion(true)

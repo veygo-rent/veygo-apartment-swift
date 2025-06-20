@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PasswordView: View {
-    @State var renter: Optional<PublishRenter> = nil
+    @EnvironmentObject var session: UserSession
     @State private var password: String = ""
     @State private var goToCongratsView = false
     @State private var showAlert = false
@@ -75,7 +75,7 @@ struct PasswordView: View {
         .background(Color("MainBG"))
         .ignoresSafeArea()
         .navigationDestination(isPresented: $goToCongratsView) {
-            CongratsView(user: $renter)
+            CongratsView(user: $session.user)
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
@@ -167,13 +167,9 @@ struct PasswordView: View {
                let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterData) {
 
                 DispatchQueue.main.async {
-                    self.renter = decodedUser
+                    self.session.user = decodedUser
                     self.token = token
                     self.userId = decodedUser.id
-
-                    UserDefaults.standard.set(token, forKey: "token")
-                    UserDefaults.standard.set(decodedUser.id, forKey: "user_id")
-                    UserDefaults.standard.set(try? JSONEncoder().encode(decodedUser), forKey: "user")
 
                     print("Registered user: \(decodedUser.name)")
                     print("Token: \(token)")

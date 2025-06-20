@@ -31,6 +31,8 @@ struct veygo_apartment_swift: App {
                 }
                 didLoad.toggle()
             }
+            .onChange(of: token) { oldValue, newValue in
+            }
         }
         .environmentObject(session)
     }
