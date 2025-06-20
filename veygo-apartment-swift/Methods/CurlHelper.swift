@@ -5,7 +5,7 @@
 //  Created by Shenghong Zhou on 5/29/25.
 //
 
-import Foundation;
+import Foundation
 
 public func veygoCurlRequest (url: String, method: String, headers: [String: String] = [:], body: Data? = nil) -> URLRequest {
     let BASE_PATH = "https://dev.veygo.rent"

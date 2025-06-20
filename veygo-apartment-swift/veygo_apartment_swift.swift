@@ -35,4 +35,3 @@ struct veygo_apartment_swift: App {
         .environmentObject(session)
     }
 }
-
