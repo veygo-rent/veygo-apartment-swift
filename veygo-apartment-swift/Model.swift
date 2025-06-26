@@ -62,9 +62,9 @@ class UserSession: ObservableObject {
                 let newToken: String = httpResponse.value(forHTTPHeaderField: "token")!
                 DispatchQueue.main.async {
                     self.user = decodedUser
+                    self.token = newToken
+                    self.userId = decodedUser.id
                 }
-                self.token = newToken
-                self.userId = decodedUser.id
                 print("New token refreshed.")
                 print("User loaded via token: \(decodedUser.name)")
                 completion(true)
