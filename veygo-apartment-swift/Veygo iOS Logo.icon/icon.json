@@ -9,7 +9,15 @@
         {
           "blend-mode" : "normal",
           "fill" : "automatic",
-          "glass" : false,
+          "glass-specializations" : [
+            {
+              "value" : true
+            },
+            {
+              "appearance" : "dark",
+              "value" : false
+            }
+          ],
           "image-name" : "Veygo_logo.png",
           "name" : "Veygo_logo",
           "position" : {
