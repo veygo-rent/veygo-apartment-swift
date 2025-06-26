@@ -4,6 +4,7 @@
   },
   "groups" : [
     {
+      "blur-material" : 0,
       "layers" : [
         {
           "blend-mode" : "normal",
@@ -20,10 +21,18 @@
           }
         }
       ],
+      "lighting" : "individual",
+      "opacity-specializations" : [
+        {
+          "appearance" : "dark",
+          "value" : 1
+        }
+      ],
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
       },
+      "specular" : false,
       "translucency" : {
         "enabled" : true,
         "value" : 0.5
