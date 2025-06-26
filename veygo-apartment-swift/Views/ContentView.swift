@@ -55,6 +55,7 @@ struct ContentView: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
+    @AppStorage("apns_token") var apns_token: String = ""
 
     var body: some View {
         ZStack {
@@ -63,6 +64,28 @@ struct ContentView: View {
                     .transition(.move(edge: .leading))
             } else {
                 TabBar()
+                    .onAppear {
+                        NotificationManager.shared.requestPermission()
+                        if !apns_token.isEmpty {
+                            print("APNs device token: \(apns_token)")
+                            var body: [String: String] = ["apns": apns_token]
+                            #if DEBUG
+                            body = ["apns": "!\(apns_token)"]
+                            #endif
+                            let jsonData = try? JSONSerialization.data(withJSONObject: body)
+                            let update_apns_request = veygoCurlRequest(url: "/api/v1/user/update-apns", method: "POST", headers: ["auth": "\(token)$\(userId)"], body: jsonData)
+                            URLSession.shared.dataTask(with: update_apns_request) { data, response, error in
+                                guard let httpResponse = response as? HTTPURLResponse else {
+                                    print("Invalid server response.")
+                                    return
+                                }
+                                if httpResponse.statusCode == 200 {
+                                    self.token = extractToken(from: response)!
+                                    print("APNs Updated")
+                                }
+                            }.resume()
+                        }
+                    }
                     .transition(.move(edge: .trailing))
             }
         }
