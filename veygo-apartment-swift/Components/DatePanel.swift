@@ -14,6 +14,8 @@ struct DatePanel: View {
     @State private var showStartPicker = false
     @State private var showEndPicker = false
     
+    var isEditMode: Bool
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16)
@@ -53,16 +55,37 @@ struct DatePanel: View {
             }
             .frame(height: 71)
             // 起始日期选择器
-            .sheet(isPresented: $showStartPicker) {
-                DatePicker("Select Start Date & Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
-                    .datePickerStyle(GraphicalDatePickerStyle())
-                    .padding()
-            }
+            .modifier(optionalDateSheet(showPicker: $showStartPicker, pickerView: {
+                AnyView(
+                    DatePicker("Select Start Date & Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
+                        .datePickerStyle(.graphical)
+                )
+            }, isEditMode: isEditMode))
             // 结束日期选择器
-            .sheet(isPresented: $showEndPicker) {
-                DatePicker("Select End Date & Time", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
-                    .datePickerStyle(GraphicalDatePickerStyle())
-                    .padding()
+            .modifier(optionalDateSheet(showPicker: $showEndPicker, pickerView: {
+                AnyView(
+                    DatePicker("Select End Date & Time", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
+                        .datePickerStyle(.graphical)
+                )
+            }, isEditMode: isEditMode))
+        }
+    }
+    
+    private struct optionalDateSheet: ViewModifier {
+        @Binding var showPicker: Bool
+        
+        var pickerView: () -> AnyView
+        var isEditMode: Bool
+
+        func body(content: Content) -> some View {
+            if isEditMode {
+                content
+                    .sheet(isPresented: $showPicker) {
+                        pickerView()
+                            .presentationDetents([.height(500)])
+                    }
+            } else {
+                content
             }
         }
     }
@@ -73,7 +96,7 @@ struct DatePanel: View {
         StatefulPreviewWrapper(Date().addingTimeInterval(3600)) { endDate in
             DatePanel(
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate, isEditMode: true
             )
         }
     }

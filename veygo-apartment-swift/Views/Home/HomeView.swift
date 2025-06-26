@@ -48,7 +48,7 @@ struct HomeView: View {
                 Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
                 SlidingToggleButton(selectedOption: $selectedToggle)
                 Dropdown(selectedOption: $selectedLocation, labelText: .constant("Rental location"))
-                DatePanel(startDate: $startDate, endDate: $endDate)
+                DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
                 // Promo code + Apply
                 HStack (spacing: 16) {
                     InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCode)
