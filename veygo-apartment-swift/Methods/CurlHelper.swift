@@ -22,9 +22,20 @@ public func veygoCurlRequest (url: String, method: String, headers: [String: Str
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
     
+    request.setValue("none", forHTTPHeaderField: "Debug-Mode")
     #if DEBUG
     request.setValue("ios", forHTTPHeaderField: "Debug-Mode")
     #endif
 
     return request
+}
+
+class VeygoDecoderStandard {
+    static let shared = VeygoDecoderStandard()
+    let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
 }

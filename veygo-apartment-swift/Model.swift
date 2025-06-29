@@ -7,14 +7,80 @@
 
 import SwiftUI
 
+enum VerificationType: String, Codable {
+    case email = "Email"
+    case phone = "Phone"
+}
+
+enum AgreementStatus: String, Codable {
+    case rental = "Rental"
+    case void = "Void"
+    case canceled = "Canceled"
+}
+
+enum EmployeeTier: String, Codable {
+    case user = "User"
+    case generalEmployee = "GeneralEmployee"
+    case maintenance = "Maintenance"
+    case admin = "Admin"
+}
+
+enum PaymentType: String, Codable {
+    case canceled = "canceled"
+    case processing = "processing"
+    case requiresAction = "requires_action"
+    case requiresCapture = "requires_capture"
+    case requiresConfirmation = "requires_confirmation"
+    case requiresPaymentMethod = "requires_payment_method"
+    case succeeded = "succeeded"
+}
+
+enum PlanTier: String, Codable {
+    case free = "Free"
+    case silver = "Silver"
+    case gold = "Gold"
+    case platinum = "Platinum"
+}
+
+enum Gender: String, Codable {
+    case male = "Male"
+    case female = "Female"
+    case other = "Other"
+    case pnts = "PNTS"
+}
+
+enum TransactionType: String, Codable {
+    case credit = "Credit"
+    case cash = "Cash"
+}
 
 struct PublishRenter: Codable, Identifiable, Equatable {
-    let id: Int
-    let name: String
-    let student_email: String
-    let phone: String
-    let date_of_birth: String
-    let apartment_id: Int
+    var id: Int
+    var name: String
+    var studentEmail: String
+    var studentEmailExpiration: String?
+    var phone: String
+    var phoneIsVerified: Bool
+    var dateOfBirth: String
+    var profilePicture: String?
+    var gender: Gender?
+    var dateOfRegistration: String
+    var driversLicenseNumber: String?
+    var driversLicenseStateRegion: String?
+    var driversLicenseExpiration: String?
+    var insuranceLiabilityExpiration: String?
+    var insuranceCollisionExpiration: String?
+    var apartmentId: Int
+    var leaseAgreementExpiration: String?
+    var billingAddress: String?
+    var signatureDatetime: String?
+    var planTier: PlanTier
+    var planRenewalDay: String
+    var planExpireMonthYear: String
+    var planAvailableDuration: Double
+    var isPlanAnnual: Bool
+    var employeeTier: EmployeeTier
+    var subscriptionPaymentMethodId: Int?
 }
 
 class SignupSession: ObservableObject {
@@ -58,7 +124,7 @@ class UserSession: ObservableObject {
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let renter = json["renter"],
                let renterData = try? JSONSerialization.data(withJSONObject: renter),
-               let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterData) {
+               let decodedUser = try? VeygoDecoderStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
                 let newToken: String = httpResponse.value(forHTTPHeaderField: "token")!
                 DispatchQueue.main.async {
                     self.user = decodedUser

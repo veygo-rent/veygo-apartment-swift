@@ -144,7 +144,7 @@ struct LoginView: View {
                 let responseJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
                 if let renterData = responseJSON?["renter"],
                    let renterJSON = try? JSONSerialization.data(withJSONObject: renterData),
-                   let decodedUser = try? JSONDecoder().decode(PublishRenter.self, from: renterJSON) {
+                   let decodedUser = try? VeygoDecoderStandard.shared.decoder.decode(PublishRenter.self, from: renterJSON) {
                     // Update AppStorage
                     self.token = extractToken(from: response)!
                     self.userId = decodedUser.id
