@@ -64,16 +64,16 @@ struct PublishRenter: Codable, Identifiable, Equatable {
     var dateOfBirth: String
     var profilePicture: String?
     var gender: Gender?
-    var dateOfRegistration: String
+    var dateOfRegistration: Date
     var driversLicenseNumber: String?
     var driversLicenseStateRegion: String?
-    var driversLicenseExpiration: String?
-    var insuranceLiabilityExpiration: String?
-    var insuranceCollisionExpiration: String?
+    var driversLicenseExpiration: Date?
+    var insuranceLiabilityExpiration: Date?
+    var insuranceCollisionExpiration: Date?
     var apartmentId: Int
-    var leaseAgreementExpiration: String?
+    var leaseAgreementExpiration: Date?
     var billingAddress: String?
-    var signatureDatetime: String?
+    var signatureDatetime: Date?
     var planTier: PlanTier
     var planRenewalDay: String
     var planExpireMonthYear: String
@@ -124,7 +124,7 @@ class UserSession: ObservableObject {
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let renter = json["renter"],
                let renterData = try? JSONSerialization.data(withJSONObject: renter),
-               let decodedUser = try? VeygoDecoderStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
+               let decodedUser = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
                 let newToken: String = httpResponse.value(forHTTPHeaderField: "token")!
                 DispatchQueue.main.async {
                     self.user = decodedUser

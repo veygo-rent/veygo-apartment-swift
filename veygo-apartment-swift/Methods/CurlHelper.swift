@@ -30,12 +30,19 @@ public func veygoCurlRequest (url: String, method: String, headers: [String: Str
     return request
 }
 
-class VeygoDecoderStandard {
-    static let shared = VeygoDecoderStandard()
+class VeygoJsonStandard {
+    static let shared = VeygoJsonStandard()
     let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .iso8601
         return decoder
+    }()
+    let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted]
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
     }()
 }

@@ -164,7 +164,7 @@ struct PasswordView: View {
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let renter = json["renter"],
                let renterData = try? JSONSerialization.data(withJSONObject: renter),
-               let decodedUser = try? VeygoDecoderStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
+               let decodedUser = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
 
                 DispatchQueue.main.async {
                     self.session.user = decodedUser

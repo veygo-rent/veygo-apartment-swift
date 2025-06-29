@@ -106,6 +106,9 @@ struct HomeView: View {
         }
         .ignoresSafeArea(.container)
         .background(Color("MainBG"))
+        .onAppear() {
+            print(session.user)
+        }
     }
 }
 
