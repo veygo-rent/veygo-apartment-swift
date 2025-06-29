@@ -30,6 +30,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         if apns_token != token {
             apns_token = token
+            #if DEBUG
+            apns_token = "!\(token)"
+            #endif
         }
 
         //uploadDeviceTokenToBackend(token: token) //这里上传后端
