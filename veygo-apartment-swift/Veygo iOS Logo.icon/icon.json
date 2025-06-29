@@ -11,7 +11,7 @@
           "fill" : "automatic",
           "glass-specializations" : [
             {
-              "value" : true
+              "value" : false
             },
             {
               "appearance" : "dark",
@@ -38,7 +38,7 @@
       ],
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.5
+        "opacity" : 1
       },
       "specular" : false,
       "translucency" : {

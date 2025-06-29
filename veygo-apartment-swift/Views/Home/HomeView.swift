@@ -20,7 +20,7 @@ struct HomeView: View {
                 Image("HomePageImage")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(maxWidth: .infinity, maxHeight: 150)
+                    .frame(maxWidth: .infinity, maxHeight: 220)
                     .clipped()
 
                 VStack(alignment: .leading, spacing: 4) {

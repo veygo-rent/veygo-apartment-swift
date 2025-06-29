@@ -49,7 +49,6 @@ struct PanelView: View {
             
             Divider()
                 .frame(height: 1)
-                .background(Color("TextFieldFrame"))
             
             // 下半部分
             HStack {

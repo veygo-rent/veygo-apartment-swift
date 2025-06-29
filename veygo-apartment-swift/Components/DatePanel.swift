@@ -36,8 +36,7 @@ struct DatePanel: View {
                 .onTapGesture { showStartPicker.toggle() }
                 
                 // 中
-                Rectangle()
-                    .fill(Color("TextFieldFrame"))
+                Divider()
                     .frame(width: 1, height: 71)
                 
                 // 右
