@@ -28,7 +28,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        apns_token = token
+        if apns_token != token {
+            apns_token = token
+        }
 
         //uploadDeviceTokenToBackend(token: token) //这里上传后端
     }

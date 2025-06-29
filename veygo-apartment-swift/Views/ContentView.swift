@@ -56,6 +56,7 @@ struct ContentView: View {
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
     @AppStorage("apns_token") var apns_token: String = ""
+    @AppStorage("prev_apns_token") var prev_apns_token: String = ""
 
     var body: some View {
         ZStack {
@@ -66,8 +67,8 @@ struct ContentView: View {
                 TabBar()
                     .onAppear {
                         NotificationManager.shared.requestPermission()
-                        if !apns_token.isEmpty {
-                            print("APNs device token: \(apns_token)")
+                        if !apns_token.isEmpty && apns_token != prev_apns_token {
+                            prev_apns_token = apns_token
                             var body: [String: String] = ["apns": apns_token]
                             #if DEBUG
                             body = ["apns": "!\(apns_token)"]
