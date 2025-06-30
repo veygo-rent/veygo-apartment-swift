@@ -1,7 +1,10 @@
 import SwiftUI
 import UserNotifications
 
+
+
 struct HomeView: View {
+    
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
@@ -31,18 +34,8 @@ struct HomeView: View {
                 .padding(.leading, 24)
                 .padding(.bottom, 10)
             }
+            
             VStack (alignment: .leading, spacing: 16) {
-                
-                // Upcoming Trip
-                Title(text: "Upcoming Trip", fontSize: 20, color: Color("TextBlackPrimary"))
-                PanelView(
-                    reservationNumber: "PU28367359",
-                    dateTime: "Jun 17 at 12:00 PM",
-                    location: "Purdue University Main Campus",
-                    locationNote: "(Exact location will be provided 30 minutes\nbefore rental starts)",
-                    modifyAction: { print("Modify tapped") },
-                    cancelAction: { print("Cancel tapped") }
-                )
                 
                 // Make a Reservation & others
                 Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
@@ -102,13 +95,12 @@ struct HomeView: View {
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 128)
+            .padding(.bottom, 120)
         }
-        .ignoresSafeArea(.container)
-        .background(Color("MainBG"))
-        .onAppear() {
-            print(session.user)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
+        .ignoresSafeArea()
     }
 }
 

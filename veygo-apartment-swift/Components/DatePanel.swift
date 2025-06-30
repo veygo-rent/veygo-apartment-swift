@@ -56,15 +56,25 @@ struct DatePanel: View {
             // 起始日期选择器
             .modifier(optionalDateSheet(showPicker: $showStartPicker, pickerView: {
                 AnyView(
-                    DatePicker("Select Start Date & Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
-                        .datePickerStyle(.graphical)
+                    VStack {
+                        DatePicker("Select Start Date & Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(.graphical)
+                        PrimaryButtonLg(text: "Complete") {
+                            showStartPicker.toggle()
+                        }
+                    }.padding(.horizontal)
                 )
             }, isEditMode: isEditMode))
             // 结束日期选择器
             .modifier(optionalDateSheet(showPicker: $showEndPicker, pickerView: {
                 AnyView(
-                    DatePicker("Select End Date & Time", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
-                        .datePickerStyle(.graphical)
+                    VStack {
+                        DatePicker("Select End Date & Time", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(.graphical)
+                        PrimaryButtonLg(text: "Complete") {
+                            showEndPicker.toggle()
+                        }
+                    }.padding(.horizontal)
                 )
             }, isEditMode: isEditMode))
         }

@@ -17,24 +17,28 @@ struct TabBar: View {
             TabView(selection: $selected) {
                 Tab(value: .home) {
                     HomeView()
+                        .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Home", systemImage: homeImg)
                 }
                 
                 Tab(value: .trips) {
-                    Trips()
+                    TripView()
+                        .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Trips", systemImage: tripsImg)
                 }
                 
                 Tab(value: .reward) {
-                    Text("Reward View")
+                    RewardView()
+                        .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Reward", systemImage: rewardImg)
                 }
                 
                 Tab(value: .setting) {
-                    Setting()
+                    SettingView()
+                        .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Setting", systemImage: settingImg)
                 }
@@ -43,18 +47,21 @@ struct TabBar: View {
         } else {
             TabView(selection: $selected) {
                 HomeView()
+                    .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Home", systemImage: homeImg) }
                     .tag(Destination.home)
 
-                Trips()
+                TripView()
+                    .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Trips", systemImage: tripsImg) }
                     .tag(Destination.trips)
 
-                Text("Reward View")
+                RewardView()
                     .tabItem { Label("Reward", systemImage: rewardImg) }
                     .tag(Destination.reward)
 
-                Setting()
+                SettingView()
+                    .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Setting", systemImage: settingImg) }
                     .tag(Destination.setting)
             }

@@ -16,6 +16,11 @@ enum SignupRoute: Hashable {
 }
 
 struct LoginView: View {
+
+    private enum Field: Hashable {
+        case email
+        case password
+    }
     
     @State private var email: String = ""
     @State private var password: String = ""
@@ -33,7 +38,7 @@ struct LoginView: View {
     
     @EnvironmentObject var session: UserSession
     
-    @FocusState private var focusedField: String?
+    @FocusState private var focusedField: Field?
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -44,33 +49,24 @@ struct LoginView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 250, height: 250)
+                    .onTapGesture {
+                        focusedField = nil
+                    }
 
                 TextInputField(placeholder: "Email", text: $email)
                     .onChange(of: email) { oldValue, newValue in
                         email = newValue.lowercased()
                     }
-                    .focused($focusedField, equals: "email")
-                    .onSubmit {
-                        focusedField = "password"
-                    }
+                    .focused($focusedField, equals: .email)
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
-                    .focused($focusedField, equals: "password")
-                    .onSubmit {
-                        if email.isEmpty {
-                            focusedField = "email"
-                        } else if password.isEmpty {
-                            focusedField = "password"
-                        } else {
-                            loginUser()
-                        }
-                    }
+                    .focused($focusedField, equals: .password)
                 Spacer().frame(height: 20)
                 PrimaryButtonLg(text: "Login") {
                     if email.isEmpty {
-                        focusedField = "email"
+                        focusedField = .email
                     } else if password.isEmpty {
-                        focusedField = "password"
+                        focusedField = .password
                     } else {
                         loginUser()
                     }
@@ -96,7 +92,9 @@ struct LoginView: View {
                 Spacer().frame(height: 15)
             }
             .padding(.horizontal, 32)
-            .background(Color("MainBG").ignoresSafeArea())
+            .background(Color("MainBG").ignoresSafeArea().onTapGesture {
+                focusedField = nil
+            })
             .navigationDestination(for: SignupRoute.self) { route in
                 switch route {
                 case .name:

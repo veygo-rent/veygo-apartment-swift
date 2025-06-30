@@ -6,15 +6,16 @@
 //
 import SwiftUI
 
-struct Setting: View {
+struct SettingView: View {
     var body: some View {
         Text("Setting Page")
             .font(.largeTitle)
             .foregroundColor(.blue)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
 #Preview {
-    Setting()
+    SettingView()
 }
 
