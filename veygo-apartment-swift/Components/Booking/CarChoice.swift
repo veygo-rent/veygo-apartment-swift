@@ -26,7 +26,7 @@ struct CarsChoiceView: View {
             HStack(spacing: 16) {
                 ForEach(cars) { car in
                     VStack(alignment: .leading, spacing: 8) {
-                        // 顶部地址，小人图标，时间
+                        // 顶部地址 + icon + 时间
                         HStack {
                             Text(car.location)
                                 .font(.system(size: 15, weight: .semibold))
@@ -44,47 +44,60 @@ struct CarsChoiceView: View {
                         }
                         .padding(.horizontal, 25)
                         .frame(height: 40)
-                        
-                        // 白卡内容
-                        ZStack {
-                            Color.clear
 
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack(alignment: .top) {
+                        // 白色卡片区域，居中对齐
+                        HStack {
+                            Spacer()
+
+                            ZStack(alignment: .bottomTrailing) {
+                                // 内容
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack(alignment: .top) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(car.name)
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(Color("TextBlackPrimary"))
+
+                                            Text(car.price)
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundColor(Color("TextBluePrimary"))
+                                        }
+
+                                        Spacer()
+
+                                        Image(car.imageName)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 95, height: 55)
+                                    }
+
+                                    Text("Features:")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundColor(Color("TextBlackPrimary"))
+
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(car.name)
-                                            .font(.system(size: 20, weight: .semibold))
-                                            .foregroundColor(Color("TextBlackPrimary"))
-
-                                        Text(car.price)
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(Color("TextBluePrimary"))
+                                        ForEach(car.features, id: \.self) { feature in
+                                            Text("• \(feature)")
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundColor(Color("TextBlackPrimary"))
+                                        }
                                     }
 
-                                    Spacer()
-
-                                    Image(car.imageName)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 95, height: 55)
+                                    Spacer() // 为底部按钮留出空间
                                 }
+                                .padding(12)
 
-                                Text("Features:")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(Color("TextBlackPrimary"))
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    ForEach(car.features, id: \.self) { feature in
-                                        Text("• \(feature)")
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(Color("TextBlackPrimary"))
-                                    }
+                                // 右下角按钮
+                                LargerSecondaryButtonLg(text: "Book") {
+                                    print("Book tapped for \(car.name)")
                                 }
+                                .padding([.bottom, .trailing], 12)
+                                .frame(width: 92)
                             }
-                            .padding(.horizontal, 12)
                             .frame(width: 335, height: 190)
                             .background(Color.white)
-                            .frame(alignment: .center)
+
+                            Spacer()
                         }
                     }
                     .frame(width: 401, height: 252)

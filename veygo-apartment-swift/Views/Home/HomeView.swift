@@ -72,9 +72,9 @@ struct HomeView: View {
                     .frame(width: 92)
                 }
                 // 底部按钮
-                LargerPrimaryButtonLg(text: "Vehicle Look Up", action: {
-                    print("Vehicle Look Up tapped")
-                })
+                NavigationLink(destination: FindCarView(startDate: $startDate, endDate: $endDate)) {
+                            LargerPrimaryButtonLg(text: "Vehicle Look Up") {}
+                        }
                 ShortTextLink(text: "Log out...") {
                     let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
                     URLSession.shared.dataTask(with: request) { data, response, error in
