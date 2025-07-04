@@ -48,7 +48,6 @@ struct SettingsRow: View {
                 .padding(.leading, 0)
                 .background(Color("SeparateLine"))
         }
-        .padding(.vertical, 4)
     }
 }
 
