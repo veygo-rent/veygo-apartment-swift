@@ -137,7 +137,6 @@ struct LoginView: View {
                 }
                 return
             }
-            print("Response headers: \(httpResponse.allHeaderFields)")
 
             if httpResponse.statusCode == 200 {
                 let responseJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
