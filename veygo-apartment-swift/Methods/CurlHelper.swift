@@ -35,7 +35,7 @@ class VeygoJsonStandard {
     let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-         decoder.dateDecodingStrategy = .iso8601
+        decoder.dateDecodingStrategy = .secondsSince1970
 //        let formatter = DateFormatter()
 //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
 //        formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -47,7 +47,7 @@ class VeygoJsonStandard {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted]
         encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.dateEncodingStrategy = .iso8601
+        encoder.dateEncodingStrategy = .secondsSince1970
 //        let formatter = DateFormatter()
 //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
 //        formatter.locale = Locale(identifier: "en_US_POSIX")
