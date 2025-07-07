@@ -21,6 +21,7 @@ struct TimeBanner: View {
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(Color("TextFieldWordColor"))
                         .lineLimit(1)
+                        
 
                     Spacer()
                 }

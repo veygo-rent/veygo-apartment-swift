@@ -107,6 +107,7 @@ struct FindCarView: View {
             .frame(maxHeight: .infinity)
         }
         .ignoresSafeArea()
+        .navigationBarBackButtonHidden(true)
     }
 }
 
