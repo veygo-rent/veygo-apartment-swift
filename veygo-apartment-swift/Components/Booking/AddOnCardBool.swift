@@ -11,7 +11,7 @@ struct AddOnCardBool: View {
     @Binding var title: String
     @Binding var description: String
     @Binding var pricePerDay: String
-    var onSelect: () -> Void
+    @Binding var isSelected: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -37,9 +37,14 @@ struct AddOnCardBool: View {
 
                 Spacer()
 
-                LargerPrimaryButtonLg(text: "Select", action: onSelect)
-                    .frame(width: 141)
-                    .padding(.trailing, 8)
+                LargerPrimaryButtonLg(
+                                    text: isSelected ? "Selected" : "Select",
+                                    action: {
+                                        isSelected.toggle()
+                                    }
+                                )
+                                .frame(width: 141)
+                                .padding(.trailing, 8)
             }
         }
         .background(
@@ -56,11 +61,20 @@ struct AddOnCardBool: View {
     }
 }
 
-#Preview {
-    AddOnCardBool(
-        title: .constant("Liability Insurance"),
-        description: .constant("Indiana-minimum protection for others’ injuries/property; excludes rental car."),
-        pricePerDay: .constant("$19.98/day"),
-        onSelect: { print("Selected") }
-    )
+struct AddOnCardBool_PreviewWrapper: View {
+    @State private var selected = false
+
+    var body: some View {
+        AddOnCardBool(
+            title: .constant("Liability Insurance"),
+            description: .constant("Indiana-minimum protection for others’ injuries/property; excludes rental car."),
+            pricePerDay: .constant("$19.98/day"),
+            isSelected: $selected
+        )
+    }
 }
+
+#Preview {
+    AddOnCardBool_PreviewWrapper()
+}
+
