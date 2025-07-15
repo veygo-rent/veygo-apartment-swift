@@ -1,5 +1,5 @@
 //
-//  Plans.swift
+//  RewardView.swift
 //  veygo-apartment-swift
 //
 //  Created by Shenghong Zhou on 6/30/25.

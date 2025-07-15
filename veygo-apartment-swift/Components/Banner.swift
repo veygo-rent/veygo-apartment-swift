@@ -45,7 +45,7 @@ struct BannerView: View {
                 Spacer()
                     .frame(width: 44)
             }
-            .padding(.top, 50)
+            .padding(.top, 40)
         }
     }
 }
