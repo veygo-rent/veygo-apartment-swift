@@ -99,6 +99,7 @@ struct FindCarView: View {
                 if let selected = selectedLocation {
                     CarsChoiceView(cars: selected.cars)
                         .frame(height: 300)
+                        .padding(.bottom, 60)
                         .transition(.move(edge: .bottom))
                         .animation(.easeInOut, value: selectedLocation)
                 }
