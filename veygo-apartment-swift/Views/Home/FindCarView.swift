@@ -103,7 +103,7 @@ struct FindCarView: View {
             .frame(maxWidth: .infinity)
             .frame(maxHeight: .infinity)
         }
-        .navigationTitle("Navigation Title")
+        .navigationTitle("Find Your Car")
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(
             Color("Accent2Color").opacity(0.6),

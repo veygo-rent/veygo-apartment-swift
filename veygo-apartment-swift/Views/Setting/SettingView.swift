@@ -15,8 +15,8 @@ struct SettingView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                BannerView(showTitle: false, showBackButton: false)
-                    .ignoresSafeArea(.container, edges: .top)
+//                BannerView(showTitle: false, showBackButton: false)
+//                    .ignoresSafeArea(.container, edges: .top)
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Xinyi Guan")
@@ -81,6 +81,11 @@ struct SettingView: View {
                             }
                         }.resume()
                     }
+                    .navigationTitle("Setting")
+                    .toolbarBackground(.visible, for: .navigationBar)
+                    .toolbarBackground(
+                        Color("Accent2Color").opacity(0.6),
+                        for: .navigationBar)
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 8)
