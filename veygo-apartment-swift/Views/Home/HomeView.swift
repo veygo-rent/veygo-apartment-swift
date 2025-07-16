@@ -91,7 +91,7 @@ struct HomeView: View {
             .navigationDestination(for: HomeDestination.self) { dest in
                 switch dest {
                 case .apartment: Text("Apartment")
-                case .university: FindCarView(startDate: $startDate, endDate: $endDate)
+                case .university: FindCarView(path: $path, startDate: $startDate, endDate: $endDate)
                 }
             }
         }
