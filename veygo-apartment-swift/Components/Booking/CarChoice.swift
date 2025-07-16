@@ -7,19 +7,8 @@
 
 import SwiftUI
 
-struct CarModel: Identifiable {
-    let id = UUID()
-    var location: String
-    var timeText: String
-    var name: String
-    var price: String
-    var features: [String]
-    var imageName: String
-    var iconName: String // 小人图标
-}
-
 struct CarsChoiceView: View {
-    var cars: [CarModel]
+    var cars: [Car]
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -110,7 +99,7 @@ struct CarsChoiceView: View {
 
 #Preview {
     CarsChoiceView(cars: [
-        CarModel(
+        Car(
             location: "Purdue: Hillenbrand Hall",
             timeText: "16 min",
             name: "Kia Forte",
@@ -123,7 +112,7 @@ struct CarsChoiceView: View {
             imageName: "kia_forte",
             iconName: "figure.walk"
         ),
-        CarModel(
+        Car(
             location: "Purdue: Hawkins Hall",
             timeText: "12 min",
             name: "Toyota Corolla",

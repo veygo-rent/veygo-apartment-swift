@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 enum VerificationType: String, Codable {
     case email = "Email"
@@ -89,6 +90,28 @@ class SignupSession: ObservableObject {
     @Published var phone: Optional<String> = nil
     @Published var student_email: Optional<String> = nil
     @Published var password: Optional<String> = nil
+}
+
+struct Car: Identifiable {
+    let id = UUID()
+    var location: String
+    var timeText: String
+    var name: String
+    var price: String
+    var features: [String]
+    var imageName: String
+    var iconName: String // 小人图标
+}
+
+struct CarLocation: Identifiable, Equatable {
+    let id = UUID()
+    let coordinate: CLLocationCoordinate2D
+    let title: String
+    let cars: [Car]
+
+    static func == (lhs: CarLocation, rhs: CarLocation) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 class UserSession: ObservableObject {

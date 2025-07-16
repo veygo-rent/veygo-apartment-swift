@@ -1,21 +1,27 @@
 import SwiftUI
 import UserNotifications
 
+enum HomeDestination: Hashable {
+    case university
+    case apartment
+}
+
 struct HomeView: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
     @AppStorage("apns_token") var apns_token: String = ""
-
+    
     @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation = "Purdue University"
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Date().addingTimeInterval(3600)
     @State private var promoCode: String = ""
-    @State private var navigateToFindCar = false
-
+    
+    @State private var path: [HomeDestination] = []
+    
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 // 顶部图片 + 文字
                 ZStack(alignment: .bottomLeading) {
@@ -24,7 +30,7 @@ struct HomeView: View {
                         .aspectRatio(contentMode: .fill)
                         .frame(maxWidth: .infinity, maxHeight: 220)
                         .clipped()
-
+                    
                     VStack(alignment: .leading, spacing: 4) {
                         Title(text: "Good Morning,", fontSize: 24, color: Color.white)
                         Title(text: "\(session.user?.name ?? "Veygo Renter")", fontSize: 24, color: Color.white)
@@ -33,14 +39,14 @@ struct HomeView: View {
                     .padding(.leading, 24)
                     .padding(.bottom, 10)
                 }
-
+                
                 VStack(alignment: .leading, spacing: 16) {
                     // Make a Reservation & others
                     Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
                     SlidingToggleButton(selectedOption: $selectedToggle)
                     Dropdown(selectedOption: $selectedLocation, labelText: .constant("Rental location"))
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
-
+                    
                     // Promo code + Apply
                     HStack(spacing: 16) {
                         InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCode)
@@ -62,7 +68,7 @@ struct HomeView: View {
                                     promoCode = finalResult
                                 }
                             }
-
+                        
                         LargerSecondaryButtonLg(text: "Apply") {
                             if !promoCode.isEmpty {
                                 print("Apply tapped with promo code: \(promoCode)")
@@ -70,13 +76,9 @@ struct HomeView: View {
                         }
                         .frame(width: 92)
                     }
-
+                    
                     LargerPrimaryButtonLg(text: "Vehicle Look Up") {
-                        navigateToFindCar = true
-                    }
-
-                    NavigationLink(destination: FindCarView(startDate: $startDate, endDate: $endDate), isActive: $navigateToFindCar) {
-                        EmptyView()
+                        path.append(.university)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -86,6 +88,12 @@ struct HomeView: View {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
             }
             .ignoresSafeArea()
+            .navigationDestination(for: HomeDestination.self) { dest in
+                switch dest {
+                case .apartment: Text("Apartment")
+                case .university: FindCarView(startDate: $startDate, endDate: $endDate)
+                }
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-enum Destination: String, Identifiable, Hashable {
+private enum Destination: String, Identifiable, Hashable {
     case home, trips, reward, setting
 
     var id: String { self.rawValue }
@@ -7,7 +7,7 @@ enum Destination: String, Identifiable, Hashable {
 import SwiftUI
 
 struct TabBar: View {
-    @State var selected: Destination = .home
+    @State private var selected: Destination = .home
     private let homeImg = "house"
     private let tripsImg = "map.fill"
     private let rewardImg = "trophy.fill"

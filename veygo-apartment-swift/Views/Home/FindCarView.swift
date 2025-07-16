@@ -8,17 +8,6 @@
 import SwiftUI
 import MapKit
 
-struct CarLocation: Identifiable, Equatable {
-    let id = UUID()
-    let coordinate: CLLocationCoordinate2D
-    let title: String
-    let cars: [CarModel]
-
-    static func == (lhs: CarLocation, rhs: CarLocation) -> Bool {
-        return lhs.id == rhs.id
-    }
-}
-
 struct FindCarView: View {
     @Binding var startDate: Date
     @Binding var endDate: Date
@@ -33,7 +22,20 @@ struct FindCarView: View {
             coordinate: CLLocationCoordinate2D(latitude: 40.4225, longitude: -86.9215),
             title: "Hillenbrand Hall",
             cars: [
-                CarModel(
+                Car(
+                    location: "Purdue: Hillenbrand Hall",
+                    timeText: "16 min",
+                    name: "Kia Forte",
+                    price: "$9.99/hr - $69.99/day",
+                    features: [
+                        "Android Auto / Apple CarPlay",
+                        "Automatic Transmission",
+                        "Collision Detection"
+                    ],
+                    imageName: "kia_forte",
+                    iconName: "figure.walk"
+                ),
+                Car(
                     location: "Purdue: Hillenbrand Hall",
                     timeText: "16 min",
                     name: "Kia Forte",
@@ -52,7 +54,7 @@ struct FindCarView: View {
             coordinate: CLLocationCoordinate2D(latitude: 40.4242, longitude: -86.9208),
             title: "Elliott Hall",
             cars: [
-                CarModel(
+                Car(
                     location: "Purdue: Elliott Hall",
                     timeText: "12 min",
                     name: "Toyota Corolla",
@@ -71,12 +73,6 @@ struct FindCarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // 顶部固定时间 banner
-            TimeBanner(startDate: startDate, endDate: endDate) {
-                print("Change tapped")
-            }
-            .frame(height: 100)
-            .ignoresSafeArea(.container, edges: .top)
 
             // 地图 + 底部车辆卡片区域
             ZStack(alignment: .bottom) {
@@ -107,8 +103,11 @@ struct FindCarView: View {
             .frame(maxWidth: .infinity)
             .frame(maxHeight: .infinity)
         }
-        .ignoresSafeArea()
-        .navigationBarBackButtonHidden(true)
+        .navigationTitle("Navigation Title")
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(
+            Color("Accent2Color").opacity(0.6),
+            for: .navigationBar)
     }
 }
 
