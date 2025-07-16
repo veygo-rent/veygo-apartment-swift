@@ -69,7 +69,7 @@ struct PanelView: View {
             .frame(height: 40)
             .padding(.horizontal, 20)
         }
-        .background(Color("TextFieldBg"))
+        .background(Color("CardBG"))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)

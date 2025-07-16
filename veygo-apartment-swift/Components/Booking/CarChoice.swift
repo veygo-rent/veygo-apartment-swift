@@ -84,13 +84,13 @@ struct CarsChoiceView: View {
                                 .frame(width: 92)
                             }
                             .frame(width: 335, height: 190)
-                            .background(Color.white)
+                            .background(Color("CardBG"))
 
                             Spacer()
                         }
                     }
                     .frame(width: 401, height: 252)
-                    .background(Color("GrayPrimaryBG"))
+                    .background(Color("MainBG"))
                 }
             }
         }
