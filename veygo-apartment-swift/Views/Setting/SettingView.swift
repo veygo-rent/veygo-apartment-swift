@@ -82,6 +82,7 @@ struct SettingView: View {
                         }.resume()
                     }
                     .navigationTitle("Setting")
+                    .navigationBarTitleDisplayMode(.inline) //这里可以把root上的改小
                     .toolbarBackground(.visible, for: .navigationBar)
                     .toolbarBackground(
                         Color("Accent2Color").opacity(0.6),
@@ -89,6 +90,7 @@ struct SettingView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 8)
+                .padding(.top, 15)
             }
         }
     }

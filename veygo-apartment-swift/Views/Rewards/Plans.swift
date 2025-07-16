@@ -64,9 +64,10 @@ struct Plans: View {
                 )
             }
             .padding(.horizontal, 24)
-            .padding(.top, 16)
+            .padding(.top, 20)
         }
         .navigationTitle("Plans")
+        .navigationBarTitleDisplayMode(.inline) 
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color("Accent2Color").opacity(0.6), for: .navigationBar)
         .background(Color("MainBG"))
