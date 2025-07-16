@@ -74,7 +74,7 @@ struct FindCarView: View {
     ]
 
     var body: some View {
-        ZStack {
+        ZStack (alignment: .bottom) {
             Map(coordinateRegion: $region, annotationItems: locations) { location in
                 MapAnnotation(coordinate: location.coordinate) {
                     Button(action: {
@@ -91,11 +91,15 @@ struct FindCarView: View {
                 }
             }
             .ignoresSafeArea(.container, edges: [.bottom, .top])
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    selectedLocation = nil
+                }
+            )
 
             if let selected = selectedLocation {
                 CarsChoiceView(cars: selected.cars)
                     .frame(height: 300)
-                    .padding(.bottom, 60)
                     .transition(.move(edge: .bottom))
                     .animation(.easeInOut, value: selectedLocation)
             }

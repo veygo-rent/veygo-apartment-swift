@@ -12,7 +12,7 @@ struct CarsChoiceView: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
+            HStack(spacing: 0) {
                 ForEach(cars) { car in
                     VStack(alignment: .leading, spacing: 8) {
                         // 顶部地址 + icon + 时间
