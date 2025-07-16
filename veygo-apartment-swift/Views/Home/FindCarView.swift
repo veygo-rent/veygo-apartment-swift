@@ -9,6 +9,8 @@ import SwiftUI
 import MapKit
 
 struct FindCarView: View {
+    @Binding var path: [HomeDestination]
+    
     @Binding var startDate: Date
     @Binding var endDate: Date
     @State private var region = MKCoordinateRegion(
@@ -72,42 +74,54 @@ struct FindCarView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-
-            // 地图 + 底部车辆卡片区域
-            ZStack(alignment: .bottom) {
-                Map(coordinateRegion: $region, annotationItems: locations) { location in
-                    MapAnnotation(coordinate: location.coordinate) {
-                        Button(action: {
-                            withAnimation {
-                                region.center = location.coordinate
-                                region.span = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-                                selectedLocation = location
-                            }
-                        }) {
-                            Image("Pin")
-                                .resizable()
-                                .frame(width: 48, height: 48)
+        ZStack (alignment: .bottom) {
+            Map(coordinateRegion: $region, annotationItems: locations) { location in
+                MapAnnotation(coordinate: location.coordinate) {
+                    Button(action: {
+                        withAnimation {
+                            region.center = location.coordinate
+                            region.span = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+                            selectedLocation = location
                         }
+                    }) {
+                        Image("Pin")
+                            .resizable()
+                            .frame(width: 48, height: 48)
                     }
                 }
-
-                if let selected = selectedLocation {
-                    CarsChoiceView(cars: selected.cars)
-                        .frame(height: 300)
-                        .padding(.bottom, 60)
-                        .transition(.move(edge: .bottom))
-                        .animation(.easeInOut, value: selectedLocation)
-                }
             }
-            .frame(maxWidth: .infinity)
-            .frame(maxHeight: .infinity)
+            .ignoresSafeArea(.container, edges: [.bottom, .top])
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    selectedLocation = nil
+                }
+            )
+
+            if let selected = selectedLocation {
+                CarsChoiceView(cars: selected.cars)
+                    .frame(height: 300)
+                    .transition(.move(edge: .bottom))
+                    .animation(.easeInOut, value: selectedLocation)
+            }
         }
         .navigationTitle("Find Your Car")
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(
-            Color("Accent2Color").opacity(0.6),
+            .thinMaterial,
             for: .navigationBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbar(content: {
+            if #unavailable(iOS 26) {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        path.removeLast()
+                    }) {
+                        BackButton()
+                    }
+                }
+            }
+        })
+        .modifier(BackButtonHiddenModifier())
     }
 }
 
@@ -115,10 +129,11 @@ struct FindCarView: View {
     struct PreviewWrapper: View {
         @State var start = Date()
         @State var end = Date().addingTimeInterval(3600)
+        @State private var path: [HomeDestination] = []
 
         var body: some View {
             NavigationStack {
-                FindCarView(startDate: $start, endDate: $end)
+                FindCarView(path: $path, startDate: $start, endDate: $end)
             }
         }
     }

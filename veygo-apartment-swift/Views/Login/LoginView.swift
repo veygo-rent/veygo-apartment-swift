@@ -62,7 +62,7 @@ struct LoginView: View {
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
                     .focused($focusedField, equals: .password)
                 Spacer().frame(height: 20)
-                PrimaryButtonLg(text: "Login") {
+                PrimaryButton(text: "Login") {
                     if email.isEmpty {
                         focusedField = .email
                     } else if password.isEmpty {
@@ -82,7 +82,7 @@ struct LoginView: View {
 
                 Spacer()
 
-                SecondaryButtonLg(text: "Create New Account") {
+                SecondaryButton(text: "Create New Account") {
                     path.append(SignupRoute.name)
                 }
                 .padding(.top, 50)

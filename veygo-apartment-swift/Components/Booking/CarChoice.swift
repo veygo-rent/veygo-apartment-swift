@@ -12,7 +12,7 @@ struct CarsChoiceView: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
+            HStack(spacing: 0) {
                 ForEach(cars) { car in
                     VStack(alignment: .leading, spacing: 8) {
                         // 顶部地址 + icon + 时间
@@ -77,20 +77,20 @@ struct CarsChoiceView: View {
                                 .padding(12)
 
                                 // 右下角按钮
-                                LargerSecondaryButtonLg(text: "Book") {
+                                SecondaryButtonLg(text: "Book") {
                                     print("Book tapped for \(car.name)")
                                 }
                                 .padding([.bottom, .trailing], 12)
                                 .frame(width: 92)
                             }
                             .frame(width: 335, height: 190)
-                            .background(Color.white)
+                            .background(Color("CardBG"))
 
                             Spacer()
                         }
                     }
                     .frame(width: 401, height: 252)
-                    .background(Color("GrayPrimaryBG"))
+                    .background(Color("MainBG"))
                 }
             }
         }

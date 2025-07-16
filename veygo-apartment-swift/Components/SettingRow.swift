@@ -33,7 +33,7 @@ struct SettingsRow: View {
                 if showVerification {
                     Text("Needs Verification")
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(Color("Invalid2Red"))
+                        .foregroundColor(Color("InvalidRed"))
 
                 }
                 Image(systemName: "chevron.right")

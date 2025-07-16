@@ -59,7 +59,7 @@ struct DatePanel: View {
                     VStack {
                         DatePicker("Select Start Date & Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
-                        PrimaryButtonLg(text: "Complete") {
+                        PrimaryButton(text: "Complete") {
                             showStartPicker.toggle()
                         }
                     }.padding(.horizontal)
@@ -71,7 +71,7 @@ struct DatePanel: View {
                     VStack {
                         DatePicker("Select End Date & Time", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
-                        PrimaryButtonLg(text: "Complete") {
+                        PrimaryButton(text: "Complete") {
                             showEndPicker.toggle()
                         }
                     }.padding(.horizontal)
