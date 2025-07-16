@@ -77,7 +77,7 @@ struct CarsChoiceView: View {
                                 .padding(12)
 
                                 // 右下角按钮
-                                LargerSecondaryButtonLg(text: "Book") {
+                                SecondaryButtonLg(text: "Book") {
                                     print("Book tapped for \(car.name)")
                                 }
                                 .padding([.bottom, .trailing], 12)

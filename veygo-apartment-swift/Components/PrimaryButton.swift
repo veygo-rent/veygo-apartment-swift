@@ -1,12 +1,7 @@
-//
-//  LargerPrimaryButtonLg.swift
-//  veygo-apartment-swift
-//
-//  Created by Sardine on 6/5/25.
-//
 import SwiftUI
 
-struct LargerPrimaryButtonLg: View {
+struct PrimaryButton: View {
+    // 接收按钮文本和点击事件
     let text: String
     var action: () -> Void
 
@@ -16,9 +11,9 @@ struct LargerPrimaryButtonLg: View {
         }) {
             Text(text)
                 .font(.system(size: 17, weight: .semibold, design: .default)) // 使用 SF Pro 字体
-                .foregroundColor(Color("PrimaryButtonText"))
+                .foregroundColor(Color("PrimaryButtonText")) // 使用 Assets 中的颜色
                 .frame(maxWidth: .infinity)
-                .frame(height: 53)
+                .frame(height: 45)
                 .background(Color("PrimaryButtonBg"))
                 .cornerRadius(16)
                 .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
@@ -27,7 +22,7 @@ struct LargerPrimaryButtonLg: View {
 }
 
 #Preview {
-    LargerPrimaryButtonLg(text: "Vehicle Look Up") {
+    PrimaryButton(text: "Login") {
+        print("Log In Button Pressed")
     }
 }
-

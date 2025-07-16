@@ -1,8 +1,8 @@
 //
-//  CreateButton.swift
+//  LargerSecondaryButtonLg.swift
 //  veygo-apartment-swift
 //
-//  Created by 魔法玛丽大炮 on 5/19/25.
+//  Created by Sardine on 6/5/25.
 //
 
 import SwiftUI
@@ -20,7 +20,7 @@ struct SecondaryButtonLg: View {
                 .font(.system(size: 17, weight: .semibold, design: .default)) // SF Pro 字体
                 .foregroundColor(Color("SecondaryButtonText")) // 使用自定义颜色
                 .frame(maxWidth: .infinity)
-                .frame(height: 45)
+                .frame(height: 53)
                 .background(Color("SecondaryButtonBg"))
                 .cornerRadius(16)
                 .overlay(
@@ -32,10 +32,10 @@ struct SecondaryButtonLg: View {
 }
 
 #Preview {
-    SecondaryButtonLg(text: "Create New Account") {
-        print("Create Button Pressed")
+    SecondaryButtonLg(text: "Apply") {
     }
 }
+
 
 
 

@@ -51,12 +51,12 @@ struct SignatureView: View {
             )
 
             HStack {
-                SecondaryButtonLg(text: "Clear") {
+                SecondaryButton(text: "Clear") {
                     lines.removeAll()
                     savedImage = nil
                 }
 
-                PrimaryButtonLg(text: "Save") {
+                PrimaryButton(text: "Save") {
                     if let image = renderSignatureImage() {
                         savedImage = Image(uiImage: image)
                         let data = image.pngData()!

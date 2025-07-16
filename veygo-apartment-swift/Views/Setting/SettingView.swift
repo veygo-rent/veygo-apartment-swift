@@ -63,7 +63,7 @@ struct SettingView: View {
                     
                     Spacer()
                     
-                    LargerPrimaryButtonLg(text: "Log out") {
+                    PrimaryButtonLg(text: "Log out") {
                         let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
                         URLSession.shared.dataTask(with: request) { data, response, error in
                             guard let httpResponse = response as? HTTPURLResponse else {

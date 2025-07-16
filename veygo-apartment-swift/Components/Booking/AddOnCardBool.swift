@@ -37,7 +37,7 @@ struct AddOnCardBool: View {
 
                 Spacer()
 
-                LargerPrimaryButtonLg(
+                PrimaryButtonLg(
                                     text: isSelected ? "Selected" : "Select",
                                     action: {
                                         isSelected.toggle()

@@ -79,7 +79,7 @@ struct ChooseAddOnsView: View {
 
             HStack {
                 Spacer()
-                LargerPrimaryButtonLg(text: "Continue", action: {
+                PrimaryButtonLg(text: "Continue", action: {
                     // TODO: Continue action
                 })
                 .frame(width: 221)

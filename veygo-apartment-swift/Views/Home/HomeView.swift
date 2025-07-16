@@ -69,7 +69,7 @@ struct HomeView: View {
                                 }
                             }
                         
-                        LargerSecondaryButtonLg(text: "Apply") {
+                        SecondaryButtonLg(text: "Apply") {
                             if !promoCode.isEmpty {
                                 print("Apply tapped with promo code: \(promoCode)")
                             }
@@ -77,7 +77,7 @@ struct HomeView: View {
                         .frame(width: 92)
                     }
                     
-                    LargerPrimaryButtonLg(text: "Vehicle Look Up") {
+                    PrimaryButtonLg(text: "Vehicle Look Up") {
                         path.append(.university)
                     }
                 }
