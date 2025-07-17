@@ -17,6 +17,7 @@ struct HomeView: View {
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Date().addingTimeInterval(3600)
     @State private var promoCode: String = ""
+    @State private var universities: [University] = []
     
     @State private var path: [HomeDestination] = []
     
@@ -44,7 +45,11 @@ struct HomeView: View {
                     // Make a Reservation & others
                     Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
                     SlidingToggleButton(selectedOption: $selectedToggle)
-                    Dropdown(selectedOption: $selectedLocation, labelText: .constant("Rental location"))
+                    Dropdown(
+                        selectedOption: $selectedLocation,
+                        labelText: .constant("Rental location"),
+                        universityOptions: universities
+                    )
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
                     
                     // Promo code + Apply
@@ -94,7 +99,37 @@ struct HomeView: View {
                 case .university: FindCarView(path: $path, startDate: $startDate, endDate: $endDate)
                 }
             }
+            .onAppear {
+                fetchUniversities()
+            }
         }
+    }
+    func fetchUniversities() {
+        let request = veygoCurlRequest(
+            url: "/api/v1/apartment/get-universities",
+            method: "GET"
+        )
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data else {
+                print("No data or error: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+//            let responseString = String(data: data, encoding: .utf8) ?? "nil"
+//            print("Raw response:")
+//            print(responseString)
+            do {
+                let decoded = try VeygoJsonStandard.shared.decoder.decode([String: [University]].self, from: data)
+                if let unis = decoded["universities"] {
+                    DispatchQueue.main.async {
+                        self.universities = unis
+                        self.selectedLocation = unis.first?.name ?? "Select"
+                    }
+                }
+            } catch {
+                print("Failed to decode university data: \(error)")
+            }
+        }.resume()
     }
 }
 

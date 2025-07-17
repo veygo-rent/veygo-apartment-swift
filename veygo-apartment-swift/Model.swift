@@ -84,6 +84,60 @@ struct PublishRenter: Codable, Identifiable, Equatable {
     var subscriptionPaymentMethodId: Int?
 }
 
+struct University: Codable, Identifiable, Equatable {
+    let id: Int
+    let name: String
+    let address: String
+    let email: String
+    let phone: String
+    let acceptedSchoolEmailDomain: String
+    let durationRate: Double
+    let freeTierHours: Double
+    let freeTierRate: Double
+    let goldTierHours: Double
+    let goldTierRate: Double
+    let platinumTierHours: Double
+    let platinumTierRate: Double
+    let silverTierHours: Double
+    let silverTierRate: Double
+    let liabilityProtectionRate: Double
+    let paiProtectionRate: Double
+    let pcdwProtectionRate: Double
+    let pcdwExtProtectionRate: Double
+    let rsaProtectionRate: Double
+    let isOperating: Bool
+    let isPublic: Bool
+    let uniId: Int
+    let taxes: [Int]
+}
+
+struct Apartment: Codable, Identifiable {
+    var id: Int
+    var name: String
+    var email: String
+    var phone: String
+    var address: String
+    var acceptedSchoolEmailDomain: String
+    var freeTierHours: Double
+    var freeTierRate: Double
+    var silverTierHours: Double
+    var silverTierRate: Double
+    var goldTierHours: Double
+    var goldTierRate: Double
+    var platinumTierHours: Double
+    var platinumTierRate: Double
+    var durationRate: Double
+    var liabilityProtectionRate: Double
+    var pcdwProtectionRate: Double
+    var pcdwExtProtectionRate: Double
+    var rsaProtectionRate: Double
+    var paiProtectionRate: Double
+    var salesTaxRate: Double
+    var isOperating: Bool
+    var isPublic: Bool
+    var uniId: Int
+}
+
 class SignupSession: ObservableObject {
     @Published var name: Optional<String> = nil
     @Published var date_of_birth: Optional<String> = nil  // MM/DD/YYYY

@@ -4,16 +4,23 @@
 //
 //  Created by Sardine on 6/5/25.
 //
+//
+//  Dropdown.swift
+//  veygo-apartment-swift
+//
+//  Created by Sardine on 6/5/25.
+//
 
 import SwiftUI
 
 struct Dropdown: View {
     @Binding var selectedOption: String
     @Binding var labelText: String
-    
+
+    var universityOptions: [University]   
+
     @State private var showOptions = false
-    private let options = ["Purdue University", "Indiana University", "UC Los Angeles", "IUPUI"]
-    
+
     var body: some View {
         VStack (spacing: 16) {
             ZStack(alignment: .topLeading) {
@@ -21,7 +28,7 @@ struct Dropdown: View {
                     .fill(Color("TextFieldBg"))
                     .stroke(Color("TextFieldFrame"), lineWidth: 1)
                     .frame(height: 53)
-                
+
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         // rental location
@@ -38,7 +45,7 @@ struct Dropdown: View {
                     .frame(height: 53)
                     .padding(.leading, 16)
                     Spacer()
-                    // DD Button
+                    // Dropdown Button
                     Button(action: {
                         withAnimation {
                             showOptions.toggle()
@@ -54,18 +61,18 @@ struct Dropdown: View {
                     }
                     .padding(.trailing, 16)
                 }
-                
+
             }
             if showOptions {
-                let renderedOptions = options.indices.map { index in
+                let renderedOptions = universityOptions.indices.map { index in
                     VStack(spacing: 0) {
                         Button(action: {
-                            selectedOption = options[index]
+                            selectedOption = universityOptions[index].name
                             withAnimation {
                                 showOptions = false
                             }
                         }) {
-                            Text(options[index])
+                            Text(universityOptions[index].name)
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(Color("TextFieldWordColor"))
                                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
@@ -82,7 +89,7 @@ struct Dropdown: View {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color("TextFieldBg"))
                         .stroke(Color("TextFieldFrame"), lineWidth: 1)
-                    
+
                     ScrollView {
                         VStack(spacing: 0) {
                             ForEach(0..<renderedOptions.count, id: \.self) { index in
@@ -101,10 +108,40 @@ struct Dropdown: View {
 }
 
 #Preview {
+    let sampleUniversities: [University] = [
+        University(
+            id: 1,
+            name: "Veygo HQ",
+            address: "101 Foundry Dr, Ste 1200, West Lafayette, IN 47906",
+            email: "admin@veygo.rent",
+            phone: "8334683946",
+            acceptedSchoolEmailDomain: "veygo.rent",
+            durationRate: 0,
+            freeTierHours: 0,
+            freeTierRate: 0,
+            goldTierHours: 0,
+            goldTierRate: 0,
+            platinumTierHours: 0,
+            platinumTierRate: 0,
+            silverTierHours: 0,
+            silverTierRate: 0,
+            liabilityProtectionRate: 0,
+            paiProtectionRate: 0,
+            pcdwProtectionRate: 0,
+            pcdwExtProtectionRate: 0,
+            rsaProtectionRate: 0,
+            isOperating: true,
+            isPublic: true,
+            uniId: 1,
+            taxes: []
+        )
+]
+    
     StatefulPreviewWrapper("Purdue University") { selected in
         Dropdown(
             selectedOption: selected,
-            labelText: .constant("Rental location")
+            labelText: .constant("Rental location"),
+            universityOptions: sampleUniversities
         )
     }
 }
@@ -112,12 +149,12 @@ struct Dropdown: View {
 struct StatefulPreviewWrapper<T: Equatable>: View {
     @State private var value: T
     private var content: (Binding<T>) -> AnyView
-    
+
     init(_ value: T, @ViewBuilder content: @escaping (Binding<T>) -> some View) {
         self._value = State(initialValue: value)
         self.content = { binding in AnyView(content(binding)) }
     }
-    
+
     var body: some View {
         content($value)
     }
