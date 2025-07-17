@@ -9,9 +9,9 @@ import SwiftUI
 struct TabBar: View {
     @State private var selected: Destination = .home
     private let homeImg = "house"
-    private let tripsImg = "map.fill"
-    private let rewardImg = "trophy.fill"
-    private let settingImg = "gearshape.fill"
+    private let tripsImg = "map"
+    private let rewardImg = "trophy"
+    private let settingImg = "gearshape"
     var body: some View {
         if #available(iOS 18, *) {
             TabView(selection: $selected) {
@@ -20,6 +20,7 @@ struct TabBar: View {
                         .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Home", systemImage: homeImg)
+                        .environment(\.symbolVariants, selected == .home ? .fill : .none)
                 }
                 
                 Tab(value: .trips) {
@@ -27,6 +28,7 @@ struct TabBar: View {
                         .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Trips", systemImage: tripsImg)
+                        .environment(\.symbolVariants, selected == .trips ? .fill : .none)
                 }
                 
                 Tab(value: .reward) {
@@ -34,6 +36,7 @@ struct TabBar: View {
                         .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Reward", systemImage: rewardImg)
+                        .environment(\.symbolVariants, selected == .reward ? .fill : .none)
                 }
                 
                 Tab(value: .setting) {
@@ -41,6 +44,7 @@ struct TabBar: View {
                         .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Setting", systemImage: settingImg)
+                        .environment(\.symbolVariants, selected == .setting ? .fill : .none)
                 }
 
             }
@@ -73,4 +77,3 @@ struct TabBar: View {
 #Preview {
     TabBar().environmentObject(UserSession())
 }
-
