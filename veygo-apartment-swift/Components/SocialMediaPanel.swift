@@ -68,7 +68,7 @@ struct SocialMediaPanel: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
         .frame(width: 317, height: 234)
-        .background(Color("MainBG"))
+        .background(Color("CardBG"))
         .cornerRadius(10)
         .overlay(
             RoundedRectangle(cornerRadius: 10)

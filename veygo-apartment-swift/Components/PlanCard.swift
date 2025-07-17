@@ -22,7 +22,7 @@ struct PlanCard: View {
             HStack {
                 Text(title)
                     .font(.system(size: 25, weight: .semibold))
-                    .foregroundColor(Color("TextPinkPrimary"))
+                    .foregroundColor(Color("TextBlackPrimary"))
 
                 Spacer()
 
@@ -40,17 +40,17 @@ struct PlanCard: View {
 
             Text(subtitle)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(Color("TextPinkPrimary").opacity(0.7))
+                .foregroundColor(Color("TextBlackPrimary").opacity(0.7))
                 .underline()
 
             if isFreePlan {
                 Text(price)
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color("TextPinkPrimary"))
+                    .foregroundColor(Color("TextBlackPrimary"))
             } else {
                 Text("\(price) / \(billingCycle)")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color("TextPinkPrimary"))
+                    .foregroundColor(Color("TextBlackPrimary"))
 
             }
 
@@ -58,15 +58,15 @@ struct PlanCard: View {
                 HStack(alignment: .top, spacing: 2) {
                     Text("•")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color("TextPinkPrimary"))
+                        .foregroundColor(Color("TextBlackPrimary"))
                     Text(feature)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color("TextPinkPrimary"))
+                        .foregroundColor(Color("TextBlackPrimary"))
                 }
             }
         }
         .padding()
-        .background(Color("TextBluePrimary"))
+        .background(Color("CardBG"))
         .cornerRadius(10)
         .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 4)
         .frame(width: 338)
