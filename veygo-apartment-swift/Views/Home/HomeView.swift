@@ -48,7 +48,7 @@ struct HomeView: View {
                     Dropdown(
                         selectedOption: $selectedLocation,
                         labelText: .constant("Rental location"),
-                        universityOptions: universities
+                        universityOptions: $universities
                     )
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
                     

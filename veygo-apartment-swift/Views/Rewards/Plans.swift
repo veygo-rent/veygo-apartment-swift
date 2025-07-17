@@ -66,6 +66,7 @@ struct Plans: View {
             .padding(.horizontal, 24)
             .padding(.top, 20)
         }
+        .scrollIndicators(.hidden)
         .navigationTitle("Plans")
         .navigationBarTitleDisplayMode(.inline) 
         .toolbarBackground(.visible, for: .navigationBar)

@@ -4,12 +4,6 @@
 //
 //  Created by Sardine on 6/5/25.
 //
-//
-//  Dropdown.swift
-//  veygo-apartment-swift
-//
-//  Created by Sardine on 6/5/25.
-//
 
 import SwiftUI
 
@@ -17,7 +11,7 @@ struct Dropdown: View {
     @Binding var selectedOption: String
     @Binding var labelText: String
 
-    var universityOptions: [Apartment]
+    @Binding var universityOptions: [Apartment]
 
     @State private var showOptions = false
 
@@ -97,6 +91,7 @@ struct Dropdown: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .frame(height: 165)
                     .transition(.opacity)
@@ -135,14 +130,15 @@ struct Dropdown: View {
             uniId: 1,
             taxes: []
         )
-]
-    
+    ]
     StatefulPreviewWrapper("Purdue University") { selected in
-        Dropdown(
-            selectedOption: selected,
-            labelText: .constant("Rental location"),
-            universityOptions: sampleUniversities
-        )
+        StatefulPreviewWrapper(sampleUniversities) { universities in
+            Dropdown(
+                selectedOption: selected,
+                labelText: .constant("Rental location"),
+                universityOptions: universities
+            )
+        }
     }
 }
 
