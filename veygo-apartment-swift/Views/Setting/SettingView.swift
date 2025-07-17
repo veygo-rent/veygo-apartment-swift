@@ -42,7 +42,9 @@ struct SettingView: View {
                         Group {
                             SettingsRow(title: "Membership", subtitle: "Acendant Member", showSubtitle: true, showVerification: false)
                             SettingsRow(title: "Wallet", subtitle: "Add or manage payment methods", showSubtitle: true, showVerification: false)
-                            SettingsRow(title: "Phone", subtitle: "312-810-3169", showSubtitle: true, showVerification: false)
+                            NavigationLink(destination: PhoneVeri()) {
+                                SettingsRow(title: "Phone", subtitle: "312-810-3169", showSubtitle: true, showVerification: true)
+                            }
                             SettingsRow(title: "Email", subtitle: "guan90@purdue.edu", showSubtitle: true, showVerification: true)
                             SettingsRow(title: "Password", subtitle: nil, showSubtitle: false, showVerification: false)
                             SettingsRow(title: "Driver’s License", subtitle: nil, showSubtitle: false, showVerification: true)
