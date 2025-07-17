@@ -18,7 +18,13 @@ struct FindCarView: View {
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
     @State private var selectedLocation: CarLocation? = nil
-
+    
+    var formattedDateRange: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, h:mm a"
+        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
+    }
+    
     let locations: [CarLocation] = [
         CarLocation(
             coordinate: CLLocationCoordinate2D(latitude: 40.4225, longitude: -86.9215),
@@ -104,7 +110,7 @@ struct FindCarView: View {
                     .animation(.easeInOut, value: selectedLocation)
             }
         }
-        .navigationTitle("Find Your Car")
+        .navigationTitle(formattedDateRange)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(
             .thinMaterial,
