@@ -10,11 +10,11 @@ import SwiftUI
 struct Dropdown: View {
     @Binding var selectedOption: String
     @Binding var labelText: String
-
+    
     @Binding var universityOptions: [Apartment]
-
+    
     @State private var showOptions = false
-
+    
     var body: some View {
         VStack (spacing: 16) {
             ZStack(alignment: .topLeading) {
@@ -22,7 +22,7 @@ struct Dropdown: View {
                     .fill(Color("TextFieldBg"))
                     .stroke(Color("TextFieldFrame"), lineWidth: 1)
                     .frame(height: 53)
-
+                
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         // rental location
@@ -55,7 +55,7 @@ struct Dropdown: View {
                     }
                     .padding(.trailing, 16)
                 }
-
+                
             }
             if showOptions {
                 let renderedOptions = universityOptions.indices.map { index in
@@ -73,17 +73,20 @@ struct Dropdown: View {
                                 .background(Color("TextFieldBg").opacity(0.01))
                         }
                         .buttonStyle(PlainButtonStyle())
-                        Divider()
-                            .frame(height: 1)
-                            .background(Color("TextFieldFrame").opacity(0.6))
+                        // 🛠 Only show divider if NOT the last item:
+                        if index != universityOptions.count - 1 {
+                            Divider()
+                                .frame(height: 1)
+                                .background(Color("TextFieldFrame").opacity(0.6))
+                        }
                     }
                 }
-
+                
                 ZStack {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color("TextFieldBg"))
                         .stroke(Color("TextFieldFrame"), lineWidth: 1)
-
+                    
                     ScrollView {
                         VStack(spacing: 0) {
                             ForEach(0..<renderedOptions.count, id: \.self) { index in
@@ -145,12 +148,12 @@ struct Dropdown: View {
 struct StatefulPreviewWrapper<T: Equatable>: View {
     @State private var value: T
     private var content: (Binding<T>) -> AnyView
-
+    
     init(_ value: T, @ViewBuilder content: @escaping (Binding<T>) -> some View) {
         self._value = State(initialValue: value)
         self.content = { binding in AnyView(content(binding)) }
     }
-
+    
     var body: some View {
         content($value)
     }
