@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Dropdown: View {
-    @Binding var selectedOption: String
+    @Binding var selectedOption: Apartment.ID?
     @Binding var labelText: String
     
     @Binding var universityOptions: [Apartment]
@@ -31,10 +31,14 @@ struct Dropdown: View {
                             .foregroundColor(Color("FootNote"))
                             .frame(height: 10, alignment: .leading)
                         // University name
-                        Text(selectedOption)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Color("TextFieldWordColor"))
-                            .frame(height: 24, alignment: .leading)
+                        if let selectedOption = selectedOption {
+                            if let univ = universityOptions.getItemBy(id: selectedOption) {
+                                Text(univ.name)
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(Color("TextFieldWordColor"))
+                                    .frame(height: 24, alignment: .leading)
+                            }
+                        }
                     }
                     .frame(height: 53)
                     .padding(.leading, 16)
@@ -61,7 +65,7 @@ struct Dropdown: View {
                 let renderedOptions = universityOptions.indices.map { index in
                     VStack(spacing: 0) {
                         Button(action: {
-                            selectedOption = universityOptions[index].name
+                            selectedOption = universityOptions[index].id
                             withAnimation {
                                 showOptions = false
                             }
@@ -134,7 +138,7 @@ struct Dropdown: View {
             taxes: []
         )
     ]
-    StatefulPreviewWrapper("Purdue University") { selected in
+    StatefulPreviewWrapper<Apartment.ID?>(1) { selected in
         StatefulPreviewWrapper(sampleUniversities) { universities in
             Dropdown(
                 selectedOption: selected,
@@ -158,3 +162,4 @@ struct StatefulPreviewWrapper<T: Equatable>: View {
         content($value)
     }
 }
+

@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import FoundationModels
 
 enum HomeDestination: Hashable {
     case university
@@ -13,13 +14,52 @@ struct HomeView: View {
     @AppStorage("apns_token") var apns_token: String = ""
     
     @State private var selectedToggle: RentalOption = .university
-    @State private var selectedLocation = "Purdue University"
+    @State private var selectedLocation: Apartment.ID? = nil
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Date().addingTimeInterval(3600)
     @State private var promoCode: String = ""
     @State private var universities: [Apartment] = []
     
     @State private var path: [HomeDestination] = []
+    
+    @State private var thingsToDo: [String] = []
+    
+    @available(iOS 26.0, macOS 26.0, *)
+    @Generable
+    struct TripPlan {
+        @Guide(description: "Things to do list")
+        @Guide(.count(3))
+        let thingsToDo: [String]
+    }
+    
+    @available(iOS 26.0, macOS 26.0, *)
+    @Observable
+    @MainActor
+    final class TripPlanner {
+        private(set) var tripPlan: TripPlan?
+        private let session: LanguageModelSession
+        
+        let school: Apartment
+        
+        init(school: Apartment, startDate: Date, endDate: Date) {
+            self.school = school
+            self.session = LanguageModelSession {
+                "Your job is to help the renter figuring our what he or she can do with our rental car. "
+                "Here's the address of the school named \(school.name): \(school.address). "
+                "The renter is picking up our car at the time of \(startDate) and returning it at \(endDate). "
+                "The pick up and drop off locations are basically at the school. "
+                "Please give the renter a list of places that they can go based on the time they have, places' opening hours, school's timezone, traffic conditions and any other constraints."
+                "Our rental car is unlimited mileage, so if time permits, you can suggest places that are far from the school. And for yourb reference, intercity travel is roughly one mile per minute (eg. West Lafayette Indiana to Chicago is 2 hours). "
+            }
+        }
+        
+        func suggectPlaces() async throws {
+            let response = try await session.respond(generating: TripPlan.self) {
+                "Generate a list of places the renter can go."
+            }
+            self.tripPlan = response.content
+        }
+    }
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -69,6 +109,12 @@ struct HomeView: View {
                     PrimaryButtonLg(text: "Vehicle Look Up") {
                         path.append(.university)
                     }
+                    if !thingsToDo.isEmpty {
+                        Title(text: "Things To Do", fontSize: 20, color: Color("TextBlackPrimary"))
+                        ForEach(thingsToDo, id: \.self) { thingToDo in
+                            Title(text: thingToDo, fontSize: 16, color: Color("TextBlackSecondary"))
+                        }
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 120)
@@ -105,6 +151,25 @@ struct HomeView: View {
             .task {
                 await fetchUniversities()
             }
+            .onChange(of: selectedLocation) { oldValue, newValue in
+                thingsToDo = []
+                guard let selectedId = newValue,
+                      let school = universities.getItemBy(id: selectedId) else { return }
+                if #available(iOS 26, *) {
+                    print("\nStart Time: \(startDate). End Time: \(endDate).")
+                    let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
+                    Task {
+                        do {
+                            try await planner.suggectPlaces()
+                            if let things = planner.tripPlan?.thingsToDo {
+                                thingsToDo = things
+                            }
+                        } catch {
+                            print("Error suggesting places: \(error)")
+                        }
+                    }
+                }
+            }
         }
         .refreshable {
             await fetchUniversities()
@@ -121,7 +186,7 @@ struct HomeView: View {
             if let unis = decoded["universities"] {
                 DispatchQueue.main.async {
                     self.universities = unis
-                    self.selectedLocation = unis.first?.name ?? "Select"
+                    self.selectedLocation = unis.first?.id
                 }
             }
         } catch {
