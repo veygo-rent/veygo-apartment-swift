@@ -1,4 +1,4 @@
-private enum Destination: String, Identifiable, Hashable {
+private enum RootDestination: String, Identifiable, Hashable {
     case home, trips, reward, setting
 
     var id: String { self.rawValue }
@@ -7,13 +7,13 @@ private enum Destination: String, Identifiable, Hashable {
 import SwiftUI
 
 struct TabBar: View {
-    @State private var selected: Destination = .home
+    @State private var selected: RootDestination = .home
     private let homeImg = "house"
     private let tripsImg = "map"
     private let rewardImg = "trophy"
     private let settingImg = "gearshape"
     var body: some View {
-        if #available(iOS 18, *) {
+        if #available(iOS 26, *) {
             TabView(selection: $selected) {
                 Tab(value: .home) {
                     HomeView()
@@ -53,21 +53,21 @@ struct TabBar: View {
                 HomeView()
                     .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Home", systemImage: homeImg) }
-                    .tag(Destination.home)
+                    .tag(RootDestination.home)
 
                 TripView()
                     .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Trips", systemImage: tripsImg) }
-                    .tag(Destination.trips)
+                    .tag(RootDestination.trips)
 
                 RewardView()
                     .tabItem { Label("Reward", systemImage: rewardImg) }
-                    .tag(Destination.reward)
+                    .tag(RootDestination.reward)
 
                 SettingView()
                     .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Setting", systemImage: settingImg) }
-                    .tag(Destination.setting)
+                    .tag(RootDestination.setting)
             }
         }
     }
@@ -76,4 +76,15 @@ struct TabBar: View {
 
 #Preview {
     TabBar().environmentObject(UserSession())
+}
+
+extension View {
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
 }
