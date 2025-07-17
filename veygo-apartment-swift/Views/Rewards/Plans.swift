@@ -70,7 +70,7 @@ struct Plans: View {
         .navigationTitle("Plans")
         .navigationBarTitleDisplayMode(.inline) 
         .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color("Accent2Color").opacity(0.6), for: .navigationBar)
+        .toolbarBackground(Color("AccentColor"), for: .navigationBar)
         .background(Color("MainBG"))
     }
 }

@@ -13,7 +13,7 @@ struct TimeBanner: View {
 
     var body: some View {
         ZStack {
-            Color("Accent2Color").opacity(0.6)
+            Color("AccentColor")
             VStack {
                 Spacer()
                 HStack {

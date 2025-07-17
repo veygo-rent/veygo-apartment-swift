@@ -16,7 +16,7 @@ struct BannerView: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(Color("Accent2Color").opacity(0.6))
+                .fill(Color("AccentColor"))
                 .frame(height: 100)
                 .frame(maxWidth: .infinity)
 
