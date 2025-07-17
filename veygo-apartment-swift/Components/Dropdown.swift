@@ -17,7 +17,7 @@ struct Dropdown: View {
     @Binding var selectedOption: String
     @Binding var labelText: String
 
-    var universityOptions: [University]   
+    var universityOptions: [Apartment]
 
     @State private var showOptions = false
 
@@ -108,28 +108,28 @@ struct Dropdown: View {
 }
 
 #Preview {
-    let sampleUniversities: [University] = [
-        University(
+    let sampleUniversities: [Apartment] = [
+        Apartment(
             id: 1,
             name: "Veygo HQ",
-            address: "101 Foundry Dr, Ste 1200, West Lafayette, IN 47906",
             email: "admin@veygo.rent",
             phone: "8334683946",
+            address: "101 Foundry Dr, Ste 1200, West Lafayette, IN 47906",
             acceptedSchoolEmailDomain: "veygo.rent",
-            durationRate: 0,
             freeTierHours: 0,
             freeTierRate: 0,
+            silverTierHours: 0,
+            silverTierRate: 0,
             goldTierHours: 0,
             goldTierRate: 0,
             platinumTierHours: 0,
             platinumTierRate: 0,
-            silverTierHours: 0,
-            silverTierRate: 0,
+            durationRate: 0,
             liabilityProtectionRate: 0,
-            paiProtectionRate: 0,
             pcdwProtectionRate: 0,
             pcdwExtProtectionRate: 0,
             rsaProtectionRate: 0,
+            paiProtectionRate: 0,
             isOperating: true,
             isPublic: true,
             uniId: 1,

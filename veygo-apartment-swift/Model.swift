@@ -84,34 +84,8 @@ struct PublishRenter: Codable, Identifiable, Equatable {
     var subscriptionPaymentMethodId: Int?
 }
 
-struct University: Codable, Identifiable, Equatable {
-    let id: Int
-    let name: String
-    let address: String
-    let email: String
-    let phone: String
-    let acceptedSchoolEmailDomain: String
-    let durationRate: Double
-    let freeTierHours: Double
-    let freeTierRate: Double
-    let goldTierHours: Double
-    let goldTierRate: Double
-    let platinumTierHours: Double
-    let platinumTierRate: Double
-    let silverTierHours: Double
-    let silverTierRate: Double
-    let liabilityProtectionRate: Double
-    let paiProtectionRate: Double
-    let pcdwProtectionRate: Double
-    let pcdwExtProtectionRate: Double
-    let rsaProtectionRate: Double
-    let isOperating: Bool
-    let isPublic: Bool
-    let uniId: Int
-    let taxes: [Int]
-}
 
-struct Apartment: Codable, Identifiable {
+struct Apartment: Identifiable, Equatable, Codable {
     var id: Int
     var name: String
     var email: String
@@ -132,10 +106,10 @@ struct Apartment: Codable, Identifiable {
     var pcdwExtProtectionRate: Double
     var rsaProtectionRate: Double
     var paiProtectionRate: Double
-    var salesTaxRate: Double
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
+    var taxes: [Int?]
 }
 
 class SignupSession: ObservableObject {

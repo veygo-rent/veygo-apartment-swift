@@ -17,7 +17,7 @@ struct HomeView: View {
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Date().addingTimeInterval(3600)
     @State private var promoCode: String = ""
-    @State private var universities: [University] = []
+    @State private var universities: [Apartment] = []
     
     @State private var path: [HomeDestination] = []
     
@@ -119,7 +119,7 @@ struct HomeView: View {
 //            print("Raw response:")
 //            print(responseString)
             do {
-                let decoded = try VeygoJsonStandard.shared.decoder.decode([String: [University]].self, from: data)
+                let decoded = try VeygoJsonStandard.shared.decoder.decode([String: [Apartment]].self, from: data)
                 if let unis = decoded["universities"] {
                     DispatchQueue.main.async {
                         self.universities = unis
