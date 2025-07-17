@@ -24,22 +24,6 @@ struct HomeView: View {
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                // 顶部图片 + 文字
-                ZStack(alignment: .bottomLeading) {
-                    Image("HomePageImage")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(maxWidth: .infinity, maxHeight: 220)
-                        .clipped()
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Title(text: "Good Morning,", fontSize: 24, color: Color.white)
-                        Title(text: "\(session.user?.name ?? "Veygo Renter")", fontSize: 24, color: Color.white)
-                        Title(text: "Diamond Member", fontSize: 13, color: Color.white)
-                    }
-                    .padding(.leading, 24)
-                    .padding(.bottom, 10)
-                }
                 
                 VStack(alignment: .leading, spacing: 16) {
                     // Make a Reservation & others
@@ -89,6 +73,25 @@ struct HomeView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 120)
             }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                // 顶部图片 + 文字
+                ZStack(alignment: .bottomLeading) {
+                    Image("HomePageImage")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: .infinity, maxHeight: 220)
+                        .clipped()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Title(text: "Good Morning,", fontSize: 24, color: Color.white)
+                        Title(text: "\(session.user?.name ?? "Veygo Renter")", fontSize: 24, color: Color.white)
+                        Title(text: "Diamond Member", fontSize: 13, color: Color.white)
+                    }
+                    .padding(.leading, 24)
+                    .padding(.bottom, 10)
+                }
+                .padding(.bottom, 16)
+            }
             .onTapGesture {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
             }
@@ -99,37 +102,31 @@ struct HomeView: View {
                 case .university: FindCarView(path: $path, startDate: $startDate, endDate: $endDate)
                 }
             }
-            .onAppear {
-                fetchUniversities()
+            .task {
+                await fetchUniversities()
             }
         }
+        .refreshable {
+            await fetchUniversities()
+        }
     }
-    func fetchUniversities() {
+    func fetchUniversities() async {
         let request = veygoCurlRequest(
             url: "/api/v1/apartment/get-universities",
             method: "GET"
         )
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data else {
-                print("No data or error: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
-//            let responseString = String(data: data, encoding: .utf8) ?? "nil"
-//            print("Raw response:")
-//            print(responseString)
-            do {
-                let decoded = try VeygoJsonStandard.shared.decoder.decode([String: [Apartment]].self, from: data)
-                if let unis = decoded["universities"] {
-                    DispatchQueue.main.async {
-                        self.universities = unis
-                        self.selectedLocation = unis.first?.name ?? "Select"
-                    }
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let decoded = try VeygoJsonStandard.shared.decoder.decode([String: [Apartment]].self, from: data)
+            if let unis = decoded["universities"] {
+                DispatchQueue.main.async {
+                    self.universities = unis
+                    self.selectedLocation = unis.first?.name ?? "Select"
                 }
-            } catch {
-                print("Failed to decode university data: \(error)")
             }
-        }.resume()
+        } catch {
+            print("Failed to fetch universities: \(error)")
+        }
     }
 }
 
