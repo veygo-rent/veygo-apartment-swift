@@ -27,12 +27,12 @@ struct PlanCard: View {
                 Spacer()
 
                 if isCurrentPlan {
-                    PrimaryButtonLg(text: "Current", action: {})
+                    PrimaryButton(text: "Current", action: {})
                         .frame(width: 102, height: 36)
                         .padding(.top, 4)
                         .disabled(true)
                 } else {
-                    PrimaryButtonLg(text: "Switch Plan", action: onSwitch)
+                    PrimaryButton(text: "Switch Plan", action: onSwitch)
                         .frame(width: 130, height: 36)
                         .padding(.top, 4)
                 }
