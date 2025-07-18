@@ -87,11 +87,6 @@ struct HomeView: View {
                     prompt
                 }
                 self.tripPlan = response.content
-            } else {
-                let response = try await session.respond(generating: TripPlan.self) {
-                    "Generate a list of places the renter can go."
-                }
-                self.tripPlan = response.content
             }
         }
     }
@@ -109,7 +104,59 @@ struct HomeView: View {
                         labelText: .constant("Rental location"),
                         universityOptions: $universities
                     )
+                    .onChange(of: selectedLocation) { oldValue, newValue in
+                        thingsToDo = []
+                        guard let selectedId = newValue,
+                              let school = universities.getItemBy(id: selectedId) else { return }
+                        if #available(iOS 26, *) {
+                            let planner = TripPlanner(school: school)
+                            Task {
+                                do {
+                                    try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
+                                    if let things = planner.tripPlan?.thingsToDo {
+                                        thingsToDo = things
+                                    }
+                                } catch {
+                                    print("Error suggesting places: \(error)")
+                                }
+                            }
+                        }
+                    }
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                        .onChange(of: startDate) { oldValue, newValue in
+                            thingsToDo = []
+                            guard let school = universities.getItemBy(id: selectedLocation ?? 1) else { return }
+                            if #available(iOS 26, *) {
+                                let planner = TripPlanner(school: school)
+                                Task {
+                                    do {
+                                        try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
+                                        if let things = planner.tripPlan?.thingsToDo {
+                                            thingsToDo = things
+                                        }
+                                    } catch {
+                                        print("Error suggesting places: \(error)")
+                                    }
+                                }
+                            }
+                        }
+                        .onChange(of: endDate) { oldValue, newValue in
+                            thingsToDo = []
+                            guard let school = universities.getItemBy(id: selectedLocation ?? 1) else { return }
+                            if #available(iOS 26, *) {
+                                let planner = TripPlanner(school: school)
+                                Task {
+                                    do {
+                                        try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
+                                        if let things = planner.tripPlan?.thingsToDo {
+                                            thingsToDo = things
+                                        }
+                                    } catch {
+                                        print("Error suggesting places: \(error)")
+                                    }
+                                }
+                            }
+                        }
                     
                     // Promo code + Apply
                     HStack(spacing: 16) {
@@ -185,24 +232,6 @@ struct HomeView: View {
             }
             .task {
                 await fetchUniversities()
-            }
-            .onChange(of: selectedLocation) { oldValue, newValue in
-                thingsToDo = []
-                guard let selectedId = newValue,
-                      let school = universities.getItemBy(id: selectedId) else { return }
-                if #available(iOS 26, *) {
-                    let planner = TripPlanner(school: school)
-                    Task {
-                        do {
-                            try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
-                            if let things = planner.tripPlan?.thingsToDo {
-                                thingsToDo = things
-                            }
-                        } catch {
-                            print("Error suggesting places: \(error)")
-                        }
-                    }
-                }
             }
         }
         .refreshable {
