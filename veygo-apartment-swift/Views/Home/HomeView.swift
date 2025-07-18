@@ -1,7 +1,7 @@
 import SwiftUI
 import UserNotifications
 import FoundationModels
-import MapKit
+import GooglePlacesSwift
 
 enum HomeDestination: Hashable {
     case university
@@ -37,17 +37,30 @@ struct HomeView: View {
     @Observable
     @MainActor
     final class TripPlanner {
-        private var nearbyAttractions: [MKMapItem] = []
+        private var nearbyAttractions: [Place] = []
         private(set) var tripPlan: TripPlan?
         private let session: LanguageModelSession
         
         let school: Apartment
         
-        init(school: Apartment, startDate: Date, endDate: Date) {
+        init(school: Apartment) {
             self.school = school
-            self.session = LanguageModelSession {
+            self.session = LanguageModelSession()
+        }
+        
+        func suggectPlaces(startDate: Date, endDate: Date) async throws {
+            self.nearbyAttractions = await findTouristAttractions(near: school.address)
+            
+            if !nearbyAttractions.isEmpty {
+                let attractionsList = nearbyAttractions.map { item -> String in
+                    let name = item.displayName ?? "Unknown"
+                    let summary = item.editorialSummary ?? "Unknown"
+                    return "\(name) – Details: \(summary)"
+                }.joined(separator: "\n")
+                
+                let promptInstructions =
                 """
-                You are a travel assistant helping a renter plan activities with their rental car. 
+                \nYou are a travel assistant helping a renter plan activities with their rental car. 
 
                 - Pickup location: \(school.name), address: \(school.address).
                 - Pickup time (UTC): \(startDate).
@@ -61,26 +74,14 @@ struct HomeView: View {
                 • For longer rental periods, try to include some out-of-state/province attractions if feasible.
                 • Focus on local attractions, dining options, special events, or scenic drives.
                 • For each suggestion, include the city and state/province and a brief description.
+                • Only suggest content that is safe, neutral, family-friendly, and unrelated to politics, religion, or violence.
                 """
-            }
-        }
-        
-        func suggectPlaces() async throws {
-            self.nearbyAttractions = await findTouristAttractions(near: school.name)
-            
-            if !nearbyAttractions.isEmpty {
-                let attractionsList = nearbyAttractions.map { item -> String in
-                    let name = item.name ?? "Unknown"
-                    let category = item.pointOfInterestCategory?.rawValue ?? "N/A"
-                    let locality = item.addressRepresentations?.cityWithContext ?? "Unknown"
-                    return "\(name) – Category: \(category), in \(locality)."
-                }.joined(separator: "\n")
                 
-                let promptPrefix = "Here are some real nearby tourist attractions you may want to consider including in your suggestions:\n\(attractionsList)\nNever directly mention the category of the attraction.\n"
+                let prompt = "\(promptInstructions)\n\nHere are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsList)\n\nNever directly mention the category of the attraction.\nGenerate a list of places the renter can go.\n"
                 
-                print(promptPrefix)
+                print(prompt)
                 let response = try await session.respond(generating: TripPlan.self) {
-                    "\(promptPrefix)Generate a list of places the renter can go."
+                    prompt
                 }
                 self.tripPlan = response.content
             } else {
@@ -187,10 +188,10 @@ struct HomeView: View {
                 guard let selectedId = newValue,
                       let school = universities.getItemBy(id: selectedId) else { return }
                 if #available(iOS 26, *) {
-                    let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
+                    let planner = TripPlanner(school: school)
                     Task {
                         do {
-                            try await planner.suggectPlaces()
+                            try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
                             if let things = planner.tripPlan?.thingsToDo {
                                 thingsToDo = things
                             }

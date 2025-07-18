@@ -6,21 +6,30 @@
 //
 
 import Foundation
-import MapKit
+import GooglePlacesSwift
 import CoreLocation
 
-public func findTouristAttractions(near address: String) async -> [MKMapItem] {
+public func findTouristAttractions(near address: String) async -> [Place] {
     let geocoder = CLGeocoder()
+    let placesClient = await PlacesClient.shared
     do {
         let placemarks = try await geocoder.geocodeAddressString(address)
-        guard let location = placemarks.first?.location else { return [] }
-        let coordinate = location.coordinate
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = "tourist attraction"
-        request.region = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
-        let search = MKLocalSearch(request: request)
-        let response = try await search.start()
-        return response.mapItems
+        guard let coordinate = placemarks.first?.location?.coordinate else {
+            return []
+        }
+        let center = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        let restriction = CircularCoordinateRegion(center: center, radius: 5000)
+        let request = SearchNearbyRequest(
+            locationRestriction: restriction,
+            placeProperties: [.all],
+            includedTypes: [.touristAttraction]
+        )
+        switch await placesClient.searchNearby(with: request) {
+        case .success(let places):
+            return places
+        case .failure(_):
+            return []
+        }
     } catch {
         return []
     }
