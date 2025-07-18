@@ -44,12 +44,13 @@ struct HomeView: View {
         init(school: Apartment, startDate: Date, endDate: Date) {
             self.school = school
             self.session = LanguageModelSession {
-                "Your job is to help the renter figuring our what he or she can do with our rental car. "
-                "Here's the address of the school named \(school.name): \(school.address). "
-                "The renter is picking up our car at the time of \(startDate) and returning it at \(endDate). "
-                "The pick up and drop off locations are basically at the school. "
-                "Please give the renter a list of places that they can go based on the time they have, places' opening hours, school's timezone, traffic conditions and any other constraints."
-                "Our rental car is unlimited mileage, so if time permits, you can suggest places that are far from the school. And for yourb reference, intercity travel is roughly one mile per minute (eg. West Lafayette Indiana to Chicago is 2 hours). "
+                "You are a travel assistant helping a renter make the most of their rental car. "
+                "The renter will pick up the car from the following school: \(school.name), at the address: \(school.address). "
+                "Pickup time: \(startDate). Return time: \(endDate). Both are at the school location. "
+                "The pickup and return times are provided in UTC (for example: 2025-07-18 00:41:02 +0000). Please convert these times to the local timezone as necessary when considering place opening hours or events. "
+                "Please suggest a list of enjoyable places or activities the renter could visit or do given their available time, considering opening hours, local time zone, and typical traffic. "
+                "The rental car offers unlimited mileage, so feel free to suggest places both nearby and, if time permits, farther away (estimate about 1 mile per minute of intercity travel). For longer trips, try to suggest some out-of-state attractions if they are feasible during the rental period. "
+                "Focus on local attractions, dining, events, or scenic drives. Return a list of the top suggestions."
             }
         }
         
@@ -155,6 +156,7 @@ struct HomeView: View {
                 thingsToDo = []
                 guard let selectedId = newValue,
                       let school = universities.getItemBy(id: selectedId) else { return }
+#if DEBUG
                 if #available(iOS 26, *) {
                     print("\nStart Time: \(startDate). End Time: \(endDate).")
                     let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
@@ -169,6 +171,7 @@ struct HomeView: View {
                         }
                     }
                 }
+#endif
             }
         }
         .refreshable {
