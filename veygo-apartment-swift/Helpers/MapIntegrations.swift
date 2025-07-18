@@ -21,7 +21,7 @@ public func findTouristAttractions(near address: String, radius: Double) async -
         let restriction = CircularCoordinateRegion(center: center, radius: radius)
         let request = SearchNearbyRequest(
             locationRestriction: restriction,
-            placeProperties: [.all],
+            placeProperties: [.displayName, .editorialSummary, .addressComponents, .rating],
             includedTypes: [.touristAttraction]
         )
         switch await placesClient.searchNearby(with: request) {

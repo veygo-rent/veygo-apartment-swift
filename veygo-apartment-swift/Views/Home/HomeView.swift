@@ -56,9 +56,17 @@ struct HomeView: View {
             
             if !nearbyAttractions.isEmpty {
                 let attractionsList = nearbyAttractions.map { item -> String in
+                    print("\n\(item)")
                     let name = item.displayName ?? "Unknown"
                     let summary = item.editorialSummary ?? "Unknown"
-                    return "\(name) – Details: \(summary)"
+                    let ratingDescription: String = {
+                        if let rating = item.rating {
+                            return " with a rating of \(rating) out of 5"
+                        } else {
+                            return ""
+                        }
+                    }()
+                    return "\(name) – Details: \(summary)\(ratingDescription)"
                 }.joined(separator: "\n")
                 
                 let promptInstructions =
@@ -82,7 +90,6 @@ struct HomeView: View {
                 
                 let prompt = "\(promptInstructions)\n\nHere are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsList)\n\nNever directly mention the category of the attraction.\nGenerate a list of places the renter can go.\n"
                 
-                print(prompt)
                 let response = try await session.respond(generating: TripPlan.self) {
                     prompt
                 }
