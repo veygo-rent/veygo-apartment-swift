@@ -49,7 +49,9 @@ struct HomeView: View {
         }
         
         func suggectPlaces(startDate: Date, endDate: Date) async throws {
-            self.nearbyAttractions = await findTouristAttractions(near: school.address)
+            let timeDetla = endDate.timeIntervalSince1970 - startDate.timeIntervalSince1970
+            let suggestedRadius = 5.0 + (timeDetla - 3600.0) / 3600.0 / 3.5 * 6 * 1609.0
+            self.nearbyAttractions = await findTouristAttractions(near: school.address, radius: suggestedRadius)
             
             if !nearbyAttractions.isEmpty {
                 let attractionsList = nearbyAttractions.map { item -> String in

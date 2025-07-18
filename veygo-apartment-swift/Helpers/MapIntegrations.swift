@@ -9,7 +9,7 @@ import Foundation
 import GooglePlacesSwift
 import CoreLocation
 
-public func findTouristAttractions(near address: String) async -> [Place] {
+public func findTouristAttractions(near address: String, radius: Double) async -> [Place] {
     let geocoder = CLGeocoder()
     let placesClient = await PlacesClient.shared
     do {
@@ -18,7 +18,7 @@ public func findTouristAttractions(near address: String) async -> [Place] {
             return []
         }
         let center = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
-        let restriction = CircularCoordinateRegion(center: center, radius: 5000)
+        let restriction = CircularCoordinateRegion(center: center, radius: radius)
         let request = SearchNearbyRequest(
             locationRestriction: restriction,
             placeProperties: [.all],
