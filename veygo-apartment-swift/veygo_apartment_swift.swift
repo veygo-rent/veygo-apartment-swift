@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Stripe
+import GooglePlacesSwift
 
 @main
 struct veygo_apartment_swift: App {
@@ -16,7 +17,14 @@ struct veygo_apartment_swift: App {
     @State private var didLoad = false
 
     init() {
-        StripeAPI.defaultPublishableKey = "pk_live_51QzCjkL87NN9tQEdbASm7SXLCkcDPiwlEbBpOVQk5wZcjOPISrtTVFfK1SFKIlqyoksRIHusp5UcRYJLvZwkyK0a00kdPmuxhM"
+        guard let stripeApiKey = ProcessInfo.processInfo.environment["STRIPE_API_KEY"] else {
+            fatalError("Missing STRIPE_API_KEY")
+        }
+        guard let googlePlacesApiKey = ProcessInfo.processInfo.environment["GOOGLE_PLACES_API_KEY"] else {
+            fatalError("Missing GOOGLE_PLACES_API_KEY")
+        }
+        StripeAPI.defaultPublishableKey = stripeApiKey
+        let _ = PlacesClient.provideAPIKey(googlePlacesApiKey)
     }
 
     var body: some Scene {
