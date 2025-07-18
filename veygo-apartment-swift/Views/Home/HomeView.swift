@@ -1,6 +1,7 @@
 import SwiftUI
 import UserNotifications
 import FoundationModels
+import MapKit
 
 enum HomeDestination: Hashable {
     case university
@@ -27,7 +28,7 @@ struct HomeView: View {
     @available(iOS 26.0, macOS 26.0, *)
     @Generable
     struct TripPlan {
-        @Guide(description: "Things to do list")
+        @Guide(description: "Things to do list. Please tell renter what they can do at the loaction. (e.g., museums, restaurants, parks)")
         @Guide(.count(3))
         let thingsToDo: [String]
     }
@@ -36,6 +37,7 @@ struct HomeView: View {
     @Observable
     @MainActor
     final class TripPlanner {
+        private var nearbyAttractions: [MKMapItem] = []
         private(set) var tripPlan: TripPlan?
         private let session: LanguageModelSession
         
@@ -44,21 +46,49 @@ struct HomeView: View {
         init(school: Apartment, startDate: Date, endDate: Date) {
             self.school = school
             self.session = LanguageModelSession {
-                "You are a travel assistant helping a renter make the most of their rental car. "
-                "The renter will pick up the car from the following school: \(school.name), at the address: \(school.address). "
-                "Pickup time: \(startDate). Return time: \(endDate). Both are at the school location. "
-                "The pickup and return times are provided in UTC (for example: 2025-07-18 00:41:02 +0000). Please convert these times to the local timezone as necessary when considering place opening hours or events. "
-                "Please suggest a list of enjoyable places or activities the renter could visit or do given their available time, considering opening hours, local time zone, and typical traffic. "
-                "The rental car offers unlimited mileage, so feel free to suggest places both nearby and, if time permits, farther away (estimate about 1 mile per minute of intercity travel). For longer trips, try to suggest some out-of-state attractions if they are feasible during the rental period. "
-                "Focus on local attractions, dining, events, or scenic drives. Return a list of the top suggestions."
+                """
+                You are a travel assistant helping a renter plan activities with their rental car. 
+
+                - Pickup location: \(school.name), address: \(school.address).
+                - Pickup time (UTC): \(startDate).
+                - Return time (UTC): \(endDate).
+                  Please convert these times to the local timezone when considering opening hours or events.
+
+                Instructions:
+                • Suggest a list of enjoyable places or activities suitable for the time window provided.
+                • Factor in opening hours, local time zone, traffic, and the renter's pickup/return location.
+                • The rental car has unlimited mileage: feel free to suggest nearby and, if time permits, farther destinations (about 1 mile per minute of intercity travel).
+                • For longer rental periods, try to include some out-of-state/province attractions if feasible.
+                • Focus on local attractions, dining options, special events, or scenic drives.
+                • For each suggestion, include the city and state/province and a brief description.
+                """
             }
         }
         
         func suggectPlaces() async throws {
-            let response = try await session.respond(generating: TripPlan.self) {
-                "Generate a list of places the renter can go."
+            self.nearbyAttractions = await findTouristAttractions(near: school.name)
+            
+            if !nearbyAttractions.isEmpty {
+                let attractionsList = nearbyAttractions.map { item -> String in
+                    let name = item.name ?? "Unknown"
+                    let category = item.pointOfInterestCategory?.rawValue ?? "N/A"
+                    let locality = item.addressRepresentations?.cityWithContext ?? "Unknown"
+                    return "\(name) – Category: \(category), in \(locality)."
+                }.joined(separator: "\n")
+                
+                let promptPrefix = "Here are some real nearby tourist attractions you may want to consider including in your suggestions:\n\(attractionsList)\nNever directly mention the category of the attraction.\n"
+                
+                print(promptPrefix)
+                let response = try await session.respond(generating: TripPlan.self) {
+                    "\(promptPrefix)Generate a list of places the renter can go."
+                }
+                self.tripPlan = response.content
+            } else {
+                let response = try await session.respond(generating: TripPlan.self) {
+                    "Generate a list of places the renter can go."
+                }
+                self.tripPlan = response.content
             }
-            self.tripPlan = response.content
         }
     }
     
@@ -156,9 +186,7 @@ struct HomeView: View {
                 thingsToDo = []
                 guard let selectedId = newValue,
                       let school = universities.getItemBy(id: selectedId) else { return }
-#if DEBUG
                 if #available(iOS 26, *) {
-                    print("\nStart Time: \(startDate). End Time: \(endDate).")
                     let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
                     Task {
                         do {
@@ -171,7 +199,6 @@ struct HomeView: View {
                         }
                     }
                 }
-#endif
             }
         }
         .refreshable {
