@@ -12,6 +12,7 @@ struct SettingView: View {
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
     @State var showAlert: Bool = false
+    @State private var phoneVerified: Bool = false
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -42,12 +43,12 @@ struct SettingView: View {
                         Group {
                             SettingsRow(title: "Membership", subtitle: "Diamond Member", showSubtitle: true, showVerification: false)
                             SettingsRow(title: "Wallet", subtitle: "Add or manage payment methods", showSubtitle: true, showVerification: false)
-                            NavigationLink(destination: PhoneVeri()) {
+                            NavigationLink(destination: PhoneVeri(isVerified: $phoneVerified)) {
                                 SettingsRow(
                                     title: "Phone",
-                                    subtitle: session.user?.phone ?? "Not set",
+                                    subtitle: session.user?.phone ?? "Unknown",
                                     showSubtitle: true,
-                                    showVerification: true
+                                    showVerification: !phoneVerified 
                                 )
                             }
                             SettingsRow(
