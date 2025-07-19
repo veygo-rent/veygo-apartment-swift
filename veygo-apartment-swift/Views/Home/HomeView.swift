@@ -24,7 +24,7 @@ struct HomeView: View {
     
     @State private var path: [HomeDestination] = []
     
-    @State private var thingsToDo: [PlaceWithDescription] = []
+    @State private var thingsToDo: [PlaceWithDescription]? = []
     
     struct PlaceOption {
         let place: Place
@@ -46,7 +46,7 @@ struct HomeView: View {
         /// which must be set prior to generating a TripPlan instance.
         @Generable
         struct PlaceDescriptions {
-            @Guide(.count(3))
+            @Guide(.count(5))
             let places: [PlaceDescription]
         }
         
@@ -75,24 +75,31 @@ struct HomeView: View {
             self.school = school
             self.startDate = startDate
             self.endDate = endDate
+            
+            // Refined prompt for trip assistant.
             self.session = LanguageModelSession{
-                        """
-                        \nYou are a travel assistant helping a renter plan activities with their rental car.
-                        
-                        - Pickup location: \(school.name), address: \(school.address).
-                        - Pickup time (UTC): \(startDate).
-                        - Return time (UTC): \(endDate).
-                          Please convert these times to the local timezone when considering opening hours or events.
-                        
-                        Instructions:
-                        • Suggest a list of enjoyable places or activities suitable for the time window provided.
-                        • Factor in opening hours, local time zone, traffic, and the renter's pickup/return location.
-                        • The rental car has unlimited mileage: feel free to suggest nearby and, if time permits, farther destinations (about 1 mile per minute of intercity travel).
-                        • For longer rental periods, try to include some out-of-state/province attractions if feasible.
-                        • Focus on local attractions, dining options, special events, or scenic drives.
-                        • For each suggestion, include the city and state/province and a brief description.
-                        • Only suggest content that is safe, neutral, family-friendly, and unrelated to politics, religion, or violence.
-                        """
+                """
+                You are a travel assistant helping a renter make the most out of their rental car period by suggesting enjoyable places and activities.
+                
+                Pickup Details:
+                - Location: \(school.name), \(school.address)
+                - Pickup Time (UTC): \(startDate)
+                - Return Time (UTC): \(endDate)
+                - Please convert these times to the local timezone when considering opening hours or events.
+                
+                Instructions:
+                1. Suggest a short, ranked list of places or activities fitting the available rental period and their locations.
+                2. For each suggestion:
+                    - Provide the name, city, and state/province.
+                    - Add a concise, enticing description (avoid naming the type of attraction directly).
+                    - Mention any unique features, seasonal events, or local tips if relevant.
+                3. Consider:
+                    - Opening hours and travel time.
+                    - The renter's pickup and return location.
+                    - Both nearby and farther destinations (given unlimited mileage).
+                    - For longer rentals, suggest some out-of-state/province attractions if practical.
+                    - Focus on student-friendly, neutral, and safe content.
+                """
             }
         }
         
@@ -126,7 +133,14 @@ struct HomeView: View {
                     }()
                     return "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)"
                 }.joined(separator: "\n")
-                let prompt = "\n\nHere are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsListPrompt)\n\nNever directly mention the category of the attraction.\nGenerate a list of places the renter can go.\n"
+                
+                // Refined prompt for trip assistant.
+                let prompt = """
+                Here are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsListPrompt)\n\n
+                
+                Please do not mention the type/category of the attraction directly. Generate a list of places the renter can go that match the instructions above.
+                """
+                
                 let response = try await session.respond(generating: PlaceDescriptions.self) {
                     prompt
                 }
