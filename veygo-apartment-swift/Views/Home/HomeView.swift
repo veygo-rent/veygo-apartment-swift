@@ -28,10 +28,11 @@ struct HomeView: View {
     
     struct PlaceOption {
         let place: Place
-        let photos: [UIImage]
     }
     
-    struct PlaceWithDescription {
+    struct PlaceWithDescription: Identifiable {
+        let id = UUID()
+        
         let place: Place
         let photos: [UIImage]
         let description: String
@@ -111,8 +112,7 @@ struct HomeView: View {
             let places = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
             for place in places {
                 PlaceDescription.placesIds.append(place.placeID ?? "")
-//                let photos = await fetchPhotos(from: place.photos)
-                nearbyAttractions.append(.init(place: place, photos: []))
+                nearbyAttractions.append(.init(place: place))
             }
         }
         
@@ -145,7 +145,14 @@ struct HomeView: View {
                     prompt
                 }
                 self.tripPlan = response.content
-                print(self.tripPlan)
+                if let tripPlan = tripPlan {
+                    for place in tripPlan.places {
+                        if let placeData = nearbyAttractions.getPlaceBy(id: place.placeID) {
+                            let images = await fetchPhotos(from: placeData.photos)
+                            places.append(.init(place: placeData, photos: images, description: place.description))
+                        }
+                    }
+                }
             }
             return places
         }
@@ -214,6 +221,38 @@ struct HomeView: View {
                     PrimaryButtonLg(text: "Vehicle Look Up") {
                         path.append(.university)
                     }
+                    
+                    if let thingsToDo = thingsToDo {
+                        if !thingsToDo.isEmpty {
+                            Text("Things to do")
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(thingsToDo) { thing in
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            Image(uiImage: thing.photos.first!)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 120, height: 120)
+                                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                                .clipped()
+                                            Text(thing.place.displayName ?? "Unknown")
+                                                .font(.headline)
+                                            Text(thing.description)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                                .lineLimit(3)
+                                        }
+                                        .frame(width: 160)
+                                        .padding(10)
+                                        .background(Color(.secondarySystemGroupedBackground))
+                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    }
+                                }
+                                .padding(.vertical, 2)
+                                .padding(.horizontal, 4)
+                            }
+                        }
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 120)
@@ -272,6 +311,12 @@ struct HomeView: View {
         } catch {
             print("Failed to fetch universities: \(error)")
         }
+    }
+}
+
+extension Array where Element == HomeView.PlaceOption {
+    func getPlaceBy(id: String) -> Place? {
+        return self.first { $0.place.placeID ?? "" == id }?.place
     }
 }
 

@@ -40,16 +40,21 @@ public func fetchPhotos(from photos: [Photo]?) async -> [UIImage] {
     let placesClient = await PlacesClient.shared
     var images: [UIImage] = []
     if let photos = photos {
+        var i = 0
         for photo in photos {
+            if i == 1 {
+                break
+            }
             let fetchPhotoRequest = FetchPhotoRequest(photo: photo, maxSize: CGSizeMake(4800, 4800))
             switch await placesClient.fetchPhoto(with: fetchPhotoRequest) {
             case .success(let uiImage):
-              // Handle image.
+                // Handle image.
                 images.append(uiImage)
             case .failure(let placesError):
-              // Handle error
+                // Handle error
                 print(placesError)
             }
+            i += 1
         }
     }
     return images
