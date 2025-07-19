@@ -34,7 +34,6 @@ struct HomeView: View {
         let id = UUID()
         
         let place: Place
-        let photos: [UIImage]
         let description: String
     }
     
@@ -100,6 +99,7 @@ struct HomeView: View {
                     - Both nearby and farther destinations (given unlimited mileage).
                     - For longer rentals, suggest some out-of-state/province attractions if practical.
                     - Focus on student-friendly, neutral, and safe content.
+                4. Include a mix of well-known and lesser-known (not so famous) local places, such as hidden gems or local favorites that may not appear in typical tourist guides.
                 """
             }
         }
@@ -124,6 +124,7 @@ struct HomeView: View {
                     let name = place.displayName ?? "Unknown"
                     let summary = place.editorialSummary ?? "Unknown"
                     let placeID: String = place.placeID!
+                    let address = place.addressComponents ?? []
                     let ratingDescription: String = {
                         if let rating = place.rating {
                             return " with a rating of \(rating) out of 5"
@@ -131,7 +132,26 @@ struct HomeView: View {
                             return ""
                         }
                     }()
-                    return "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)"
+                    let location: String = {
+                        if address.isEmpty {
+                            return ""
+                        } else {
+                            let locationDesc = address.compactMap { addrComp in
+                                if addrComp.types.contains(.political) {
+                                    if addrComp.name == "United States" {
+                                        return nil
+                                    } else {
+                                        return addrComp.name
+                                    }
+                                } else {
+                                    return nil
+                                }
+                            }.joined(separator: ", ")
+                            let returnVar = " located in " + locationDesc
+                            return returnVar
+                        }
+                    }()
+                    return "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
                 }.joined(separator: "\n")
                 
                 // Refined prompt for trip assistant.
@@ -148,8 +168,7 @@ struct HomeView: View {
                 if let tripPlan = tripPlan {
                     for place in tripPlan.places {
                         if let placeData = nearbyAttractions.getPlaceBy(id: place.placeID) {
-                            let images = await fetchPhotos(from: placeData.photos)
-                            places.append(.init(place: placeData, photos: images, description: place.description))
+                            places.append(.init(place: placeData, description: place.description))
                         }
                     }
                 }
@@ -171,6 +190,23 @@ struct HomeView: View {
                         labelText: .constant("Rental location"),
                         universityOptions: $universities
                     )
+                    .onChange(of: selectedLocation) { oldValue, newValue in
+                        if #available(iOS 26, *) {
+                            thingsToDo = nil
+                            guard let selectedId = selectedLocation,
+                                  let school = universities.getItemBy(id: selectedId) else { return }
+                            let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
+                            Task {
+                                do {
+                                    await planner.loadNearbyAttractions()
+                                    thingsToDo = try await planner.suggectPlaces()
+                                } catch {
+                                    thingsToDo = []
+                                    print("Error suggesting places: \(error)")
+                                }
+                            }
+                        }
+                    }
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
                     
                     // Promo code + Apply
@@ -199,20 +235,7 @@ struct HomeView: View {
                             if !promoCode.isEmpty {
                                 print("Apply tapped with promo code: \(promoCode)")
                             } else {
-                                thingsToDo = []
-                                if #available(iOS 26, *) {
-                                    guard let selectedId = selectedLocation,
-                                          let school = universities.getItemBy(id: selectedId) else { return }
-                                    let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
-                                    Task {
-                                        do {
-                                            await planner.loadNearbyAttractions()
-                                            thingsToDo = try await planner.suggectPlaces()
-                                        } catch {
-                                            print("Error suggesting places: \(error)")
-                                        }
-                                    }
-                                }
+                                
                             }
                         }
                         .frame(width: 92)
@@ -224,34 +247,28 @@ struct HomeView: View {
                     
                     if let thingsToDo = thingsToDo {
                         if !thingsToDo.isEmpty {
-                            Text("Things to do")
+                            Title(text: "Things to Do", fontSize: 20, color: Color("TextBlackPrimary"))
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 16) {
                                     ForEach(thingsToDo) { thing in
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Image(uiImage: thing.photos.first!)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 120, height: 120)
-                                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                                .clipped()
-                                            Text(thing.place.displayName ?? "Unknown")
-                                                .font(.headline)
-                                            Text(thing.description)
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                                .lineLimit(3)
-                                        }
-                                        .frame(width: 160)
-                                        .padding(10)
-                                        .background(Color(.secondarySystemGroupedBackground))
-                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                        ThingToDoView(thing: thing)
                                     }
                                 }
                                 .padding(.vertical, 2)
                                 .padding(.horizontal, 4)
                             }
+                            .scrollContentBackground(.hidden)
                         }
+                    } else {
+                        Title(text: "Things to Do", fontSize: 20, color: Color("TextBlackPrimary"))
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 16) {
+                                ThingToDoView(thing: nil)
+                            }
+                            .padding(.vertical, 2)
+                            .padding(.horizontal, 4)
+                        }
+                        .scrollContentBackground(.hidden)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -310,6 +327,92 @@ struct HomeView: View {
             }
         } catch {
             print("Failed to fetch universities: \(error)")
+        }
+    }
+    
+    struct ThingToDoView: View {
+        var thing: PlaceWithDescription?
+        @State private var img: UIImage? = nil
+        var body: some View {
+            Group {
+                if let thing = thing {
+                    VStack (alignment: .leading) {
+                        Text(thing.place.displayName ?? "Unknown")
+                            .font(.headline)
+                            .foregroundStyle(Color("TextBlackPrimary"))
+                        HStack (alignment: .top, spacing: 20) {
+                            VStack (alignment: .leading) {
+                                if let rating = thing.place.rating {
+                                    Text("Rating: \(rating, format: .number.precision(.fractionLength(1)))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                Text(thing.description)
+                                    .font(.body)
+                                    .frame(width: 200, alignment: .leading)
+                                    .lineLimit(5)
+                            }
+                            if let img = img {
+                                Image(uiImage: img)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 140, height: 140)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .clipped()
+                            } else {
+                                Image("VeygoLogo")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 140, height: 140)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .clipped()
+                                    .redacted(reason: .placeholder)
+                            }
+                        }
+                    }
+                    .onAppear {
+                        if img == nil {
+                            Task {
+                                img = await fetchPhoto(from: thing.place.photos)
+                            }
+                        }
+                    }
+                } else {
+                    VStack (alignment: .leading) {
+                        Text("Unknown")
+                            .progressViewStyle(.linear)
+                            .font(.headline)
+                            .foregroundStyle(Color("TextBlackPrimary"))
+                            .redacted(reason: .placeholder)
+                        HStack (alignment: .top, spacing: 20) {
+                            VStack (alignment: .leading) {
+                                Text("Rating: Unknown")
+                                    .progressViewStyle(.linear)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .redacted(reason: .placeholder)
+                                Text("Apple's mission is \"to bring the best user experience to its customers through its innovative hardware, software, and services.\"")
+                                    .progressViewStyle(.linear)
+                                    .font(.body)
+                                    .frame(width: 200, alignment: .leading)
+                                    .lineLimit(5)
+                                    .redacted(reason: .placeholder)
+                            }
+                            Image("VeygoLogo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 140, height: 140)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .clipped()
+                                .redacted(reason: .placeholder)
+                        }
+                    }
+                }
+            }
+            .frame(height: 180)
+            .padding(16)
+            .background(Color("CardBG"))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
     }
 }

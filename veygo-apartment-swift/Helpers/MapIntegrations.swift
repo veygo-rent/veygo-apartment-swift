@@ -22,7 +22,7 @@ public func findTouristAttractions(near address: String, radius: Double) async -
         let restriction = CircularCoordinateRegion(center: center, radius: radius)
         let request = SearchNearbyRequest(
             locationRestriction: restriction,
-            placeProperties: [.displayName, .editorialSummary, .rating, .types, .photos, .placeID],
+            placeProperties: [.displayName, .editorialSummary, .rating, .types, .photos, .placeID, .addressComponents],
             includedTypes: [.touristAttraction]
         )
         switch await placesClient.searchNearby(with: request) {
@@ -36,26 +36,16 @@ public func findTouristAttractions(near address: String, radius: Double) async -
     }
 }
 
-public func fetchPhotos(from photos: [Photo]?) async -> [UIImage] {
+public func fetchPhoto(from photos: [Photo]?) async -> UIImage? {
     let placesClient = await PlacesClient.shared
-    var images: [UIImage] = []
-    if let photos = photos {
-        var i = 0
-        for photo in photos {
-            if i == 1 {
-                break
-            }
-            let fetchPhotoRequest = FetchPhotoRequest(photo: photo, maxSize: CGSizeMake(4800, 4800))
-            switch await placesClient.fetchPhoto(with: fetchPhotoRequest) {
-            case .success(let uiImage):
-                // Handle image.
-                images.append(uiImage)
-            case .failure(let placesError):
-                // Handle error
-                print(placesError)
-            }
-            i += 1
-        }
+    guard let photos = photos, !photos.isEmpty else { return nil }
+    let randomPhoto = photos.randomElement()!
+    let fetchPhotoRequest = FetchPhotoRequest(photo: randomPhoto, maxSize: CGSizeMake(4800, 4800))
+    switch await placesClient.fetchPhoto(with: fetchPhotoRequest) {
+    case .success(let uiImage):
+        return uiImage
+    case .failure(let placesError):
+        print(placesError)
+        return nil
     }
-    return images
 }
