@@ -8,6 +8,7 @@
 import Foundation
 import GooglePlacesSwift
 import CoreLocation
+import UIKit
 
 public func findTouristAttractions(near address: String, radius: Double) async -> [Place] {
     let geocoder = CLGeocoder()
@@ -21,7 +22,7 @@ public func findTouristAttractions(near address: String, radius: Double) async -
         let restriction = CircularCoordinateRegion(center: center, radius: radius)
         let request = SearchNearbyRequest(
             locationRestriction: restriction,
-            placeProperties: [.displayName, .editorialSummary, .addressComponents, .rating],
+            placeProperties: [.displayName, .editorialSummary, .rating, .types, .photos, .placeID],
             includedTypes: [.touristAttraction]
         )
         switch await placesClient.searchNearby(with: request) {
@@ -33,4 +34,23 @@ public func findTouristAttractions(near address: String, radius: Double) async -
     } catch {
         return []
     }
+}
+
+public func fetchPhotos(from photos: [Photo]?) async -> [UIImage] {
+    let placesClient = await PlacesClient.shared
+    var images: [UIImage] = []
+    if let photos = photos {
+        for photo in photos {
+            let fetchPhotoRequest = FetchPhotoRequest(photo: photo, maxSize: CGSizeMake(4800, 4800))
+            switch await placesClient.fetchPhoto(with: fetchPhotoRequest) {
+            case .success(let uiImage):
+              // Handle image.
+                images.append(uiImage)
+            case .failure(let placesError):
+              // Handle error
+                print(placesError)
+            }
+        }
+    }
+    return images
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UserNotifications
 import FoundationModels
 import GooglePlacesSwift
@@ -23,78 +24,116 @@ struct HomeView: View {
     
     @State private var path: [HomeDestination] = []
     
-    @State private var thingsToDo: [String] = []
+    @State private var thingsToDo: [PlaceWithDescription] = []
     
-    @available(iOS 26.0, macOS 26.0, *)
-    @Generable
-    struct TripPlan {
-        @Guide(description: "Things to do list. Please tell renter what they can do at the loaction. (e.g., museums, restaurants, parks)")
-        @Guide(.count(3))
-        let thingsToDo: [String]
+    struct PlaceOption {
+        let place: Place
+        let photos: [UIImage]
+    }
+    
+    struct PlaceWithDescription {
+        let place: Place
+        let photos: [UIImage]
+        let description: String
     }
     
     @available(iOS 26.0, macOS 26.0, *)
     @Observable
     @MainActor
     final class TripPlanner {
-        private var nearbyAttractions: [Place] = []
-        private(set) var tripPlan: TripPlan?
+        /// TripPlan represents a planned trip with a selected place and description.
+        /// The guide for valid places is provided statically via placesGuide,
+        /// which must be set prior to generating a TripPlan instance.
+        @Generable
+        struct PlaceDescriptions {
+            @Guide(.count(3))
+            let places: [PlaceDescription]
+        }
+        
+        @Generable
+        struct PlaceDescription {
+            /// Static list of place IDs used as the guide for the place selection.
+            /// This must be set before generating a TripPlan.
+            static var placesIds: [String] = []
+            
+            @Guide(.anyOf(placesIds))
+            @Guide(description: "Records the Place ID of a place")
+            let placeID: String
+            @Guide(description: "A short description of the Place")
+            let description: String
+        }
+        
+        var nearbyAttractions: [PlaceOption] = []
+        private(set) var tripPlan: PlaceDescriptions?
         private let session: LanguageModelSession
         
         let school: Apartment
+        let startDate: Date
+        let endDate: Date
         
-        init(school: Apartment) {
+        init(school: Apartment, startDate: Date, endDate: Date) {
             self.school = school
-            self.session = LanguageModelSession()
+            self.startDate = startDate
+            self.endDate = endDate
+            self.session = LanguageModelSession{
+                        """
+                        \nYou are a travel assistant helping a renter plan activities with their rental car.
+                        
+                        - Pickup location: \(school.name), address: \(school.address).
+                        - Pickup time (UTC): \(startDate).
+                        - Return time (UTC): \(endDate).
+                          Please convert these times to the local timezone when considering opening hours or events.
+                        
+                        Instructions:
+                        • Suggest a list of enjoyable places or activities suitable for the time window provided.
+                        • Factor in opening hours, local time zone, traffic, and the renter's pickup/return location.
+                        • The rental car has unlimited mileage: feel free to suggest nearby and, if time permits, farther destinations (about 1 mile per minute of intercity travel).
+                        • For longer rental periods, try to include some out-of-state/province attractions if feasible.
+                        • Focus on local attractions, dining options, special events, or scenic drives.
+                        • For each suggestion, include the city and state/province and a brief description.
+                        • Only suggest content that is safe, neutral, family-friendly, and unrelated to politics, religion, or violence.
+                        """
+            }
         }
         
-        func suggectPlaces(startDate: Date, endDate: Date) async throws {
+        func loadNearbyAttractions() async {
+            PlaceDescription.placesIds = []
             let timeDetla = endDate.timeIntervalSince1970 - startDate.timeIntervalSince1970
             let suggestedRadius = (5.0 + (timeDetla - 3600.0) / 3600.0 / 3.5 * 6.0) * 1609.0
             
-            self.nearbyAttractions = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
-            
+            let places = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
+            for place in places {
+                PlaceDescription.placesIds.append(place.placeID ?? "")
+//                let photos = await fetchPhotos(from: place.photos)
+                nearbyAttractions.append(.init(place: place, photos: []))
+            }
+        }
+        
+        func suggectPlaces() async throws -> [PlaceWithDescription] {
+            var places: [PlaceWithDescription] = []
             if !nearbyAttractions.isEmpty {
-                let attractionsList = nearbyAttractions.map { item -> String in
-                    print("\n\(item)")
-                    let name = item.displayName ?? "Unknown"
-                    let summary = item.editorialSummary ?? "Unknown"
+                let attractionsListPrompt: String = nearbyAttractions.map { item -> String in
+                    let place = item.place
+                    let name = place.displayName ?? "Unknown"
+                    let summary = place.editorialSummary ?? "Unknown"
+                    let placeID: String = place.placeID!
                     let ratingDescription: String = {
-                        if let rating = item.rating {
+                        if let rating = place.rating {
                             return " with a rating of \(rating) out of 5"
                         } else {
                             return ""
                         }
                     }()
-                    return "\(name) – Details: \(summary)\(ratingDescription)"
+                    return "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)"
                 }.joined(separator: "\n")
-                
-                let promptInstructions =
-                """
-                \nYou are a travel assistant helping a renter plan activities with their rental car. 
-
-                - Pickup location: \(school.name), address: \(school.address).
-                - Pickup time (UTC): \(startDate).
-                - Return time (UTC): \(endDate).
-                  Please convert these times to the local timezone when considering opening hours or events.
-
-                Instructions:
-                • Suggest a list of enjoyable places or activities suitable for the time window provided.
-                • Factor in opening hours, local time zone, traffic, and the renter's pickup/return location.
-                • The rental car has unlimited mileage: feel free to suggest nearby and, if time permits, farther destinations (about 1 mile per minute of intercity travel).
-                • For longer rental periods, try to include some out-of-state/province attractions if feasible.
-                • Focus on local attractions, dining options, special events, or scenic drives.
-                • For each suggestion, include the city and state/province and a brief description.
-                • Only suggest content that is safe, neutral, family-friendly, and unrelated to politics, religion, or violence.
-                """
-                
-                let prompt = "\(promptInstructions)\n\nHere are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsList)\n\nNever directly mention the category of the attraction.\nGenerate a list of places the renter can go.\n"
-                
-                let response = try await session.respond(generating: TripPlan.self) {
+                let prompt = "\n\nHere are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsListPrompt)\n\nNever directly mention the category of the attraction.\nGenerate a list of places the renter can go.\n"
+                let response = try await session.respond(generating: PlaceDescriptions.self) {
                     prompt
                 }
                 self.tripPlan = response.content
+                print(self.tripPlan)
             }
+            return places
         }
     }
     
@@ -111,59 +150,7 @@ struct HomeView: View {
                         labelText: .constant("Rental location"),
                         universityOptions: $universities
                     )
-                    .onChange(of: selectedLocation) { oldValue, newValue in
-                        thingsToDo = []
-                        guard let selectedId = newValue,
-                              let school = universities.getItemBy(id: selectedId) else { return }
-                        if #available(iOS 26, *) {
-                            let planner = TripPlanner(school: school)
-                            Task {
-                                do {
-                                    try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
-                                    if let things = planner.tripPlan?.thingsToDo {
-                                        thingsToDo = things
-                                    }
-                                } catch {
-                                    print("Error suggesting places: \(error)")
-                                }
-                            }
-                        }
-                    }
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
-                        .onChange(of: startDate) { oldValue, newValue in
-                            thingsToDo = []
-                            guard let school = universities.getItemBy(id: selectedLocation ?? 1) else { return }
-                            if #available(iOS 26, *) {
-                                let planner = TripPlanner(school: school)
-                                Task {
-                                    do {
-                                        try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
-                                        if let things = planner.tripPlan?.thingsToDo {
-                                            thingsToDo = things
-                                        }
-                                    } catch {
-                                        print("Error suggesting places: \(error)")
-                                    }
-                                }
-                            }
-                        }
-                        .onChange(of: endDate) { oldValue, newValue in
-                            thingsToDo = []
-                            guard let school = universities.getItemBy(id: selectedLocation ?? 1) else { return }
-                            if #available(iOS 26, *) {
-                                let planner = TripPlanner(school: school)
-                                Task {
-                                    do {
-                                        try await planner.suggectPlaces(startDate: startDate, endDate: endDate)
-                                        if let things = planner.tripPlan?.thingsToDo {
-                                            thingsToDo = things
-                                        }
-                                    } catch {
-                                        print("Error suggesting places: \(error)")
-                                    }
-                                }
-                            }
-                        }
                     
                     // Promo code + Apply
                     HStack(spacing: 16) {
@@ -190,6 +177,21 @@ struct HomeView: View {
                         SecondaryButtonLg(text: "Apply") {
                             if !promoCode.isEmpty {
                                 print("Apply tapped with promo code: \(promoCode)")
+                            } else {
+                                thingsToDo = []
+                                if #available(iOS 26, *) {
+                                    guard let selectedId = selectedLocation,
+                                          let school = universities.getItemBy(id: selectedId) else { return }
+                                    let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
+                                    Task {
+                                        do {
+                                            await planner.loadNearbyAttractions()
+                                            thingsToDo = try await planner.suggectPlaces()
+                                        } catch {
+                                            print("Error suggesting places: \(error)")
+                                        }
+                                    }
+                                }
                             }
                         }
                         .frame(width: 92)
@@ -197,12 +199,6 @@ struct HomeView: View {
                     
                     PrimaryButtonLg(text: "Vehicle Look Up") {
                         path.append(.university)
-                    }
-                    if !thingsToDo.isEmpty {
-                        Title(text: "Things To Do", fontSize: 20, color: Color("TextBlackPrimary"))
-                        ForEach(thingsToDo, id: \.self) { thingToDo in
-                            Title(text: thingToDo, fontSize: 16, color: Color("TextBlackSecondary"))
-                        }
                     }
                 }
                 .padding(.horizontal, 24)
