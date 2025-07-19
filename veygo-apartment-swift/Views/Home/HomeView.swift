@@ -338,12 +338,16 @@ struct HomeView: View {
                 if let thing = thing {
                     VStack (alignment: .leading) {
                         Text(thing.place.displayName ?? "Unknown")
-                            .font(.headline)
+                            .font(.title3)
                             .foregroundStyle(Color("TextBlackPrimary"))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .frame(width: 350, alignment: .leading)
+                            .padding(.bottom)
                         HStack (alignment: .top, spacing: 20) {
                             VStack (alignment: .leading) {
                                 if let rating = thing.place.rating {
-                                    Text("Rating: \(rating, format: .number.precision(.fractionLength(1)))")
+                                    Text("Rating: \(rating, format: .number.precision(.fractionLength(1)))/5.0")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
@@ -381,9 +385,10 @@ struct HomeView: View {
                     VStack (alignment: .leading) {
                         Text("Unknown")
                             .progressViewStyle(.linear)
-                            .font(.headline)
+                            .font(.title3)
                             .foregroundStyle(Color("TextBlackPrimary"))
                             .redacted(reason: .placeholder)
+                            .padding(.bottom)
                         HStack (alignment: .top, spacing: 20) {
                             VStack (alignment: .leading) {
                                 Text("Rating: Unknown")
