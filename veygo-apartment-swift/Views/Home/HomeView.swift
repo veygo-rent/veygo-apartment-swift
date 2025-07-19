@@ -184,12 +184,15 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Make a Reservation & others
                     Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
+                        .padding(.horizontal, 24)
                     SlidingToggleButton(selectedOption: $selectedToggle)
+                        .padding(.horizontal, 24)
                     Dropdown(
                         selectedOption: $selectedLocation,
                         labelText: .constant("Rental location"),
                         universityOptions: $universities
                     )
+                    .padding(.horizontal, 24)
                     .onChange(of: selectedLocation) { oldValue, newValue in
                         if #available(iOS 26, *) {
                             thingsToDo = nil
@@ -208,6 +211,7 @@ struct HomeView: View {
                         }
                     }
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                        .padding(.horizontal, 24)
                     
                     // Promo code + Apply
                     HStack(spacing: 16) {
@@ -240,14 +244,17 @@ struct HomeView: View {
                         }
                         .frame(width: 92)
                     }
+                    .padding(.horizontal, 24)
                     
                     PrimaryButtonLg(text: "Vehicle Look Up") {
                         path.append(.university)
                     }
+                    .padding(.horizontal, 24)
                     
                     if let thingsToDo = thingsToDo {
                         if !thingsToDo.isEmpty {
                             Title(text: "Things to Do", fontSize: 20, color: Color("TextBlackPrimary"))
+                                .padding(.horizontal, 24)
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 16) {
                                     ForEach(thingsToDo) { thing in
@@ -255,23 +262,23 @@ struct HomeView: View {
                                     }
                                 }
                                 .padding(.vertical, 2)
-                                .padding(.horizontal, 4)
+                                .padding(.horizontal, 24)
                             }
                             .scrollContentBackground(.hidden)
                         }
                     } else {
                         Title(text: "Things to Do", fontSize: 20, color: Color("TextBlackPrimary"))
+                            .padding(.horizontal, 24)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 ThingToDoView(thing: nil)
                             }
                             .padding(.vertical, 2)
-                            .padding(.horizontal, 4)
+                            .padding(.horizontal, 24)
                         }
                         .scrollContentBackground(.hidden)
                     }
                 }
-                .padding(.horizontal, 24)
                 .padding(.bottom, 120)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
