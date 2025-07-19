@@ -19,11 +19,11 @@ struct SettingView: View {
 //                    .ignoresSafeArea(.container, edges: .top)
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Xinyi Guan")
+                        Text("\(session.user?.name ?? "Unknown User")")
                             .font(.system(size: 25, weight: .semibold))
                             .foregroundColor(Color("TextBlackPrimary"))
                         
-                        Text("Ascendant Member")
+                        Text("Diamond Member")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(Color("TextBlackPrimary"))
                         
@@ -40,12 +40,22 @@ struct SettingView: View {
                             .foregroundColor(Color("TextBlackPrimary"))
                         
                         Group {
-                            SettingsRow(title: "Membership", subtitle: "Acendant Member", showSubtitle: true, showVerification: false)
+                            SettingsRow(title: "Membership", subtitle: "Diamond Member", showSubtitle: true, showVerification: false)
                             SettingsRow(title: "Wallet", subtitle: "Add or manage payment methods", showSubtitle: true, showVerification: false)
                             NavigationLink(destination: PhoneVeri()) {
-                                SettingsRow(title: "Phone", subtitle: "312-810-3169", showSubtitle: true, showVerification: true)
+                                SettingsRow(
+                                    title: "Phone",
+                                    subtitle: session.user?.phone ?? "Not set",
+                                    showSubtitle: true,
+                                    showVerification: true
+                                )
                             }
-                            SettingsRow(title: "Email", subtitle: "guan90@purdue.edu", showSubtitle: true, showVerification: true)
+                            SettingsRow(
+                                title: "Email",
+                                subtitle: session.user?.studentEmail ?? "Not set",
+                                showSubtitle: true,
+                                showVerification: true
+                            )
                             SettingsRow(title: "Password", subtitle: nil, showSubtitle: false, showVerification: false)
                             SettingsRow(title: "Driver’s License", subtitle: nil, showSubtitle: false, showVerification: true)
                             SettingsRow(title: "Insurance", subtitle: nil, showSubtitle: false, showVerification: true)
