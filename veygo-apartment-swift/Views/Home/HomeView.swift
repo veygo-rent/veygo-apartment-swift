@@ -119,7 +119,7 @@ struct HomeView: View {
         func suggectPlaces() async throws -> [PlaceWithDescription] {
             var places: [PlaceWithDescription] = []
             if !nearbyAttractions.isEmpty {
-                let forbiddenKeywords = ["China", "Hong Kong", "US"]
+                let forbiddenKeywords = ["Six Flags"]
                 let attractionsListPrompt: String = nearbyAttractions.compactMap { item -> String? in
                     let place = item.place
                     let name = place.displayName ?? "Unknown"
@@ -155,6 +155,10 @@ struct HomeView: View {
                     let finalPlacePrompt = "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
                     // Filter forbidden keywords
                     if forbiddenKeywords.contains(where: { finalPlacePrompt.localizedCaseInsensitiveContains($0) }) {
+                        // Remove the placeID if forbidden
+                        if let index = PlaceDescription.placesIds.firstIndex(of: placeID) {
+                            PlaceDescription.placesIds.remove(at: index)
+                        }
                         return nil
                     }
                     return finalPlacePrompt
@@ -167,6 +171,7 @@ struct HomeView: View {
                 Please do not mention the type/category of the attraction directly. Generate a list of places the renter can go that match the instructions above.
                 """
                 
+                print(prompt)
                 let response = try await session.respond(generating: PlaceDescriptions.self) {
                     prompt
                 }
