@@ -59,7 +59,7 @@ struct HomeView: View {
             @Guide(.anyOf(placesIds))
             @Guide(description: "Records the Place ID of a place")
             let placeID: String
-            @Guide(description: "A short description of the Place")
+            @Guide(description: "A short description of the Place, explicitly mention what city the place is in")
             let description: String
         }
         
@@ -99,7 +99,7 @@ struct HomeView: View {
                     - Both nearby and farther destinations (given unlimited mileage).
                     - For longer rentals, suggest some out-of-state/province attractions if practical.
                     - Focus on student-friendly, neutral, and safe content.
-                4. Include a mix of well-known and lesser-known (not so famous) local places, such as hidden gems or local favorites that may not appear in typical tourist guides.
+                4. Include a mix of well-known and lesser-known (not so famous) local places, such as hidden gems or local favorites that may not appear in typical tourist guides. 
                 """
             }
         }
@@ -171,7 +171,6 @@ struct HomeView: View {
                 Please do not mention the type/category of the attraction directly. Generate a list of places the renter can go that match the instructions above.
                 """
                 
-                print(prompt)
                 let response = try await session.respond(generating: PlaceDescriptions.self) {
                     prompt
                 }
