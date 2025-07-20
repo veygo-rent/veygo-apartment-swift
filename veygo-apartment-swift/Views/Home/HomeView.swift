@@ -46,7 +46,7 @@ struct HomeView: View {
         /// which must be set prior to generating a TripPlan instance.
         @Generable
         struct PlaceDescriptions {
-            @Guide(.count(5))
+            @Guide(.count(10))
             let places: [PlaceDescription]
         }
         
@@ -119,7 +119,8 @@ struct HomeView: View {
         func suggectPlaces() async throws -> [PlaceWithDescription] {
             var places: [PlaceWithDescription] = []
             if !nearbyAttractions.isEmpty {
-                let attractionsListPrompt: String = nearbyAttractions.map { item -> String in
+                let forbiddenKeywords = ["China", "Hong Kong", "US"]
+                let attractionsListPrompt: String = nearbyAttractions.compactMap { item -> String? in
                     let place = item.place
                     let name = place.displayName ?? "Unknown"
                     let summary = place.editorialSummary ?? "Unknown"
@@ -151,7 +152,12 @@ struct HomeView: View {
                             return returnVar
                         }
                     }()
-                    return "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
+                    let finalPlacePrompt = "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
+                    // Filter forbidden keywords
+                    if forbiddenKeywords.contains(where: { finalPlacePrompt.localizedCaseInsensitiveContains($0) }) {
+                        return nil
+                    }
+                    return finalPlacePrompt
                 }.joined(separator: "\n")
                 
                 // Refined prompt for trip assistant.
