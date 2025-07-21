@@ -13,6 +13,7 @@ struct SettingView: View {
     @AppStorage("user_id") var userId: Int = 0
     @State var showAlert: Bool = false
     @State private var phoneVerified: Bool = false
+    @State private var emailVerified = false
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -51,12 +52,14 @@ struct SettingView: View {
                                     showVerification: !phoneVerified 
                                 )
                             }
-                            SettingsRow(
-                                title: "Email",
-                                subtitle: session.user?.studentEmail ?? "Not set",
-                                showSubtitle: true,
-                                showVerification: true
-                            )
+                            NavigationLink(destination: EmailVeri(isVerified: $emailVerified)) {
+                                SettingsRow(
+                                    title: "Email",
+                                    subtitle: session.user?.studentEmail ?? "Not set",
+                                    showSubtitle: true,
+                                    showVerification: !emailVerified
+                                )
+                            }
                             SettingsRow(title: "Password", subtitle: nil, showSubtitle: false, showVerification: false)
                             SettingsRow(title: "Driver’s License", subtitle: nil, showSubtitle: false, showVerification: true)
                             SettingsRow(title: "Insurance", subtitle: nil, showSubtitle: false, showVerification: true)
