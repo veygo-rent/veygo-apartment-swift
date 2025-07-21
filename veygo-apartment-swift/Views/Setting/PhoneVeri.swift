@@ -10,6 +10,7 @@ struct PhoneVeri: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
+    @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0 // 让need verification消失30天 也就是说30天内用户不用再次验证
 
     @State private var verificationCode: String = ""
     @State private var showAlert: Bool = false
@@ -38,6 +39,7 @@ struct PhoneVeri: View {
                     verifyCode { success in
                         if success {
                             isVerified = true
+                            self.phoneVerifiedAt = Date().timeIntervalSince1970
                         }
                     }
                 }

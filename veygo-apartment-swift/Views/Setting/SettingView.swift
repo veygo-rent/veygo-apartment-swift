@@ -11,6 +11,9 @@ struct SettingView: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
+    @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0
+    @AppStorage("email_verified_at") var emailVerifiedAt: Double = 0
+    
     @State var showAlert: Bool = false
     @State private var phoneVerified: Bool = false
     @State private var emailVerified = false
@@ -106,6 +109,11 @@ struct SettingView: View {
                 .padding(.vertical, 8)
                 .padding(.top, 15)
             }
+        }
+        .onAppear {
+            let now = Date().timeIntervalSince1970
+            phoneVerified = now - phoneVerifiedAt < 30 * 24 * 60 * 60
+            emailVerified = now - emailVerifiedAt < 30 * 24 * 60 * 60
         }
     }
 }

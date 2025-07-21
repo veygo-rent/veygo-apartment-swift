@@ -11,7 +11,8 @@ struct EmailVeri: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
-
+    @AppStorage("email_verified_at") var emailVerifiedAt: Double = 0
+    
     @State private var verificationCode: String = ""
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -40,6 +41,7 @@ struct EmailVeri: View {
                     verifyCode { success in
                         if success {
                             isVerified = true
+                            self.emailVerifiedAt = Date().timeIntervalSince1970
                         }
                     }
                 }
