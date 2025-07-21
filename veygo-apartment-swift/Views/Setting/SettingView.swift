@@ -63,6 +63,15 @@ struct SettingView: View {
                                     showVerification: !emailVerified
                                 )
                             }
+                            
+                            NavigationLink(destination: FullStripeCardEntryView()) {
+                                SettingsRow(
+                                    title: "Add Card",
+                                    subtitle: "Enter your payment method",
+                                    showSubtitle: true,
+                                    showVerification: false
+                                )
+                            }
                             SettingsRow(title: "Password", subtitle: nil, showSubtitle: false, showVerification: false)
                             SettingsRow(title: "Driver’s License", subtitle: nil, showSubtitle: false, showVerification: true)
                             SettingsRow(title: "Insurance", subtitle: nil, showSubtitle: false, showVerification: true)
