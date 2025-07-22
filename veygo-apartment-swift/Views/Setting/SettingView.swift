@@ -46,7 +46,14 @@ struct SettingView: View {
                         
                         Group {
                             SettingsRow(title: "Membership", subtitle: "Diamond Member", showSubtitle: true, showVerification: false)
-                            SettingsRow(title: "Wallet", subtitle: "Add or manage payment methods", showSubtitle: true, showVerification: false)
+                            NavigationLink(destination: FullStripeCardEntryView()) {
+                                SettingsRow(
+                                    title: "Wallet",
+                                    subtitle: "Add or manage your payment methods",
+                                    showSubtitle: true,
+                                    showVerification: false
+                                )
+                            }
                             NavigationLink(destination: PhoneVeri(isVerified: $phoneVerified)) {
                                 SettingsRow(
                                     title: "Phone",
@@ -64,14 +71,6 @@ struct SettingView: View {
                                 )
                             }
                             
-                            NavigationLink(destination: FullStripeCardEntryView()) {
-                                SettingsRow(
-                                    title: "Add Card",
-                                    subtitle: "Enter your payment method",
-                                    showSubtitle: true,
-                                    showVerification: false
-                                )
-                            }
                             SettingsRow(title: "Password", subtitle: nil, showSubtitle: false, showVerification: false)
                             SettingsRow(title: "Driver’s License", subtitle: nil, showSubtitle: false, showVerification: true)
                             SettingsRow(title: "Insurance", subtitle: nil, showSubtitle: false, showVerification: true)

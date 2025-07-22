@@ -118,7 +118,6 @@ struct PhoneVeri: View {
                     }
                 }
             }
-
             DispatchQueue.main.async {
                 if httpResponse.statusCode == 200 {
                     alertMessage = "Code sent successfully"
