@@ -93,7 +93,7 @@ struct FullStripeCardEntryView: View {
         }
 
         let request = veygoCurlRequest(
-            url: "/api/v1/payment_method/create",
+            url: "/api/v1/payment-method/create",
             method: "POST",
             headers: [
                 "auth": "\(token)$\(userId)",
@@ -102,6 +102,8 @@ struct FullStripeCardEntryView: View {
             ],
             body: body
         )
+
+        print("URL: \(request.url?.absoluteString ?? "nil")")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
@@ -117,10 +119,22 @@ struct FullStripeCardEntryView: View {
                     return
                 }
 
+                guard let data = data else {
+                    alertMessage = "Empty response from server"
+                    showAlert = true
+                    return
+                }
+
                 if httpResponse.statusCode == 201 {
-                    alertMessage = "Card added successfully!"
+                    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                       let newToken = json["token"] as? String {
+                        self.token = newToken // 更新token
+                        alertMessage = "Card added successfully!"
+                    } else {
+                        alertMessage = "Card added but failed to parse new token"
+                    }
                 } else {
-                    let responseText = String(data: data ?? Data(), encoding: .utf8) ?? "Unknown error"
+                    let responseText = String(data: data, encoding: .utf8) ?? "Unknown error"
                     alertMessage = "Failed to add card: \(responseText)"
                 }
 
@@ -128,6 +142,7 @@ struct FullStripeCardEntryView: View {
             }
         }.resume()
     }
+
 }
 
 // MARK: - CardInputFieldWrapper
