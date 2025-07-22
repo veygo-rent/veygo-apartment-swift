@@ -188,19 +188,19 @@ struct PhoneVeri: View {
                     completion(true)
 
                 case 401:
-                    alertMessage = "Your session has expired. Please log in again."
+                    alertMessage = "Your account has expired. Please log in again."
                     showAlert = true
                     session.clear()
                     completion(false)
 
                 case 406:
                     self.token = newToken
-                    alertMessage = "You are not allowed to verify this token."
+                    alertMessage = "Wrong code, please enter again."
                     showAlert = true
                     completion(false)
 
                 default:
-                    alertMessage = "Wait, what happened？ \(httpResponse.statusCode)"
+                    alertMessage = "Error: \(httpResponse.statusCode)"
                     showAlert = true
                     completion(false)
                 }

@@ -199,7 +199,7 @@ struct EmailVeri: View {
                     completion(false)
 
                 default:
-                    alertMessage = "Wait, what happened？ \(httpResponse.statusCode)"
+                    alertMessage = "Error: \(httpResponse.statusCode)"
                     showAlert = true
                     completion(false)
                 }
