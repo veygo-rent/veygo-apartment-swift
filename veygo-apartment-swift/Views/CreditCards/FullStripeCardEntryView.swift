@@ -97,8 +97,6 @@ struct FullStripeCardEntryView: View {
             method: "POST",
             headers: [
                 "auth": "\(token)$\(userId)",
-                "Content-Type": "application/json",
-                "User-Agent": "iOS-App"
             ],
             body: body
         )
@@ -126,8 +124,8 @@ struct FullStripeCardEntryView: View {
                 }
 
                 if httpResponse.statusCode == 201 {
-                    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let newToken = json["token"] as? String {
+                    let tokenOpt = extractToken(from: response)
+                    if let newToken = tokenOpt {
                         self.token = newToken // 更新token
                         alertMessage = "Card added successfully!"
                     } else {

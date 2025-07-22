@@ -191,4 +191,11 @@ class UserSession: ObservableObject {
             }
         }.resume()
     }
+    
+    func clear() {
+        self.user = nil
+        self.token = ""
+        self.userId = 0
+    }
+    
 }
