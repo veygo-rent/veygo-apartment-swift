@@ -11,7 +11,12 @@ struct SettingView: View {
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
+    @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0
+    @AppStorage("email_verified_at") var emailVerifiedAt: Double = 0
+    
     @State var showAlert: Bool = false
+    @State private var phoneVerified: Bool = false
+    @State private var emailVerified = false
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -19,11 +24,11 @@ struct SettingView: View {
 //                    .ignoresSafeArea(.container, edges: .top)
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Xinyi Guan")
+                        Text("\(session.user?.name ?? "Unknown User")")
                             .font(.system(size: 25, weight: .semibold))
                             .foregroundColor(Color("TextBlackPrimary"))
                         
-                        Text("Ascendant Member")
+                        Text("Diamond Member")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(Color("TextBlackPrimary"))
                         
@@ -40,12 +45,33 @@ struct SettingView: View {
                             .foregroundColor(Color("TextBlackPrimary"))
                         
                         Group {
-                            SettingsRow(title: "Membership", subtitle: "Acendant Member", showSubtitle: true, showVerification: false)
+                            SettingsRow(title: "Membership", subtitle: "Diamond Member", showSubtitle: true, showVerification: false)
                             SettingsRow(title: "Wallet", subtitle: "Add or manage payment methods", showSubtitle: true, showVerification: false)
-                            NavigationLink(destination: PhoneVeri()) {
-                                SettingsRow(title: "Phone", subtitle: "312-810-3169", showSubtitle: true, showVerification: true)
+                            NavigationLink(destination: PhoneVeri(isVerified: $phoneVerified)) {
+                                SettingsRow(
+                                    title: "Phone",
+                                    subtitle: session.user?.phone ?? "Unknown",
+                                    showSubtitle: true,
+                                    showVerification: !phoneVerified 
+                                )
                             }
-                            SettingsRow(title: "Email", subtitle: "guan90@purdue.edu", showSubtitle: true, showVerification: true)
+                            NavigationLink(destination: EmailVeri(isVerified: $emailVerified)) {
+                                SettingsRow(
+                                    title: "Email",
+                                    subtitle: session.user?.studentEmail ?? "Not set",
+                                    showSubtitle: true,
+                                    showVerification: !emailVerified
+                                )
+                            }
+                            
+                            NavigationLink(destination: FullStripeCardEntryView()) {
+                                SettingsRow(
+                                    title: "Add Card",
+                                    subtitle: "Enter your payment method",
+                                    showSubtitle: true,
+                                    showVerification: false
+                                )
+                            }
                             SettingsRow(title: "Password", subtitle: nil, showSubtitle: false, showVerification: false)
                             SettingsRow(title: "Driver’s License", subtitle: nil, showSubtitle: false, showVerification: true)
                             SettingsRow(title: "Insurance", subtitle: nil, showSubtitle: false, showVerification: true)
@@ -92,6 +118,11 @@ struct SettingView: View {
                 .padding(.vertical, 8)
                 .padding(.top, 15)
             }
+        }
+        .onAppear {
+            let now = Date().timeIntervalSince1970
+            phoneVerified = now - phoneVerifiedAt < 30 * 24 * 60 * 60
+            emailVerified = now - emailVerifiedAt < 30 * 24 * 60 * 60
         }
     }
 }

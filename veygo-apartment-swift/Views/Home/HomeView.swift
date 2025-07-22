@@ -46,7 +46,7 @@ struct HomeView: View {
         /// which must be set prior to generating a TripPlan instance.
         @Generable
         struct PlaceDescriptions {
-            @Guide(.count(5))
+            @Guide(.count(10))
             let places: [PlaceDescription]
         }
         
@@ -59,7 +59,7 @@ struct HomeView: View {
             @Guide(.anyOf(placesIds))
             @Guide(description: "Records the Place ID of a place")
             let placeID: String
-            @Guide(description: "A short description of the Place")
+            @Guide(description: "A short description of the Place, explicitly mention what city the place is in")
             let description: String
         }
         
@@ -99,7 +99,7 @@ struct HomeView: View {
                     - Both nearby and farther destinations (given unlimited mileage).
                     - For longer rentals, suggest some out-of-state/province attractions if practical.
                     - Focus on student-friendly, neutral, and safe content.
-                4. Include a mix of well-known and lesser-known (not so famous) local places, such as hidden gems or local favorites that may not appear in typical tourist guides.
+                4. Include a mix of well-known and lesser-known (not so famous) local places, such as hidden gems or local favorites that may not appear in typical tourist guides. 
                 """
             }
         }
@@ -119,7 +119,8 @@ struct HomeView: View {
         func suggectPlaces() async throws -> [PlaceWithDescription] {
             var places: [PlaceWithDescription] = []
             if !nearbyAttractions.isEmpty {
-                let attractionsListPrompt: String = nearbyAttractions.map { item -> String in
+                let forbiddenKeywords = ["Six Flags"]
+                let attractionsListPrompt: String = nearbyAttractions.compactMap { item -> String? in
                     let place = item.place
                     let name = place.displayName ?? "Unknown"
                     let summary = place.editorialSummary ?? "Unknown"
@@ -151,7 +152,16 @@ struct HomeView: View {
                             return returnVar
                         }
                     }()
-                    return "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
+                    let finalPlacePrompt = "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
+                    // Filter forbidden keywords
+                    if forbiddenKeywords.contains(where: { finalPlacePrompt.localizedCaseInsensitiveContains($0) }) {
+                        // Remove the placeID if forbidden
+                        if let index = PlaceDescription.placesIds.firstIndex(of: placeID) {
+                            PlaceDescription.placesIds.remove(at: index)
+                        }
+                        return nil
+                    }
+                    return finalPlacePrompt
                 }.joined(separator: "\n")
                 
                 // Refined prompt for trip assistant.
