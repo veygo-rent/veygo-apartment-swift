@@ -88,7 +88,7 @@ struct PhoneVeri: View {
             body: body
         )
 
-        print("Sending code with auth header: \(token)$\(userId)")
+        print("Sending Phone code with auth header: \(token)$\(userId)")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -118,7 +118,6 @@ struct PhoneVeri: View {
                     }
                 }
             }
-
             DispatchQueue.main.async {
                 if httpResponse.statusCode == 200 {
                     alertMessage = "Code sent successfully"
@@ -170,7 +169,8 @@ struct PhoneVeri: View {
                 return
             }
 
-            guard let httpResponse = response as? HTTPURLResponse else {
+            guard let httpResponse = response as? HTTPURLResponse,
+                  let newToken = extractToken(from: response) else {
                 DispatchQueue.main.async {
                     alertMessage = "Invalid server response"
                     showAlert = true
@@ -178,19 +178,34 @@ struct PhoneVeri: View {
                 }
                 return
             }
-
+            
             DispatchQueue.main.async {
-                if httpResponse.statusCode == 200 {
+                switch httpResponse.statusCode {
+                case 200:
+                    self.token = newToken
                     alertMessage = "Verification successful!"
                     showAlert = true
                     completion(true)
-                } else {
-                    //alertMessage = "Verification failed with status \(httpResponse.statusCode)"
-                    alertMessage = "Verification failed."
+
+                case 401:
+                    alertMessage = "Your account has expired. Please log in again."
+                    showAlert = true
+                    session.clear()
+                    completion(false)
+
+                case 406:
+                    self.token = newToken
+                    alertMessage = "Wrong code, please enter again."
+                    showAlert = true
+                    completion(false)
+
+                default:
+                    alertMessage = "Error: \(httpResponse.statusCode)"
                     showAlert = true
                     completion(false)
                 }
             }
+
         }.resume()
     }
 

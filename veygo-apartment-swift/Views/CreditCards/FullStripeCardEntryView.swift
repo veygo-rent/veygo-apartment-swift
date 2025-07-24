@@ -9,6 +9,7 @@
 import SwiftUI
 import Stripe
 import StripePaymentsUI
+import StripeCardScan
 
 struct FullStripeCardEntryView: View {
     @State private var paymentMethodParams: STPPaymentMethodParams? = nil
@@ -16,6 +17,7 @@ struct FullStripeCardEntryView: View {
     @State private var alertMessage = ""
     @State private var cardholderName: String = ""
     @State private var nickname: String = ""
+    @State private var showCardScan = false
 
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
@@ -44,6 +46,10 @@ struct FullStripeCardEntryView: View {
             .padding()
         }
         .padding()
+        .navigationTitle("Add Card")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(Color("AccentColor"), for: .navigationBar)
         .alert("Result", isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -97,8 +103,6 @@ struct FullStripeCardEntryView: View {
             method: "POST",
             headers: [
                 "auth": "\(token)$\(userId)",
-                "Content-Type": "application/json",
-                "User-Agent": "iOS-App"
             ],
             body: body
         )
@@ -126,8 +130,8 @@ struct FullStripeCardEntryView: View {
                 }
 
                 if httpResponse.statusCode == 201 {
-                    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let newToken = json["token"] as? String {
+                    let tokenOpt = extractToken(from: response)
+                    if let newToken = tokenOpt {
                         self.token = newToken // 更新token
                         alertMessage = "Card added successfully!"
                     } else {

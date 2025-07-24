@@ -16,26 +16,26 @@ struct EmailVeri: View {
     @State private var verificationCode: String = ""
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
-
+    
     @Binding var isVerified: Bool
-
+    
     var body: some View {
         VStack(spacing: 24) {
             Spacer().frame(height: 40)
-
+            
             HStack(spacing: 12) {
                 InputWithInlinePrompt(promptText: "Your Email", userInput: .constant(session.user?.studentEmail ?? "Not set"))
                     .disabled(true)
                     .foregroundColor(Color("FootNote"))
-
+                
                 SecondaryButtonLg(text: "Send Code") {
                     sendVerificationCode()
                 }
                 .frame(width: 120)
             }
-
+            
             InputWithInlinePrompt(promptText: "Verification code", userInput: $verificationCode)
-
+            
             HStack {
                 PrimaryButtonLg(text: "Verify") {
                     verifyCode { success in
@@ -47,7 +47,7 @@ struct EmailVeri: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-
+            
             HStack {
                 Spacer()
                 ShortTextLink(text: "Change Email") {
@@ -55,7 +55,7 @@ struct EmailVeri: View {
                 }
                 Spacer()
             }
-
+            
             Spacer()
         }
         .padding(.horizontal, 24)
@@ -69,18 +69,18 @@ struct EmailVeri: View {
             Text(alertMessage)
         }
     }
-
+    
     func sendVerificationCode() {
         let bodyDict: [String: String] = [
             "verification_method": "Email"
         ]
-
+        
         guard let body = try? JSONEncoder().encode(bodyDict) else {
             alertMessage = "Failed to encode request body"
             showAlert = true
             return
         }
-
+        
         let request = veygoCurlRequest(
             url: "/api/v1/verification/request-token",
             method: "POST",
@@ -89,26 +89,26 @@ struct EmailVeri: View {
             ],
             body: body
         )
-
+        
         print("Sending email code with auth header: \(token)$\(userId)")
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 alertMessage = "Failed to send code: \(error.localizedDescription)"
                 showAlert = true
                 return
             }
-
+            
             guard let httpResponse = response as? HTTPURLResponse else {
                 alertMessage = "Invalid server response"
                 showAlert = true
                 return
             }
-
+            
             if let data = data {
                 let responseString = String(data: data, encoding: .utf8) ?? ""
                 print("Response from request-token:\n\(responseString)")
-
+                
                 if let newToken = httpResponse.value(forHTTPHeaderField: "token") {
                     print("Updated token from response header: \(newToken)")
                     DispatchQueue.main.async {
@@ -116,7 +116,7 @@ struct EmailVeri: View {
                     }
                 }
             }
-
+            
             DispatchQueue.main.async {
                 if httpResponse.statusCode == 200 {
                     alertMessage = "Code sent successfully"
@@ -127,7 +127,7 @@ struct EmailVeri: View {
             }
         }.resume()
     }
-
+    
     func verifyCode(completion: @escaping (Bool) -> Void) {
         guard !verificationCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             alertMessage = "Verification code cannot be empty."
@@ -168,7 +168,8 @@ struct EmailVeri: View {
                 return
             }
 
-            guard let httpResponse = response as? HTTPURLResponse else {
+            guard let httpResponse = response as? HTTPURLResponse,
+                  let newToken = extractToken(from: response) else {
                 DispatchQueue.main.async {
                     alertMessage = "Invalid server response"
                     showAlert = true
@@ -178,12 +179,27 @@ struct EmailVeri: View {
             }
 
             DispatchQueue.main.async {
-                if httpResponse.statusCode == 200 {
+                switch httpResponse.statusCode {
+                case 200:
+                    self.token = newToken
                     alertMessage = "Verification successful!"
                     showAlert = true
                     completion(true)
-                } else {
-                    alertMessage = "Verification failed."
+
+                case 401:
+                    alertMessage = "Your account has expired. Please log in again."
+                    showAlert = true
+                    session.clear()
+                    completion(false)
+
+                case 406:
+                    self.token = newToken
+                    alertMessage = "Wrong code, please enter again."
+                    showAlert = true
+                    completion(false)
+
+                default:
+                    alertMessage = "Error: \(httpResponse.statusCode)"
                     showAlert = true
                     completion(false)
                 }
