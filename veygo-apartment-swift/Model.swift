@@ -131,13 +131,12 @@ struct Car: Identifiable {
     var iconName: String // 小人图标
 }
 
-struct CreditCard: Identifiable, Codable, Equatable {
+struct PublishPaymentMethod: Identifiable, Codable, Equatable {
     let id: Int
     let cardholderName: String
     let maskedCardNumber: String
     let network: String
     let expiration: String
-    //let token: String
     let md5: String
     let nickname: String?
     let isEnabled: Bool

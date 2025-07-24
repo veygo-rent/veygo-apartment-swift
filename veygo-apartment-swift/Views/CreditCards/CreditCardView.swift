@@ -96,7 +96,7 @@ import SwiftUI
 
 struct CreditCardView: View {
     @EnvironmentObject var session: UserSession
-    @State private var cards: [CreditCard] = []
+    @State private var cards: [PublishPaymentMethod] = []
     @State private var expandedCardID: Int? = nil
     @State private var navigateToAddCard = false
     @State private var showAlert = false
@@ -190,8 +190,8 @@ struct CreditCardView: View {
                             print("Updated token from response header")
                         }
                     do {
-                        let decoded = try VeygoJsonStandard.shared.decoder.decode(CardDataWrapper.self, from: data)
-                        self.cards = decoded.payment_methods
+                        let decoded = try VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: data)
+                        self.cards = decoded
                     } catch {
                         print(String(data: data, encoding: .utf8) ?? "Unreadable JSON")
                         alertMessage = "Failed to parse response"
@@ -223,10 +223,6 @@ struct CreditCardView: View {
         cards.remove(atOffsets: offsets)
         // TODO: DELETE API
     }
-}
-
-struct CardDataWrapper: Codable {
-    let payment_methods: [CreditCard]
 }
 
 #Preview {
