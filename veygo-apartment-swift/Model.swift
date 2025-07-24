@@ -137,10 +137,9 @@ struct PublishPaymentMethod: Identifiable, Codable, Equatable {
     let maskedCardNumber: String
     let network: String
     let expiration: String
-    let md5: String
     let nickname: String?
     let isEnabled: Bool
-    let renterID: Int
+    let renterId: Int
     let lastUsedDateTime: String?
 }
 
