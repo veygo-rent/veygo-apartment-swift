@@ -137,7 +137,7 @@ struct CreditCard: Identifiable, Codable, Equatable {
     let maskedCardNumber: String
     let network: String
     let expiration: String
-    let token: String
+    //let token: String
     let md5: String
     let nickname: String?
     let isEnabled: Bool

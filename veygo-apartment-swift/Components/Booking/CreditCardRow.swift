@@ -69,7 +69,7 @@ struct CreditCardRow_Previews: PreviewProvider {
                 maskedCardNumber: "**** **** **** 4242",
                 network: "Visa",
                 expiration: "12/26",
-                token: "tok_sample",
+                //token: "tok_sample",
                 md5: "abc123",
                 nickname: "My Visa",
                 isEnabled: true,
