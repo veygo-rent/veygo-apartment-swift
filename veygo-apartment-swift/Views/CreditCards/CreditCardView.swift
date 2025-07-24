@@ -15,10 +15,10 @@ struct CreditCardView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
-//                Text("Your Cards")
-//                    .font(.title2)
-//                    .bold()
-//                    .padding(.horizontal)
+                Text("Your Cards")
+                    .font(.title2)
+                    .bold()
+                    .padding(.horizontal)
 
                 List {
                     ForEach(cards) { card in
