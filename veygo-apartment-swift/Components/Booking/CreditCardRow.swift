@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CreditCardRow: View {
-    let card: CreditCard
+    let card: PublishPaymentMethod
     let isExpanded: Bool
     let onTap: () -> Void
 
@@ -63,7 +63,7 @@ struct CreditCardRow: View {
 struct CreditCardRow_Previews: PreviewProvider {
     static var previews: some View {
         CreditCardRow(
-            card: CreditCard(
+            card: PublishPaymentMethod(
                 id: 1,
                 cardholderName: "Xinyi Guan",
                 maskedCardNumber: "**** **** **** 4242",
