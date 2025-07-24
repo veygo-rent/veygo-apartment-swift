@@ -9,6 +9,7 @@
 import SwiftUI
 import Stripe
 import StripePaymentsUI
+import StripeCardScan
 
 struct FullStripeCardEntryView: View {
     @State private var paymentMethodParams: STPPaymentMethodParams? = nil
@@ -16,6 +17,7 @@ struct FullStripeCardEntryView: View {
     @State private var alertMessage = ""
     @State private var cardholderName: String = ""
     @State private var nickname: String = ""
+    @State private var showCardScan = false
 
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
@@ -44,6 +46,10 @@ struct FullStripeCardEntryView: View {
             .padding()
         }
         .padding()
+        .navigationTitle("Add Card")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(Color("AccentColor"), for: .navigationBar)
         .alert("Result", isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
         } message: {

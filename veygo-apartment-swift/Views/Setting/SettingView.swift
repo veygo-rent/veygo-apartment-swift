@@ -46,7 +46,7 @@ struct SettingView: View {
                         
                         Group {
                             SettingsRow(title: "Membership", subtitle: "Diamond Member", showSubtitle: true, showVerification: false)
-                            NavigationLink(destination: FullStripeCardEntryView()) {
+                            NavigationLink(destination: CreditCardView()) {
                                 SettingsRow(
                                     title: "Wallet",
                                     subtitle: "Add or manage your payment methods",
