@@ -157,8 +157,7 @@ struct CreditCardView: View {
             url: "/api/v1/payment-method/get",
             method: "GET",
             headers: [
-                "auth": "\(token)$\(userId)",
-                "user-agent": "veygo-app"
+                "auth": "\(token)$\(userId)"
             ]
         )
 
