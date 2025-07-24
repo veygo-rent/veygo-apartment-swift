@@ -184,19 +184,30 @@ struct CreditCardView: View {
 
                 switch httpResponse.statusCode {
                 case 200:
-                    let tokenOpt = extractToken(from: response)
-                        if let newToken = tokenOpt {
-                            self.token = newToken
-                            print("Updated token from response header")
-                        }
+                    if let newToken = extractToken(from: response) {
+                        self.token = newToken
+                    }
+
                     do {
-                        let decoded = try VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: data)
+                        let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+                        guard let paymentArray = jsonObject?["payment_methods"] else {
+                            alertMessage = "No payment_methods found"
+                            showAlert = true
+                            return
+                        }
+
+                        let methodsData = try JSONSerialization.data(withJSONObject: paymentArray)
+
+                        let decoded = try VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: methodsData)
+
                         self.cards = decoded
                     } catch {
-                        print(String(data: data, encoding: .utf8) ?? "Unreadable JSON")
-                        alertMessage = "Failed to parse response"
+                        print("Decode error: \(error)")
+                        alertMessage = "Failed to parse payment_methods"
                         showAlert = true
                     }
+
                 case 401:
                     alertMessage = "Session expired. Please log in again."
                     session.clear()

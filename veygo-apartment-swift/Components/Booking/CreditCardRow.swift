@@ -41,22 +41,19 @@ struct CreditCardRow: View {
             if isExpanded {
                 VStack(alignment: .leading, spacing: 4) {
                     Divider()
-                    if let nick = card.nickname {
-                        Text("Nickname: \(nick)")
-                    }
-//                    Text("Enabled: \(card.is_enabled ? "Yes" : "No")")
-                    if let date = card.lastUsedDateTime {
-                        Text("Last Used: \(date)")
-                            .font(.footnote)
-                            .foregroundColor(.gray)
-                    }
+                    Text("Nickname: \(card.nickname ?? "None")")
+                    Text("Enabled: \(card.isEnabled ? "Yes" : "No")")
+                    Text("Last Used: \(card.lastUsedDateTime ?? "Never")")
+                        .font(.footnote)
+                        .foregroundColor(.gray)
                 }
-                .transition(.opacity)
+                .transition(.opacity.combined(with: .slide))
             }
         }
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .animation(.easeInOut, value: isExpanded)
     }
 }
 
@@ -69,11 +66,9 @@ struct CreditCardRow_Previews: PreviewProvider {
                 maskedCardNumber: "**** **** **** 4242",
                 network: "Visa",
                 expiration: "12/26",
-                //token: "tok_sample",
-                md5: "abc123",
                 nickname: "My Visa",
                 isEnabled: true,
-                renterID: 1001,
+                renterId: 1001,
                 lastUsedDateTime: "2025-07-23T12:00:00Z"
             ),
             isExpanded: true,
