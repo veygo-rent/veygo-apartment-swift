@@ -230,8 +230,88 @@ struct CreditCardView: View {
             return
         }
 
-        cards.remove(atOffsets: offsets)
-        // TODO: DELETE API
+        guard let index = offsets.first else { return }
+        let cardToDelete = cards[index]
+
+        let requestBody: [String: Any] = [
+            "card_id": cardToDelete.id
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
+            alertMessage = "Failed to encode delete request"
+            showAlert = true
+            return
+        }
+
+        var request = veygoCurlRequest(
+            url: "/api/v1/payment-method/delete",
+            method: "POST",
+            headers: [
+                "auth": "\(token)$\(userId)",
+                "user-agent": "iOS-App"
+            ]
+        )
+        request.httpBody = jsonData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    alertMessage = "Network error: \(error.localizedDescription)"
+                    showAlert = true
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    alertMessage = "Invalid response"
+                    showAlert = true
+                    return
+                }
+
+                guard let data = data else {
+                    alertMessage = "Empty response"
+                    showAlert = true
+                    return
+                }
+
+                switch httpResponse.statusCode {
+                case 200:
+                    if let newToken = extractToken(from: response) {
+                        self.token = newToken
+                    }
+
+                    do {
+                        let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                        guard let paymentArray = jsonObject?["payment_methods"] else {
+                            alertMessage = "No payment_methods found"
+                            showAlert = true
+                            return
+                        }
+
+                        let methodsData = try JSONSerialization.data(withJSONObject: paymentArray)
+                        let decoded = try VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: methodsData)
+                        self.cards = decoded
+                    } catch {
+                        alertMessage = "Failed to parse updated card list"
+                        showAlert = true
+                    }
+
+                case 406:
+                    alertMessage = "Invalid payment method."
+                    showAlert = true
+                case 401:
+                    alertMessage = "Session expired. Please log in again."
+                    session.clear()
+                    showAlert = true
+                case 500:
+                    alertMessage = "Server error. Try again later."
+                    showAlert = true
+                default:
+                    let rawText = String(data: data, encoding: .utf8) ?? "Unknown error"
+                    alertMessage = "Error: \(rawText)"
+                    showAlert = true
+                }
+            }
+        }.resume()
     }
 }
 
