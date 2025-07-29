@@ -15,10 +15,13 @@ struct CreditCardRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 16) {
-                Image(systemName: card.network == "Visa" ? "creditcard.fill" : "creditcard")
-                    .resizable()
-                    .frame(width: 32, height: 22)
-                    .foregroundColor(.primaryButtonBg)
+//                Image(systemName: card.network == "Visa" ? "creditcard.fill" : "creditcard")
+//                    .resizable()
+//                    .frame(width: 32, height: 22)
+//                    .foregroundColor(.primaryButtonBg)
+                cardBrandImage(for: card.network)
+                    .frame(width: 32, height: 32)
+                    .cornerRadius(4)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(card.maskedCardNumber)
@@ -57,6 +60,22 @@ struct CreditCardRow: View {
     }
 }
 
+@ViewBuilder
+    func cardBrandImage(for brand: String) -> some View {
+        let lowercased = brand.lowercased()
+        let knownBrands = ["visa", "master", "amex", "discover", "union", "jcb", "dinner"]
+
+        if knownBrands.contains(lowercased) {
+            Image(lowercased)
+                .resizable()
+        } else {
+            Image(systemName: "creditcard")
+                .resizable()
+                .frame(width: 32, height: 22)
+                .foregroundColor(.primaryButtonBg)
+        }
+    }
+
 struct CreditCardRow_Previews: PreviewProvider {
     static var previews: some View {
         CreditCardRow(
@@ -78,3 +97,4 @@ struct CreditCardRow_Previews: PreviewProvider {
         .padding()
     }
 }
+
