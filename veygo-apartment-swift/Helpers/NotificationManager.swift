@@ -7,7 +7,7 @@
 import Foundation
 import UserNotifications
 
-class NotificationManager {
+struct NotificationManager {
     static let shared = NotificationManager()
 
     private init() {}

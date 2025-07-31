@@ -11,8 +11,7 @@ enum HomeDestination: Hashable {
 
 struct HomeView: View {
     @EnvironmentObject var session: UserSession
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
+    
     @AppStorage("apns_token") var apns_token: String = ""
     
     @State private var selectedToggle: RentalOption = .university
@@ -38,12 +37,8 @@ struct HomeView: View {
     }
     
     @available(iOS 26.0, macOS 26.0, *)
-    @Observable
-    @MainActor
     final class TripPlanner {
-        /// TripPlan represents a planned trip with a selected place and description.
-        /// The guide for valid places is provided statically via placesGuide,
-        /// which must be set prior to generating a TripPlan instance.
+        
         @Generable
         struct PlaceDescriptions {
             @Guide(.count(10))
@@ -51,10 +46,9 @@ struct HomeView: View {
         }
         
         @Generable
-        struct PlaceDescription {
-            /// Static list of place IDs used as the guide for the place selection.
-            /// This must be set before generating a TripPlan.
-            static var placesIds: [String] = []
+        nonisolated struct PlaceDescription {
+            
+            nonisolated(unsafe) static var placesIds: [String] = []
             
             @Guide(.anyOf(placesIds))
             @Guide(description: "Records the Place ID of a place")
@@ -76,7 +70,7 @@ struct HomeView: View {
             self.startDate = startDate
             self.endDate = endDate
             
-            // Refined prompt for trip assistant.
+            
             self.session = LanguageModelSession{
                 """
                 You are a travel assistant helping a renter make the most out of their rental car period by suggesting enjoyable places and activities.
@@ -105,13 +99,17 @@ struct HomeView: View {
         }
         
         func loadNearbyAttractions() async {
-            PlaceDescription.placesIds = []
+            await MainActor.run {
+                PlaceDescription.placesIds = []
+            }
             let timeDetla = endDate.timeIntervalSince1970 - startDate.timeIntervalSince1970
             let suggestedRadius = (5.0 + (timeDetla - 3600.0) / 3600.0 / 3.5 * 6.0) * 1609.0
             
             let places = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
             for place in places {
-                PlaceDescription.placesIds.append(place.placeID ?? "")
+                await MainActor.run {
+                    PlaceDescription.placesIds.append(place.placeID ?? "")
+                }
                 nearbyAttractions.append(.init(place: place))
             }
         }
@@ -120,7 +118,8 @@ struct HomeView: View {
             var places: [PlaceWithDescription] = []
             if !nearbyAttractions.isEmpty {
                 let forbiddenKeywords = ["Six Flags"]
-                let attractionsListPrompt: String = nearbyAttractions.compactMap { item -> String? in
+                var attractionsListPromptArr: [String] = []
+                for item in nearbyAttractions {
                     let place = item.place
                     let name = place.displayName ?? "Unknown"
                     let summary = place.editorialSummary ?? "Unknown"
@@ -155,14 +154,16 @@ struct HomeView: View {
                     let finalPlacePrompt = "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
                     // Filter forbidden keywords
                     if forbiddenKeywords.contains(where: { finalPlacePrompt.localizedCaseInsensitiveContains($0) }) {
-                        // Remove the placeID if forbidden
-                        if let index = PlaceDescription.placesIds.firstIndex(of: placeID) {
-                            PlaceDescription.placesIds.remove(at: index)
+                        await MainActor.run {
+                            if let index = PlaceDescription.placesIds.firstIndex(of: placeID) {
+                                PlaceDescription.placesIds.remove(at: index)
+                            }
                         }
-                        return nil
+                        continue
                     }
-                    return finalPlacePrompt
-                }.joined(separator: "\n")
+                    attractionsListPromptArr.append(finalPlacePrompt)
+                }
+                let attractionsListPrompt = attractionsListPromptArr.joined(separator: "\n")
                 
                 // Refined prompt for trip assistant.
                 let prompt = """

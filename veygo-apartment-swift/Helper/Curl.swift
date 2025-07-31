@@ -7,7 +7,7 @@
 
 import Foundation
 
-public func veygoCurlRequest (url: String, method: String, headers: [String: String] = [:], body: Data? = nil) -> URLRequest {
+nonisolated public func veygoCurlRequest (url: String, method: String, headers: [String: String] = [:], body: Data? = nil) -> URLRequest {
     let BASE_PATH = "https://dev.veygo.rent"
     guard let fullURL = URL(string: "\(BASE_PATH)\(url)") else {
         fatalError("Invalid URL: \(BASE_PATH)\(url)")
@@ -30,29 +30,29 @@ public func veygoCurlRequest (url: String, method: String, headers: [String: Str
     return request
 }
 
-class VeygoJsonStandard {
-    static let shared = VeygoJsonStandard()
-    let decoder: JSONDecoder = {
+struct VeygoJsonStandard {
+    nonisolated static let shared = VeygoJsonStandard()
+    nonisolated let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .secondsSince1970
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
-//        formatter.locale = Locale(identifier: "en_US_POSIX")
-//        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-//        decoder.dateDecodingStrategy = .formatted(formatter)
         return decoder
     }()
-    let encoder: JSONEncoder = {
+    nonisolated let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted]
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .secondsSince1970
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
-//        formatter.locale = Locale(identifier: "en_US_POSIX")
-//        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-//        encoder.dateEncodingStrategy = .formatted(formatter)
         return encoder
     }()
+}
+
+nonisolated public func extractToken(from response: URLResponse?) -> String? {
+    guard let httpResponse = response as? HTTPURLResponse else {
+        print("Failed to cast response to HTTPURLResponse")
+        return nil
+    }
+    let token = httpResponse.value(forHTTPHeaderField: "token")
+    print("Extracted token from header: \(token ?? "nil")")
+    return token
 }

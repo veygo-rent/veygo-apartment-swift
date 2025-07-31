@@ -8,13 +8,18 @@
 import SwiftUI
 
 struct SettingView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @EnvironmentObject var session: UserSession
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
     @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0
     @AppStorage("email_verified_at") var emailVerifiedAt: Double = 0
     
-    @State var showAlert: Bool = false
     @State private var phoneVerified: Bool = false
     @State private var emailVerified = false
     var body: some View {
@@ -91,22 +96,11 @@ struct SettingView: View {
                     Spacer()
                     
                     PrimaryButtonLg(text: "Log out") {
-                        let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
-                        URLSession.shared.dataTask(with: request) { data, response, error in
-                            guard let httpResponse = response as? HTTPURLResponse else {
-                                print("Invalid server response.")
-                                return
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await logoutRequestAsync(token, userId)
                             }
-                            if httpResponse.statusCode == 200 {
-                                token = ""
-                                userId = 0
-                                DispatchQueue.main.async {
-                                    // Update UserSession
-                                    self.session.user = nil
-                                }
-                                print("🧼 Token cleared")
-                            }
-                        }.resume()
+                        }
                     }
                     .navigationTitle("Setting")
                     .navigationBarTitleDisplayMode(.inline) //这里可以把root上的改小
@@ -122,6 +116,54 @@ struct SettingView: View {
             let now = Date().timeIntervalSince1970
             phoneVerified = now - phoneVerifiedAt < 30 * 24 * 60 * 60
             emailVerified = now - emailVerifiedAt < 30 * 24 * 60 * 60
+        }
+    }
+    
+    @ApiCallActor func logoutRequestAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            if !token.isEmpty && userId > 0 {
+                let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: "GET", headers: ["auth": "\(token)$\(userId)"])
+                let (_, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    await MainActor.run {
+                        session.user = nil
+                    }
+                    return .clearUser
+                case 405:
+                    await MainActor.run {
+                        alertTitle = "Internal Error"
+                        alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                        showAlert = true
+                    }
+                    return .doNothing
+                default:
+                    await MainActor.run {
+                        alertTitle = "Application Error"
+                        alertMessage = "Unrecognized response, make sure you are running the latest version"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
         }
     }
 }

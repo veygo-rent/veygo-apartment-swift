@@ -165,11 +165,11 @@ struct CardInputFieldWrapper: UIViewRepresentable {
         Coordinator(parent: self)
     }
 
-    class Coordinator: NSObject, STPPaymentCardTextFieldDelegate {
+    class Coordinator: NSObject, @preconcurrency STPPaymentCardTextFieldDelegate {
         var parent: CardInputFieldWrapper
         init(parent: CardInputFieldWrapper) { self.parent = parent }
 
-        func paymentCardTextFieldDidChange(_ textField: STPPaymentCardTextField) {
+        @MainActor func paymentCardTextFieldDidChange(_ textField: STPPaymentCardTextField) {
             if textField.isValid {
                 parent.paymentMethodParams = textField.paymentMethodParams
             } else {

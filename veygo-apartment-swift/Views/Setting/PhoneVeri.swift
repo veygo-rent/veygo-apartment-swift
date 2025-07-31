@@ -7,14 +7,17 @@
 import SwiftUI
 
 struct PhoneVeri: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @EnvironmentObject var session: UserSession
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
+    
     @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0 // 让need verification消失30天 也就是说30天内用户不用再次验证
 
     @State private var verificationCode: String = ""
-    @State private var showAlert: Bool = false
-    @State private var alertMessage: String = ""
     
     @Binding var isVerified: Bool
     var body: some View {
@@ -27,7 +30,11 @@ struct PhoneVeri: View {
                     .foregroundColor(Color("FootNote"))
 
                 SecondaryButtonLg(text: "Send Code") {
-                    sendVerificationCode()
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await sendVerificationCodeAsync(token, userId)
+                        }
+                    }
                 }
                 .frame(width: 120)
             }
@@ -36,10 +43,9 @@ struct PhoneVeri: View {
 
             HStack {
                 PrimaryButtonLg(text: "Verify") {
-                    verifyCode { success in
-                        if success {
-                            isVerified = true
-                            self.phoneVerifiedAt = Date().timeIntervalSince1970
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await verifyCodeAsync(token, userId)
                         }
                     }
                 }
@@ -68,147 +74,182 @@ struct PhoneVeri: View {
         }
     }
 
-    func sendVerificationCode() {
-        let bodyDict: [String: String] = [
-            "verification_method": "Phone"
-        ]
-
-        guard let body = try? JSONEncoder().encode(bodyDict) else {
-            alertMessage = "Failed to encode request body"
-            showAlert = true
-            return
-        }
-
-        let request = veygoCurlRequest(
-            url: "/api/v1/verification/request-token",
-            method: "POST",
-            headers: [
-                "auth": "\(token)$\(userId)"
-            ],
-            body: body
-        )
-
-        print("Sending Phone code with auth header: \(token)$\(userId)")
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                alertMessage = "Failed to send code: \(error.localizedDescription)"
-                showAlert = true
-                return
-            }
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                alertMessage = "Invalid server response"
-                showAlert = true
-                return
-            }
-
-            if let data = data {
-                let responseString = String(data: data, encoding: .utf8) ?? ""
-                print("Response from request-token:\n\(responseString)")
-
-                if let httpResponse = response as? HTTPURLResponse {
-                    if let newToken = httpResponse.value(forHTTPHeaderField: "token") {
-                        print("Updated token from response header: \(newToken)")
-                        DispatchQueue.main.async {
-                            self.token = newToken
-                        }
-                    } else {
-                        print("No token found in response headers")
+    @ApiCallActor func sendVerificationCodeAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            if !token.isEmpty && userId > 0 {
+                let body: [String: String] = [
+                    "verification_method": "Phone"
+                ]
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+                let request = veygoCurlRequest(
+                    url: "/api/v1/verification/request-token",
+                    method: "POST",
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ],
+                    body: jsonData
+                )
+                let (_, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
                     }
+                    return .doNothing
                 }
-            }
-            DispatchQueue.main.async {
-                if httpResponse.statusCode == 200 {
-                    alertMessage = "Code sent successfully"
-                } else {
-                    alertMessage = "Failed to send code (status \(httpResponse.statusCode))"
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
                 }
-                showAlert = true
-            }
-        }.resume()
-    }
-
-    func verifyCode(completion: @escaping (Bool) -> Void) { // return T means already verificated, no "Need Verification in Setting row anymore <3
-        guard !verificationCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            alertMessage = "Verification code cannot be empty."
-            showAlert = true
-            completion(false)
-            return
-        }
-
-        let bodyDict: [String: String] = [
-            "verification_method": "Phone",
-            "code": verificationCode
-        ]
-        
-        guard let body = try? JSONEncoder().encode(bodyDict) else {
-            alertMessage = "Failed to encode verification request"
-            showAlert = true
-            completion(false)
-            return
-        }
-        
-        let request = veygoCurlRequest(
-            url: "/api/v1/verification/verify-token",
-            method: "POST",
-            headers: [
-                "auth": "\(token)$\(userId)",
-                "Content-Type": "application/json"
-            ],
-            body: body
-        )
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    alertMessage = "Verification failed: \(error.localizedDescription)"
-                    showAlert = true
-                    completion(false)
-                }
-                return
-            }
-
-            guard let httpResponse = response as? HTTPURLResponse,
-                  let newToken = extractToken(from: response) else {
-                DispatchQueue.main.async {
-                    alertMessage = "Invalid server response"
-                    showAlert = true
-                    completion(false)
-                }
-                return
-            }
-            
-            DispatchQueue.main.async {
+                
                 switch httpResponse.statusCode {
                 case 200:
-                    self.token = newToken
-                    alertMessage = "Verification successful!"
-                    showAlert = true
-                    completion(true)
-
+                    let token = extractToken(from: response) ?? ""
+                    return .renewSuccessful(token: token)
                 case 401:
-                    alertMessage = "Your account has expired. Please log in again."
-                    showAlert = true
-                    session.clear()
-                    completion(false)
-
-                case 406:
-                    self.token = newToken
-                    alertMessage = "Wrong code, please enter again."
-                    showAlert = true
-                    completion(false)
-
+                    await MainActor.run {
+                        alertTitle = "Session Expired"
+                        alertMessage = "Token expired, please login again"
+                        showAlert = true
+                        clearUserTriggered = true
+                    }
+                    return .clearUser
+                case 405:
+                    await MainActor.run {
+                        alertTitle = "Internal Error"
+                        alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                        showAlert = true
+                        clearUserTriggered = true
+                    }
+                    return .clearUser
                 default:
-                    alertMessage = "Error: \(httpResponse.statusCode)"
-                    showAlert = true
-                    completion(false)
+                    await MainActor.run {
+                        alertTitle = "Application Error"
+                        alertMessage = "Unrecognized response, make sure you are running the latest version"
+                        showAlert = true
+                    }
+                    return .doNothing
                 }
             }
-
-        }.resume()
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
     }
+    
+    @ApiCallActor func verifyCodeAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            if !token.isEmpty && userId > 0 {
+                let verificationCode = await verificationCode.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !verificationCode.isEmpty else {
+                    await MainActor.run {
+                        alertTitle = "Warning"
+                        alertMessage = "Verification code cannot be empty."
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
 
+                let body: [String: String] = [
+                    "verification_method": "Phone",
+                    "code": verificationCode
+                ]
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+                let request = veygoCurlRequest(
+                    url: "/api/v1/verification/verify-token",
+                    method: "POST",
+                    headers: [
+                        "auth": "\(token)$\(userId)",
+                        "Content-Type": "application/json"
+                    ],
+                    body: jsonData
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    nonisolated struct FetchSuccessBody: Decodable {
+                        let verifiedRenter: PublishRenter
+                    }
+                    
+                    let token = extractToken(from: response) ?? ""
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .renewSuccessful(token: token)
+                    }
+                    await MainActor.run {
+                        session.user = decodedBody.verifiedRenter
+                    }
+                    return .renewSuccessful(token: token)
+                case 405:
+                    await MainActor.run {
+                        alertTitle = "Internal Error"
+                        alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                        showAlert = true
+                        clearUserTriggered = true
+                    }
+                    return .clearUser
+                case 406:
+                    let token = extractToken(from: response) ?? ""
+                    await MainActor.run {
+                        alertTitle = "Warning"
+                        alertMessage = "Invalid verification code"
+                        showAlert = true
+                    }
+                    return .renewSuccessful(token: token)
+                default:
+                    await MainActor.run {
+                        alertTitle = "Application Error"
+                        alertMessage = "Unrecognized response, make sure you are running the latest version"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
 }
 
 #Preview {

@@ -16,6 +16,11 @@ enum SignupRoute: Hashable {
 }
 
 struct LoginView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
 
     private enum Field: Hashable {
         case email
@@ -29,9 +34,6 @@ struct LoginView: View {
     @StateObject private var signup = SignupSession()
     
     @State private var goToResetView = false
-
-    @State private var showAlert = false
-    @State private var alertMessage = ""
 
     @AppStorage("token") var token: String = ""
     @AppStorage("user_id") var userId: Int = 0
@@ -68,7 +70,11 @@ struct LoginView: View {
                     } else if password.isEmpty {
                         focusedField = .password
                     } else {
-                        loginUser()
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await loginUserAsync()
+                            }
+                        }
                     }
                 }
                 .alert(isPresented: $showAlert) {
@@ -114,59 +120,85 @@ struct LoginView: View {
             }
         }
     }
-
-    func loginUser() {
-        let body: [String: String] = ["email": email, "password": password]
-        let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        
-        let request = veygoCurlRequest(url: "/api/v1/user/login", method: "POST", body: jsonData)
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    alertMessage = "Network error: \(error.localizedDescription)"
+    
+    @ApiCallActor func loginUserAsync() async -> ApiTaskResponse {
+        do {
+            let body = await ["email": email, "password": password]
+            let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+            
+            let request = veygoCurlRequest(url: "/api/v1/user/login", method: "POST", body: jsonData)
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid protocol"
                     showAlert = true
                 }
-                return
+                return .doNothing
             }
-
-            guard let httpResponse = response as? HTTPURLResponse, let data = data else {
-                DispatchQueue.main.async {
-                    alertMessage = "Invalid server response."
+            
+            guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid content"
                     showAlert = true
                 }
-                return
+                return .doNothing
             }
-
-            if httpResponse.statusCode == 200 {
-                let responseJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-                if let renterData = responseJSON?["renter"],
-                   let renterJSON = try? JSONSerialization.data(withJSONObject: renterData),
-                   let decodedUser = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: renterJSON) {
-                    // Update AppStorage
-                    self.token = extractToken(from: response)!
-                    self.userId = decodedUser.id
-                    DispatchQueue.main.async {
-                        // Update UserSession
-                        self.session.user = decodedUser
+            
+            switch httpResponse.statusCode {
+            case 200:
+                nonisolated struct LoginSuccessBody: Decodable {
+                    let renter: PublishRenter
+                }
+                
+                let token = extractToken(from: response) ?? ""
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data) else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
                     }
-                    print("\nLogin successful: \(self.token) \(decodedUser.id)\n")
-                    DispatchQueue.main.async {
-                        self.session.user = decodedUser
-                    }
+                    return .renewSuccessful(token: token)
                 }
-            } else if httpResponse.statusCode == 401 {
-                DispatchQueue.main.async {
-                    alertMessage = "Email or password is incorrect"
+                await MainActor.run {
+                    self.session.user = decodedBody.renter
+                }
+                return .loginSuccessful(userId: decodedBody.renter.id, token: token)
+            case 401:
+                await MainActor.run {
+                    alertTitle = "Login Failed"
+                    alertMessage = "Wrong email or password"
+                    showAlert = true
+                    clearUserTriggered = true
+                }
+                return .clearUser
+            case 405:
+                await MainActor.run {
+                    alertTitle = "Internal Error"
+                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                    showAlert = true
+                    clearUserTriggered = true
+                }
+                return .clearUser
+            default:
+                await MainActor.run {
+                    alertTitle = "Application Error"
+                    alertMessage = "Unrecognized response, make sure you are running the latest version"
                     showAlert = true
                 }
-            } else {
-                DispatchQueue.main.async {
-                    alertMessage = "Unexpected error (code: \(httpResponse.statusCode))."
-                    showAlert = true
-                }
+                return .doNothing
             }
-        }.resume()
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
     }
 }
 

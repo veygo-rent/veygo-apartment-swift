@@ -8,6 +8,8 @@
 import SwiftUI
 import MapKit
 
+import Foundation
+
 enum VerificationType: String, Codable {
     case email = "Email"
     case phone = "Phone"
@@ -55,7 +57,7 @@ enum TransactionType: String, Codable {
     case cash = "Cash"
 }
 
-struct PublishRenter: Codable, Identifiable, Equatable {
+nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var id: Int
     var name: String
     var studentEmail: String
@@ -68,11 +70,11 @@ struct PublishRenter: Codable, Identifiable, Equatable {
     var dateOfRegistration: Date
     var driversLicenseNumber: String?
     var driversLicenseStateRegion: String?
-    var driversLicenseExpiration: Date?
-    var insuranceLiabilityExpiration: Date?
-    var insuranceCollisionExpiration: Date?
+    var driversLicenseExpiration: String? // Admin needs to verify
+    var insuranceLiabilityExpiration: String? // Admin needs to verify
+    var insuranceCollisionExpiration: String? // Admin needs to verify
     var apartmentId: Int
-    var leaseAgreementExpiration: Date?
+    var leaseAgreementExpiration: String? // Admin needs to verify
     var billingAddress: String?
     var signatureDatetime: Date?
     var planTier: PlanTier
@@ -84,8 +86,16 @@ struct PublishRenter: Codable, Identifiable, Equatable {
     var subscriptionPaymentMethodId: Int?
 }
 
+struct DoNotRentList: Identifiable, Equatable, Codable {
+    var id: Int
+    var name: String?
+    var email: String?
+    var phone: String?
+    var note: String
+    var exp: String?
+}
 
-struct Apartment: Identifiable, Equatable, Codable {
+struct Apartment: Identifiable, Equatable, Codable, HasName {
     var id: Int
     var name: String
     var email: String
@@ -112,12 +122,49 @@ struct Apartment: Identifiable, Equatable, Codable {
     var taxes: [Int?]
 }
 
-class SignupSession: ObservableObject {
-    @Published var name: Optional<String> = nil
-    @Published var date_of_birth: Optional<String> = nil  // MM/DD/YYYY
-    @Published var phone: Optional<String> = nil
-    @Published var student_email: Optional<String> = nil
-    @Published var password: Optional<String> = nil
+nonisolated struct ApartmentNew: Equatable, Codable, HasName {
+    var name: String
+    var email: String
+    var phone: String
+    var address: String
+    var acceptedSchoolEmailDomain: String
+    var freeTierHours: Double
+    var freeTierRate: Double
+    var silverTierHours: Double
+    var silverTierRate: Double
+    var goldTierHours: Double
+    var goldTierRate: Double
+    var platinumTierHours: Double
+    var platinumTierRate: Double
+    var durationRate: Double
+    var liabilityProtectionRate: Double
+    var pcdwProtectionRate: Double
+    var pcdwExtProtectionRate: Double
+    var rsaProtectionRate: Double
+    var paiProtectionRate: Double
+    var isOperating: Bool
+    var isPublic: Bool
+    var uniId: Int
+    var taxes: [Int?]
+}
+
+struct Tax: Identifiable, Equatable, Codable, HasName {
+    var id: Int
+    var name: String
+    var multiplier: Double
+    var isEffective: Bool
+}
+
+struct TransponderCompany: Identifiable, Equatable, Codable {
+    var id: Int
+    var name: String
+    var correspondingKeyForVehicleId: String
+    var correspondingKeyForTransactionName: String
+    var customPrefixForTransactionName: String
+    var correspondingKeyForTransactionTime: String
+    var correspondingKeyForTransactionAmount: String
+    var timestampFormat: String
+    var timezone: String?
 }
 
 struct Car: Identifiable {
@@ -152,62 +199,4 @@ struct CarLocation: Identifiable, Equatable {
     static func == (lhs: CarLocation, rhs: CarLocation) -> Bool {
         return lhs.id == rhs.id
     }
-}
-
-class UserSession: ObservableObject {
-    @Published var user: PublishRenter? = nil
-    
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
-
-    // 用 token 和 user_id 调用后端 API 验证并查找用户信息 对了—>200, 不对—>re-login
-    func validateTokenAndFetchUser(completion: @escaping (Bool) -> Void) {
-        let request = veygoCurlRequest(url: "/api/v1/user/retrieve", method: "GET", headers: ["auth": "\(token)$\(userId)"])
-        
-        if (token == "" || userId == 0) {
-            completion(false)
-            return
-        }
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                completion(false)
-                return
-            }
-
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200,
-                  let data = data else {
-                print("Invalid or unauthorized response")
-                completion(false)
-                return
-            }
-
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let renter = json["renter"],
-               let renterData = try? JSONSerialization.data(withJSONObject: renter),
-               let decodedUser = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
-                let newToken: String = httpResponse.value(forHTTPHeaderField: "token")!
-                DispatchQueue.main.async {
-                    self.user = decodedUser
-                    self.token = newToken
-                    self.userId = decodedUser.id
-                }
-                print("New token refreshed.")
-                print("User loaded via token: \(decodedUser.name)")
-                completion(true)
-            } else {
-                print("Failed to parse user from response")
-                completion(false)
-            }
-        }.resume()
-    }
-    
-    func clear() {
-        self.user = nil
-        self.token = ""
-        self.userId = 0
-    }
-    
 }
