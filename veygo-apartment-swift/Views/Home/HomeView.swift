@@ -46,7 +46,7 @@ struct HomeView: View {
         }
         
         @Generable
-        nonisolated struct PlaceDescription {
+        struct PlaceDescription {
             
             nonisolated(unsafe) static var placesIds: [String] = []
             
