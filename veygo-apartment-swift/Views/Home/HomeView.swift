@@ -24,6 +24,7 @@ struct HomeView: View {
     @State private var path: [HomeDestination] = []
     
     @State private var thingsToDo: [PlaceWithDescription]? = []
+    @State private var thingsToDoTask: Task<Void, Never>? = nil
     
     struct PlaceOption {
         let place: Place
@@ -206,16 +207,30 @@ struct HomeView: View {
                     .padding(.horizontal, 24)
                     .onChange(of: selectedLocation) { oldValue, newValue in
                         if #available(iOS 26, *) {
-                            thingsToDo = nil
-                            guard let selectedId = selectedLocation,
-                                  let school = universities.getItemBy(id: selectedId) else { return }
-                            let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
-                            Task {
+                            thingsToDo = []
+                            // Cancel any in-flight load for a previous selection
+                            thingsToDoTask?.cancel()
+
+                            let selectionSnapshot = newValue
+                            thingsToDoTask = Task {
+                                // Wait 1.5 seconds before clearing the UI
+                                try? await Task.sleep(nanoseconds: 500_000_000)
+                                guard !Task.isCancelled else { return }
+
+                                guard let selectedId = selectionSnapshot,
+                                      let school = universities.getItemBy(id: selectedId) else { return }
+
+                                await MainActor.run { thingsToDo = nil }
+
+                                let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
                                 do {
                                     await planner.loadNearbyAttractions()
-                                    thingsToDo = try await planner.suggectPlaces()
+                                    let suggestions = try await planner.suggectPlaces()
+                                    guard !Task.isCancelled else { return }
+                                    await MainActor.run { thingsToDo = suggestions }
                                 } catch {
-                                    thingsToDo = []
+                                    guard !Task.isCancelled else { return }
+                                    await MainActor.run { thingsToDo = [] }
                                     print("Error suggesting places: \(error)")
                                 }
                             }
