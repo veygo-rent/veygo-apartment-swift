@@ -1,7 +1,10 @@
 import SwiftUI
 import UIKit
 import UserNotifications
+//#if canImport(FoundationModels)
+#if canImport(FoundationModels)
 import FoundationModels
+#endif
 import GooglePlacesSwift
 
 enum HomeDestination: Hashable {
@@ -37,6 +40,7 @@ struct HomeView: View {
         let description: String
     }
     
+#if canImport(FoundationModels)
     @available(iOS 26.0, macOS 26.0, *)
     final class TripPlanner {
         
@@ -48,7 +52,6 @@ struct HomeView: View {
         
         @Generable
         struct PlaceDescription {
-            
             nonisolated(unsafe) static var placesIds: [String] = []
             
             @Guide(.anyOf(placesIds))
@@ -70,7 +73,6 @@ struct HomeView: View {
             self.school = school
             self.startDate = startDate
             self.endDate = endDate
-            
             
             self.session = LanguageModelSession{
                 """
@@ -169,7 +171,6 @@ struct HomeView: View {
                 // Refined prompt for trip assistant.
                 let prompt = """
                 Here are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsListPrompt)\n\n
-                
                 Please do not mention the type/category of the attraction directly. Generate a list of places the renter can go that match the instructions above.
                 """
                 
@@ -188,6 +189,43 @@ struct HomeView: View {
             return places
         }
     }
+#else
+    // Fallback implementation when FoundationModels is unavailable
+    final class TripPlanner {
+        var nearbyAttractions: [PlaceOption] = []
+        
+        let school: Apartment
+        let startDate: Date
+        let endDate: Date
+        
+        init(school: Apartment, startDate: Date, endDate: Date) {
+            self.school = school
+            self.startDate = startDate
+            self.endDate = endDate
+        }
+        
+        func loadNearbyAttractions() async {
+            let timeDetla = endDate.timeIntervalSince1970 - startDate.timeIntervalSince1970
+            let suggestedRadius = (5.0 + (timeDetla - 3600.0) / 3600.0 / 3.5 * 6.0) * 1609.0
+            let places = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
+            nearbyAttractions = places.map { PlaceOption(place: $0) }
+        }
+        
+        func suggectPlaces() async throws -> [PlaceWithDescription] {
+            // Simple local fallback: use editorialSummary if present.
+            // Return only the top 5 by rating.
+            let items = nearbyAttractions.map { option in
+                let desc = option.place.editorialSummary ?? "Popular spot near \(school.name)."
+                return PlaceWithDescription(place: option.place, description: desc)
+            }.sorted { lhs, rhs in
+                let lhsRating = lhs.place.rating ?? 0.0
+                let rhsRating = rhs.place.rating ?? 0.0
+                return lhsRating > rhsRating
+            }
+            return Array(items.prefix(5))
+        }
+    }
+#endif
     
     var body: some View {
         NavigationStack(path: $path) {
