@@ -381,6 +381,7 @@ struct HomeView: View {
         .refreshable {
             await fetchUniversities()
         }
+        .scrollContentBackground(.hidden)
     }
     func fetchUniversities() async {
         let request = veygoCurlRequest(
