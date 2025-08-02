@@ -1,10 +1,6 @@
 import SwiftUI
 import UIKit
 import UserNotifications
-//#if canImport(FoundationModels)
-#if canImport(FoundationModels)
-import FoundationModels
-#endif
 import GooglePlacesSwift
 
 enum HomeDestination: Hashable {
@@ -26,9 +22,6 @@ struct HomeView: View {
     
     @State private var path: [HomeDestination] = []
     
-    @State private var thingsToDo: [PlaceWithDescription]? = []
-    @State private var thingsToDoTask: Task<Void, Never>? = nil
-    
     struct PlaceOption {
         let place: Place
     }
@@ -39,193 +32,6 @@ struct HomeView: View {
         let place: Place
         let description: String
     }
-    
-#if canImport(FoundationModels)
-    @available(iOS 26.0, macOS 26.0, *)
-    final class TripPlanner {
-        
-        @Generable
-        struct PlaceDescriptions {
-            @Guide(.count(10))
-            let places: [PlaceDescription]
-        }
-        
-        @Generable
-        struct PlaceDescription {
-            nonisolated(unsafe) static var placesIds: [String] = []
-            
-            @Guide(.anyOf(placesIds))
-            @Guide(description: "Records the Place ID of a place")
-            let placeID: String
-            @Guide(description: "A short description of the Place, explicitly mention what city the place is in")
-            let description: String
-        }
-        
-        var nearbyAttractions: [PlaceOption] = []
-        private(set) var tripPlan: PlaceDescriptions?
-        private let session: LanguageModelSession
-        
-        let school: Apartment
-        let startDate: Date
-        let endDate: Date
-        
-        init(school: Apartment, startDate: Date, endDate: Date) {
-            self.school = school
-            self.startDate = startDate
-            self.endDate = endDate
-            
-            self.session = LanguageModelSession{
-                """
-                You are a travel assistant helping a renter make the most out of their rental car period by suggesting enjoyable places and activities.
-                
-                Pickup Details:
-                - Location: \(school.name), \(school.address)
-                - Pickup Time (UTC): \(startDate)
-                - Return Time (UTC): \(endDate)
-                - Please convert these times to the local timezone when considering opening hours or events.
-                
-                Instructions:
-                1. Suggest a short, ranked list of places or activities fitting the available rental period and their locations.
-                2. For each suggestion:
-                    - Provide the name, city, and state/province.
-                    - Add a concise, enticing description (avoid naming the type of attraction directly).
-                    - Mention any unique features, seasonal events, or local tips if relevant.
-                3. Consider:
-                    - Opening hours and travel time.
-                    - The renter's pickup and return location.
-                    - Both nearby and farther destinations (given unlimited mileage).
-                    - For longer rentals, suggest some out-of-state/province attractions if practical.
-                    - Focus on student-friendly, neutral, and safe content.
-                4. Include a mix of well-known and lesser-known (not so famous) local places, such as hidden gems or local favorites that may not appear in typical tourist guides. 
-                """
-            }
-        }
-        
-        func loadNearbyAttractions() async {
-            await MainActor.run {
-                PlaceDescription.placesIds = []
-            }
-            let timeDetla = endDate.timeIntervalSince1970 - startDate.timeIntervalSince1970
-            let suggestedRadius = (5.0 + (timeDetla - 3600.0) / 3600.0 / 3.5 * 6.0) * 1609.0
-            
-            let places = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
-            for place in places {
-                await MainActor.run {
-                    PlaceDescription.placesIds.append(place.placeID ?? "")
-                }
-                nearbyAttractions.append(.init(place: place))
-            }
-        }
-        
-        func suggectPlaces() async throws -> [PlaceWithDescription] {
-            var places: [PlaceWithDescription] = []
-            if !nearbyAttractions.isEmpty {
-                let forbiddenKeywords = ["Six Flags"]
-                var attractionsListPromptArr: [String] = []
-                for item in nearbyAttractions {
-                    let place = item.place
-                    let name = place.displayName ?? "Unknown"
-                    let summary = place.editorialSummary ?? "Unknown"
-                    let placeID: String = place.placeID!
-                    let address = place.addressComponents ?? []
-                    let ratingDescription: String = {
-                        if let rating = place.rating {
-                            return " with a rating of \(rating) out of 5"
-                        } else {
-                            return ""
-                        }
-                    }()
-                    let location: String = {
-                        if address.isEmpty {
-                            return ""
-                        } else {
-                            let locationDesc = address.compactMap { addrComp in
-                                if addrComp.types.contains(.political) {
-                                    if addrComp.name == "United States" {
-                                        return nil
-                                    } else {
-                                        return addrComp.name
-                                    }
-                                } else {
-                                    return nil
-                                }
-                            }.joined(separator: ", ")
-                            let returnVar = " located in " + locationDesc
-                            return returnVar
-                        }
-                    }()
-                    let finalPlacePrompt = "\(name) (Place ID: \(placeID)) – Details: \(summary)\(ratingDescription)\(location)"
-                    // Filter forbidden keywords
-                    if forbiddenKeywords.contains(where: { finalPlacePrompt.localizedCaseInsensitiveContains($0) }) {
-                        await MainActor.run {
-                            if let index = PlaceDescription.placesIds.firstIndex(of: placeID) {
-                                PlaceDescription.placesIds.remove(at: index)
-                            }
-                        }
-                        continue
-                    }
-                    attractionsListPromptArr.append(finalPlacePrompt)
-                }
-                let attractionsListPrompt = attractionsListPromptArr.joined(separator: "\n")
-                
-                // Refined prompt for trip assistant.
-                let prompt = """
-                Here are some real nearby tourist attractions you may want to consider including in your suggestions:\n\n\(attractionsListPrompt)\n\n
-                Please do not mention the type/category of the attraction directly. Generate a list of places the renter can go that match the instructions above.
-                """
-                
-                let response = try await session.respond(generating: PlaceDescriptions.self) {
-                    prompt
-                }
-                self.tripPlan = response.content
-                if let tripPlan = tripPlan {
-                    for place in tripPlan.places {
-                        if let placeData = nearbyAttractions.getPlaceBy(id: place.placeID) {
-                            places.append(.init(place: placeData, description: place.description))
-                        }
-                    }
-                }
-            }
-            return places
-        }
-    }
-#else
-    // Fallback implementation when FoundationModels is unavailable
-    final class TripPlanner {
-        var nearbyAttractions: [PlaceOption] = []
-        
-        let school: Apartment
-        let startDate: Date
-        let endDate: Date
-        
-        init(school: Apartment, startDate: Date, endDate: Date) {
-            self.school = school
-            self.startDate = startDate
-            self.endDate = endDate
-        }
-        
-        func loadNearbyAttractions() async {
-            let timeDetla = endDate.timeIntervalSince1970 - startDate.timeIntervalSince1970
-            let suggestedRadius = (5.0 + (timeDetla - 3600.0) / 3600.0 / 3.5 * 6.0) * 1609.0
-            let places = await findTouristAttractions(near: school.address, radius: suggestedRadius > 50000 ? 50000 : suggestedRadius)
-            nearbyAttractions = places.map { PlaceOption(place: $0) }
-        }
-        
-        func suggectPlaces() async throws -> [PlaceWithDescription] {
-            // Simple local fallback: use editorialSummary if present.
-            // Return only the top 5 by rating.
-            let items = nearbyAttractions.map { option in
-                let desc = option.place.editorialSummary ?? "Popular spot near \(school.name)."
-                return PlaceWithDescription(place: option.place, description: desc)
-            }.sorted { lhs, rhs in
-                let lhsRating = lhs.place.rating ?? 0.0
-                let rhsRating = rhs.place.rating ?? 0.0
-                return lhsRating > rhsRating
-            }
-            return Array(items.prefix(5))
-        }
-    }
-#endif
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -243,37 +49,6 @@ struct HomeView: View {
                         universityOptions: $universities
                     )
                     .padding(.horizontal, 24)
-                    .onChange(of: selectedLocation) { oldValue, newValue in
-                        if #available(iOS 26, *) {
-                            thingsToDo = []
-                            // Cancel any in-flight load for a previous selection
-                            thingsToDoTask?.cancel()
-
-                            let selectionSnapshot = newValue
-                            thingsToDoTask = Task {
-                                // Wait 1.5 seconds before clearing the UI
-                                try? await Task.sleep(nanoseconds: 500_000_000)
-                                guard !Task.isCancelled else { return }
-
-                                guard let selectedId = selectionSnapshot,
-                                      let school = universities.getItemBy(id: selectedId) else { return }
-
-                                await MainActor.run { thingsToDo = nil }
-
-                                let planner = TripPlanner(school: school, startDate: startDate, endDate: endDate)
-                                do {
-                                    await planner.loadNearbyAttractions()
-                                    let suggestions = try await planner.suggectPlaces()
-                                    guard !Task.isCancelled else { return }
-                                    await MainActor.run { thingsToDo = suggestions }
-                                } catch {
-                                    guard !Task.isCancelled else { return }
-                                    await MainActor.run { thingsToDo = [] }
-                                    print("Error suggesting places: \(error)")
-                                }
-                            }
-                        }
-                    }
                     DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
                         .padding(.horizontal, 24)
                     
@@ -314,34 +89,6 @@ struct HomeView: View {
                         path.append(.university)
                     }
                     .padding(.horizontal, 24)
-                    
-                    if let thingsToDo = thingsToDo {
-                        if !thingsToDo.isEmpty {
-                            Title(text: "Things to Do", fontSize: 20, color: Color("TextBlackPrimary"))
-                                .padding(.horizontal, 24)
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 16) {
-                                    ForEach(thingsToDo) { thing in
-                                        ThingToDoView(thing: thing)
-                                    }
-                                }
-                                .padding(.vertical, 2)
-                                .padding(.horizontal, 24)
-                            }
-                            .scrollContentBackground(.hidden)
-                        }
-                    } else {
-                        Title(text: "Things to Do", fontSize: 20, color: Color("TextBlackPrimary"))
-                            .padding(.horizontal, 24)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
-                                ThingToDoView(thing: nil)
-                            }
-                            .padding(.vertical, 2)
-                            .padding(.horizontal, 24)
-                        }
-                        .scrollContentBackground(.hidden)
-                    }
                 }
                 .padding(.bottom, 120)
             }
