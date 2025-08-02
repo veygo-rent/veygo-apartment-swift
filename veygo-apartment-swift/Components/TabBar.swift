@@ -7,16 +7,21 @@ private enum RootDestination: String, Identifiable, Hashable {
 import SwiftUI
 
 struct TabBar: View {
+    
     @State private var selected: RootDestination = .home
+    
     private let homeImg = "house"
     private let tripsImg = "map"
     private let rewardImg = "trophy"
     private let settingImg = "gearshape"
+    
+    @State private var universities: [Apartment] = []
+    
     var body: some View {
         if #available(iOS 26, *) {
             TabView(selection: $selected) {
                 Tab(value: .home) {
-                    HomeView()
+                    HomeView(universities: $universities)
                         .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Home", systemImage: homeImg)
@@ -50,7 +55,7 @@ struct TabBar: View {
             }
         } else {
             TabView(selection: $selected) {
-                HomeView()
+                HomeView(universities: $universities)
                     .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Home", systemImage: homeImg) }
                     .tag(RootDestination.home)

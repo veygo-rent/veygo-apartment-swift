@@ -18,20 +18,9 @@ struct HomeView: View {
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Date().addingTimeInterval(3600)
     @State private var promoCode: String = ""
-    @State private var universities: [Apartment] = []
+    @Binding var universities: [Apartment]
     
     @State private var path: [HomeDestination] = []
-    
-    struct PlaceOption {
-        let place: Place
-    }
-    
-    struct PlaceWithDescription: Identifiable {
-        let id = UUID()
-        
-        let place: Place
-        let description: String
-    }
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -148,106 +137,4 @@ struct HomeView: View {
             print("Failed to fetch universities: \(error)")
         }
     }
-    
-    struct ThingToDoView: View {
-        var thing: PlaceWithDescription?
-        @State private var img: UIImage? = nil
-        var body: some View {
-            Group {
-                if let thing = thing {
-                    VStack (alignment: .leading) {
-                        Text(thing.place.displayName ?? "Unknown")
-                            .font(.title3)
-                            .foregroundStyle(Color("TextBlackPrimary"))
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .frame(width: 350, alignment: .leading)
-                            .padding(.bottom)
-                        HStack (alignment: .top, spacing: 20) {
-                            VStack (alignment: .leading) {
-                                if let rating = thing.place.rating {
-                                    Text("Rating: \(rating, format: .number.precision(.fractionLength(1)))/5.0")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                Text(thing.description)
-                                    .font(.body)
-                                    .frame(width: 200, alignment: .leading)
-                                    .lineLimit(5)
-                            }
-                            if let img = img {
-                                Image(uiImage: img)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 140, height: 140)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                                    .clipped()
-                            } else {
-                                Image("VeygoLogo")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 140, height: 140)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                                    .clipped()
-                                    .redacted(reason: .placeholder)
-                            }
-                        }
-                    }
-                    .onAppear {
-                        if img == nil {
-                            Task {
-                                img = await fetchPhoto(from: thing.place.photos)
-                            }
-                        }
-                    }
-                } else {
-                    VStack (alignment: .leading) {
-                        Text("Unknown")
-                            .progressViewStyle(.linear)
-                            .font(.title3)
-                            .foregroundStyle(Color("TextBlackPrimary"))
-                            .redacted(reason: .placeholder)
-                            .padding(.bottom)
-                        HStack (alignment: .top, spacing: 20) {
-                            VStack (alignment: .leading) {
-                                Text("Rating: Unknown")
-                                    .progressViewStyle(.linear)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .redacted(reason: .placeholder)
-                                Text("Apple's mission is \"to bring the best user experience to its customers through its innovative hardware, software, and services.\"")
-                                    .progressViewStyle(.linear)
-                                    .font(.body)
-                                    .frame(width: 200, alignment: .leading)
-                                    .lineLimit(5)
-                                    .redacted(reason: .placeholder)
-                            }
-                            Image("VeygoLogo")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 140, height: 140)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .clipped()
-                                .redacted(reason: .placeholder)
-                        }
-                    }
-                }
-            }
-            .frame(height: 180)
-            .padding(16)
-            .background(Color("CardBG"))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-        }
-    }
-}
-
-extension Array where Element == HomeView.PlaceOption {
-    func getPlaceBy(id: String) -> Place? {
-        return self.first { $0.place.placeID ?? "" == id }?.place
-    }
-}
-
-#Preview {
-    HomeView()
-        .environmentObject(UserSession())
 }

@@ -7,6 +7,12 @@
 import SwiftUI
 
 struct EmailView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @State private var email: String = ""
     @State private var descriptions: [(String, Bool)] = [
         ("Your email has to be in the correct format", false),
@@ -77,7 +83,11 @@ struct EmailView: View {
         .ignoresSafeArea()
         .modifier(BackButtonHiddenModifier())
         .onAppear() {
-            fetchAcceptedDomains()
+            Task {
+                await ApiCallActor.shared.appendApi { token, userId in
+                    await fetchAcceptedDomainsAsync(token, userId)
+                }
+            }
             if let email = signup.student_email {
                 self.email = email
                 self.descriptions[1].1 = false
@@ -91,48 +101,73 @@ struct EmailView: View {
     private var canProceed: Bool {
         EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail && (isAcceptedDomain ?? false)
     }
-
-    private func fetchAcceptedDomains() {
-        let request = veygoCurlRequest(
-            url: "/api/v1/apartment/get-universities",
-            method: "GET"
-        )
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                return
-            }
-
-            guard let data = data else {
-                print("No data received.")
-                return
-            }
-
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("Raw JSON response:\n\(jsonString)")
-            }
-
-            do {
-                if let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let universities = jsonObject["universities"] as? [[String: Any]] {
-
-                    let domains = universities.compactMap { uni in
-                        uni["accepted_school_email_domain"] as? String
-                    }
-
-                    DispatchQueue.main.async {
-                        self.acceptedDomains = domains
-                        print("Parsed accepted domains: \(domains)")
-                    }
-
-                } else {
-                    print("Failed to parse 'universities' from JSON.")
+    
+    @ApiCallActor func fetchAcceptedDomainsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let request = veygoCurlRequest(
+                url: "/api/v1/apartment/get-universities",
+                method: "GET"
+            )
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid protocol"
+                    showAlert = true
                 }
-            } catch {
-                print("JSON parsing error: \(error.localizedDescription)")
+                return .doNothing
             }
-        }.resume()
+            
+            guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid content"
+                    showAlert = true
+                }
+                return .doNothing
+            }
+            switch httpResponse.statusCode {
+            case 200:
+                nonisolated struct FetchSuccessBody: Decodable {
+                    let universities: [Apartment]
+                }
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                let domains = decodedBody.universities.map { uni in
+                    uni.acceptedSchoolEmailDomain
+                }
+                await MainActor.run {
+                    self.acceptedDomains = domains
+                }
+            case 405:
+                await MainActor.run {
+                    alertTitle = "Internal Error"
+                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                    showAlert = true
+                }
+            default:
+                await MainActor.run {
+                    alertTitle = "Application Error"
+                    alertMessage = "Unrecognized response, make sure you are running the latest version"
+                    showAlert = true
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
     }
 }
 
