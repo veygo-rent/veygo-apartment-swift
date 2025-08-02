@@ -16,7 +16,7 @@ struct CreditCardView: View {
     @State private var clearUserTriggered: Bool = false
     
     @EnvironmentObject var session: UserSession
-    @State private var cards: [PublishPaymentMethod] = []
+    @Binding var cards: [PublishPaymentMethod]
     @State private var expandedCardID: PublishPaymentMethod.ID? = nil
     @State private var navigateToAddCard = false
 
@@ -258,9 +258,4 @@ struct CreditCardView: View {
             return .doNothing
         }
     }
-}
-
-#Preview {
-    CreditCardView()
-        .environmentObject(UserSession())
 }

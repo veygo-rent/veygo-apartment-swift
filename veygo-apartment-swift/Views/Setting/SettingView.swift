@@ -14,9 +14,10 @@ struct SettingView: View {
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
     
+    @Binding var cards: [PublishPaymentMethod]
+    
     @EnvironmentObject var session: UserSession
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
+    
     @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0
     @AppStorage("email_verified_at") var emailVerifiedAt: Double = 0
     
@@ -51,7 +52,7 @@ struct SettingView: View {
                         
                         Group {
                             SettingsRow(title: "Membership", subtitle: "Diamond Member", showSubtitle: true, showVerification: false)
-                            NavigationLink(destination: CreditCardView()) {
+                            NavigationLink(destination: CreditCardView(cards: $cards)) {
                                 SettingsRow(
                                     title: "Wallet",
                                     subtitle: "Add or manage your payment methods",
@@ -167,9 +168,3 @@ struct SettingView: View {
         }
     }
 }
-
-#Preview {
-    SettingView()
-        .environmentObject(UserSession())
-}
-

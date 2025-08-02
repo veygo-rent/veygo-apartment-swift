@@ -16,6 +16,7 @@ struct TabBar: View {
     private let settingImg = "gearshape"
     
     @State private var universities: [Apartment] = []
+    @State private var cards: [PublishPaymentMethod] = []
     
     var body: some View {
         if #available(iOS 26, *) {
@@ -45,7 +46,7 @@ struct TabBar: View {
                 }
                 
                 Tab(value: .setting) {
-                    SettingView()
+                    SettingView(cards: $cards)
                         .background(Color("MainBG").ignoresSafeArea())
                 } label: {
                     Label("Setting", systemImage: settingImg)
@@ -69,7 +70,7 @@ struct TabBar: View {
                     .tabItem { Label("Reward", systemImage: rewardImg) }
                     .tag(RootDestination.reward)
 
-                SettingView()
+                SettingView(cards: $cards)
                     .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Setting", systemImage: settingImg) }
                     .tag(RootDestination.setting)
