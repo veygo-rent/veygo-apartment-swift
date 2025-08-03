@@ -178,6 +178,23 @@ struct Car: Identifiable {
     var iconName: String // 小人图标
 }
 
+struct PublishVehicle: Identifiable, Decodable {
+    let id: Int
+    let vin: String
+    let name: String
+    let licenseNumber: String
+    let licenseState: String
+    let year: String
+    let make: String
+    let model: String
+    let msrpFactor: Double
+    let imageLink: String? // 这是图片 URL（可选）
+    let odometer: Int
+    let tankSize: Double
+    let tankLevelPercentage: Int
+    let apartmentId: Int
+}
+
 struct PublishPaymentMethod: Identifiable, Codable, Equatable {
     let id: Int
     let cardholderName: String
