@@ -69,7 +69,7 @@ struct CarBasicInfo: View {
             do {
                 let (data, _) = try await URLSession.shared.data(for: request)
                 await MainActor.run {
-                    self.imageData = data
+                    self.imageData = data //binary
                 }
             } catch {
                 print("Image download failed: \(error.localizedDescription)")
