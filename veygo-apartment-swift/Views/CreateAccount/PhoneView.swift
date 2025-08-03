@@ -82,7 +82,3 @@ struct PhoneView: View {
         }
     }
 }
-
-#Preview {
-    PhoneView(signup: .init(), path: .constant(.init()))
-}

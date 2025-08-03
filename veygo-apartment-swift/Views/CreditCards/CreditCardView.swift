@@ -41,6 +41,13 @@ struct CreditCardView: View {
                         )
                         .listRowBackground(Color.clear)
                     }
+                    .onDelete { indexSet in
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await deleteCardAsync(token, userId, at: indexSet)
+                            }
+                        }
+                    }
                 }
                 .listStyle(PlainListStyle())
 
@@ -132,16 +139,16 @@ struct CreditCardView: View {
                         alertTitle = "Internal Error"
                         alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
                         showAlert = true
-                        clearUserTriggered = true
                     }
-                    return .clearUser
+                    return .doNothing
                 default:
                     await MainActor.run {
                         alertTitle = "Application Error"
                         alertMessage = "Unrecognized response, make sure you are running the latest version"
                         showAlert = true
+                        clearUserTriggered = true
                     }
-                    return .doNothing
+                    return .clearUser
                 }
             }
             return .doNothing
@@ -178,8 +185,7 @@ struct CreditCardView: View {
                     url: "/api/v1/payment-method/delete",
                     method: "POST",
                     headers: [
-                        "auth": "\(token)$\(userId)",
-                        "user-agent": "iOS-App"
+                        "auth": "\(token)$\(userId)"
                     ],
                     body: jsonData
                 )
@@ -236,16 +242,16 @@ struct CreditCardView: View {
                         alertTitle = "Internal Error"
                         alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
                         showAlert = true
-                        clearUserTriggered = true
                     }
-                    return .clearUser
+                    return .doNothing
                 default:
                     await MainActor.run {
                         alertTitle = "Application Error"
                         alertMessage = "Unrecognized response, make sure you are running the latest version"
                         showAlert = true
+                        clearUserTriggered = true
                     }
-                    return .doNothing
+                    return .clearUser
                 }
             }
             return .doNothing

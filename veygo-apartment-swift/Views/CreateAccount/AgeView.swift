@@ -78,7 +78,3 @@ struct AgeView: View {
         }
     }
 }
-
-#Preview {
-    AgeView(signup: .init(), path: .constant(.init()))
-}

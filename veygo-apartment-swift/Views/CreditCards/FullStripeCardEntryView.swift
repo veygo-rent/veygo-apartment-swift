@@ -7,20 +7,23 @@
 //
 
 import SwiftUI
-import Stripe
+@preconcurrency import Stripe
 import StripePaymentsUI
 import StripeCardScan
 
 struct FullStripeCardEntryView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @State private var paymentMethodParams: STPPaymentMethodParams? = nil
-    @State private var showAlert = false
-    @State private var alertMessage = ""
     @State private var cardholderName: String = ""
     @State private var nickname: String = ""
     @State private var showCardScan = false
-
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
+    
+    @EnvironmentObject var session: UserSession
 
     var body: some View {
         VStack(spacing: 20) {
@@ -40,7 +43,11 @@ struct FullStripeCardEntryView: View {
             
             
             Button("Confirm") {
-                createPaymentMethod()
+                Task {
+                    await ApiCallActor.shared.appendApi { token, userId in
+                        await createPaymentMethodAsync(token, userId)
+                    }
+                }
             }
             .disabled(paymentMethodParams == nil || cardholderName.isEmpty)
             .padding()
@@ -50,101 +57,107 @@ struct FullStripeCardEntryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color("AccentColor"), for: .navigationBar)
-        .alert("Result", isPresented: $showAlert) {
-            Button("OK", role: .cancel) {}
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearUserTriggered {
+                    session.user = nil
+                }
+            }
         } message: {
             Text(alertMessage)
         }
     }
-
-    func createPaymentMethod() {
-        guard let params = paymentMethodParams else { return }
-        guard let cardParams = params.card else { return }
-
+    
+    @ApiCallActor func createPaymentMethodAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        guard let params = await paymentMethodParams,
+              let cardParams = params.card else { return .doNothing }
+        
         let paymentMethodParams = STPPaymentMethodParams(
             card: cardParams,
             billingDetails: nil,
             metadata: nil
         )
-
-        STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams) { paymentMethod, error in
-            if let error = error {
-                alertMessage = "Stripe error: \(error.localizedDescription)"
-                showAlert = true
-                return
-            }
-
-            guard let paymentMethod = paymentMethod else {
-                alertMessage = "Failed to create payment method."
-                showAlert = true
-                return
-            }
-
-            print("Created PaymentMethod: \(paymentMethod.stripeId)")
-            sendTokenToBackend(pmId: paymentMethod.stripeId)
-        }
-    }
-
-    func sendTokenToBackend(pmId: String) {
-        let bodyDict: [String: Any] = [
-            "pm_id": pmId,
-            "cardholder_name": cardholderName,
-            "nickname": nickname.isEmpty ? NSNull() : nickname
-        ]
-
-        guard let body = try? JSONSerialization.data(withJSONObject: bodyDict) else {
-            alertMessage = "Failed to encode request body"
-            showAlert = true
-            return
-        }
-
-        let request = veygoCurlRequest(
-            url: "/api/v1/payment-method/create",
-            method: "POST",
-            headers: [
-                "auth": "\(token)$\(userId)",
-            ],
-            body: body
-        )
-
-        print("URL: \(request.url?.absoluteString ?? "nil")")
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    alertMessage = "Backend error: \(error.localizedDescription)"
-                    showAlert = true
-                    return
-                }
-
+        do {
+            if !token.isEmpty && userId > 0 {
+                let payment = try await STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams, additionalPaymentUserAgentValues: [])
+                
+                let body = await [
+                    "pm_id": payment.stripeId,
+                    "cardholder_name": cardholderName,
+                    "nickname": nickname.isEmpty ? nil : nickname
+                ]
+                
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+                
+                let request = veygoCurlRequest(
+                    url: "/api/v1/payment-method/create",
+                    method: "POST",
+                    headers: [
+                        "auth": "\(token)$\(userId)",
+                    ],
+                    body: jsonData
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    alertMessage = "Invalid response from server"
-                    showAlert = true
-                    return
-                }
-
-                guard let data = data else {
-                    alertMessage = "Empty response from server"
-                    showAlert = true
-                    return
-                }
-
-                if httpResponse.statusCode == 201 {
-                    let tokenOpt = extractToken(from: response)
-                    if let newToken = tokenOpt {
-                        self.token = newToken // 更新token
-                        alertMessage = "Card added successfully!"
-                    } else {
-                        alertMessage = "Card added but failed to parse new token"
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
                     }
-                } else {
-                    let responseText = String(data: data, encoding: .utf8) ?? "Unknown error"
-                    alertMessage = "Failed to add card: \(responseText)"
+                    return .doNothing
                 }
-
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 201:
+                    nonisolated struct ResponseObject: Decodable {
+                        let newPaymentMethod: PublishPaymentMethod
+                    }
+                    let token = extractToken(from: response) ?? ""
+                    return .renewSuccessful(token: token)
+                case 401:
+                    await MainActor.run {
+                        alertTitle = "Session Expired"
+                        alertMessage = "Token expired, please login again"
+                        showAlert = true
+                        clearUserTriggered = true
+                    }
+                    return .clearUser
+                case 405:
+                    await MainActor.run {
+                        alertTitle = "Internal Error"
+                        alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                        showAlert = true
+                    }
+                    return .doNothing
+                default:
+                    await MainActor.run {
+                        alertTitle = "Application Error"
+                        alertMessage = "Unrecognized response, make sure you are running the latest version"
+                        showAlert = true
+                        clearUserTriggered = true
+                    }
+                    return .clearUser
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
                 showAlert = true
             }
-        }.resume()
+            return .doNothing
+        }
     }
 
 }
@@ -177,8 +190,4 @@ struct CardInputFieldWrapper: UIViewRepresentable {
             }
         }
     }
-}
-
-#Preview {
-    FullStripeCardEntryView()
 }

@@ -170,7 +170,3 @@ struct EmailView: View {
         }
     }
 }
-
-#Preview {
-    EmailView(signup: .init(), path: .constant(.init()))
-}

@@ -88,7 +88,3 @@ struct NameView: View {
         }
     }
 }
-
-#Preview {
-    NameView(path: .constant(.init()))
-}

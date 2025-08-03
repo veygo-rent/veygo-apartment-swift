@@ -20,9 +20,6 @@ struct PasswordView: View {
     @Binding var signup: SignupSession
     @Binding var path: NavigationPath
 
-    @AppStorage("token") var token: String = ""
-    @AppStorage("user_id") var userId: Int = 0
-
     var body: some View {
         ZStack(alignment: .topLeading) {
             if #unavailable(iOS 26) {
@@ -185,9 +182,8 @@ struct PasswordView: View {
                     alertTitle = "Internal Error"
                     alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
                     showAlert = true
-                    clearUserTriggered = true
                 }
-                return .clearUser
+                return .doNothing
             case 406:
                 let errMsg: String
                 if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
