@@ -54,10 +54,10 @@ class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
 }
 
-class SignupSession: ObservableObject {
-    @Published var name: Optional<String> = nil
-    @Published var date_of_birth: Optional<String> = nil  // MM/DD/YYYY
-    @Published var phone: Optional<String> = nil
-    @Published var student_email: Optional<String> = nil
-    @Published var password: Optional<String> = nil
+struct SignupSession {
+    var name: Optional<String> = nil
+    var date_of_birth: Optional<String> = nil  // MM/DD/YYYY
+    var phone: Optional<String> = nil
+    var student_email: Optional<String> = nil
+    var password: Optional<String> = nil
 }

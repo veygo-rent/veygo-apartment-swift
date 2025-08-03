@@ -31,7 +31,7 @@ struct LoginView: View {
     @State private var password: String = ""
     
     @State private var path = NavigationPath()
-    @StateObject private var signup = SignupSession()
+    @State private var signup = SignupSession()
     
     @State private var goToResetView = false
 
@@ -104,15 +104,15 @@ struct LoginView: View {
             .navigationDestination(for: SignupRoute.self) { route in
                 switch route {
                 case .name:
-                    NameView(signup: signup, path: $path)
+                    NameView(signup: $signup, path: $path)
                 case .age:
-                    AgeView(signup: signup, path: $path)
+                    AgeView(signup: $signup, path: $path)
                 case .phone:
-                    PhoneView(signup: signup, path: $path)
+                    PhoneView(signup: $signup, path: $path)
                 case .email:
-                    EmailView(signup: signup, path: $path)
+                    EmailView(signup: $signup, path: $path)
                 case .password:
-                    PasswordView(signup: signup, path: $path)
+                    PasswordView(signup: $signup, path: $path)
                 }
             }
             .navigationDestination(isPresented: $goToResetView) {
@@ -161,7 +161,7 @@ struct LoginView: View {
                         alertMessage = "Invalid content"
                         showAlert = true
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 }
                 await MainActor.run {
                     self.session.user = decodedBody.renter

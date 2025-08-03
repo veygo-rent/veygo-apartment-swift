@@ -3,7 +3,7 @@ import SwiftUI
 struct AgeView: View {
     @State private var dob: String = ""
     @State private var descriptions: [(String, Bool)] = [("Your age needs to be in the correct format", false), ("You must be at least 18 years old to rent from Veygo", false)]
-    @ObservedObject var signup: SignupSession
+    @Binding var signup: SignupSession
     @Binding var path: NavigationPath
 
     var body: some View {

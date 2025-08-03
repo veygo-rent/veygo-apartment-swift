@@ -19,7 +19,7 @@ struct EmailView: View {
         ("You must enroll in a participating university", false),
         ("Your email will also be used for communication of important account updates.", false)
     ]
-    @ObservedObject var signup: SignupSession
+    @Binding var signup: SignupSession
     @Binding var path: NavigationPath
 
     @State private var acceptedDomains: [String] = []

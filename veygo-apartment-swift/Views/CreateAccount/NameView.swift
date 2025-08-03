@@ -6,7 +6,7 @@ struct NameView: View {
         ("You must enter your full name", false),
         ("Your name must match the name appears on your official documents", false)
     ]
-    @ObservedObject var signup: SignupSession
+    @Binding var signup: SignupSession
     @Binding var path: NavigationPath
 
     var body: some View {
@@ -90,5 +90,5 @@ struct NameView: View {
 }
 
 #Preview {
-    NameView(signup: .init(), path: .constant(.init()))
+    NameView(path: .constant(.init()))
 }

@@ -1,19 +1,23 @@
 import SwiftUI
 
 struct PasswordView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @EnvironmentObject var session: UserSession
     @State private var password: String = ""
     @State private var goToCongratsView = false
-    @State private var showAlert = false
-    @State private var alertMessage = ""
 
     @State private var descriptions: [(String, Bool)] = [
         ("Password must be at least:", false),
         ("· at least 8 digits long", false),
         ("· at least one number and one special character\n  eg. (!@#$%^&*_+=?/~';,<>\u{7C})", false)
     ]
-
-    @ObservedObject var signup: SignupSession
+    
+    @Binding var signup: SignupSession
     @Binding var path: NavigationPath
 
     @AppStorage("token") var token: String = ""
@@ -53,7 +57,11 @@ struct PasswordView: View {
 
                 ArrowButton(isDisabled: !isPasswordValid(password)) {
                     signup.password = password
-                    registerUser()
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await registerUserAsync(token, userId)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 30)
@@ -99,93 +107,115 @@ struct PasswordView: View {
     private func isPasswordValid(_ password: String) -> Bool {
         return password.count >= 8 && containsNumber(password) && containsSpecialChar(password)
     }
-
-    func registerUser() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yyyy"
-        guard let dobDate = formatter.date(from: signup.date_of_birth!) else {
-            alertMessage = "Invalid date format"
-            showAlert = true
-            return
+    
+    @ApiCallActor func registerUserAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        guard let dobUsFormat: String = await signup.date_of_birth,
+              let dobDate: Date = VeygoDatetimeStandard.shared.usStandardDateFormatter.date(from: dobUsFormat) else {
+            return .doNothing
         }
-        formatter.dateFormat = "yyyy-MM-dd"
-        let dobFormatted = formatter.string(from: dobDate)
-
-        let body: [String: String] = [
-            "name": signup.name!,
-            "student_email": signup.student_email!,
-            "password": signup.password!,
-            "phone": signup.phone!,
-            "date_of_birth": dobFormatted
-        ]
-
-        if let jsonData = try? JSONSerialization.data(withJSONObject: body, options: .prettyPrinted),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            print("JSON Body to send:")
-            print(jsonString)
-        }
-
-        let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        let request = veygoCurlRequest(url: "/api/v1/user/create", method: "POST", body: jsonData)
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    alertMessage = "Network error: \(error.localizedDescription)"
+        do {
+            let dob: String = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.string(from: dobDate)
+            let body = await [
+                "name": signup.name!,
+                "student_email": signup.student_email!,
+                "password": signup.password!,
+                "phone": signup.phone!,
+                "date_of_birth": dob
+            ]
+            let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+            let request = veygoCurlRequest(url: "/api/v1/user/create", method: "POST", body: jsonData)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid protocol"
                     showAlert = true
                 }
-                return
+                return .doNothing
             }
-
-            guard let httpResponse = response as? HTTPURLResponse, let data = data else {
-                DispatchQueue.main.async {
-                    alertMessage = "Invalid response from server."
+            
+            guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid content"
                     showAlert = true
                 }
-                return
+                return .doNothing
             }
-
-            guard httpResponse.statusCode == 201 else {
-                DispatchQueue.main.async {
-                    if httpResponse.statusCode == 400 {
-                        alertMessage = "Some of your registration info may be incorrect."
-                    } else if httpResponse.statusCode == 406 {
-                        alertMessage = "Invalid email or phone number."
-                    } else {
-                        alertMessage = "Unexpected error (code: \(httpResponse.statusCode))."
+            
+            nonisolated struct ErrorMsg: Decodable {
+                let error: String
+            }
+            
+            switch httpResponse.statusCode {
+            case 201:
+                nonisolated struct LoginSuccessBody: Decodable {
+                    let renter: PublishRenter
+                }
+                
+                let token = extractToken(from: response) ?? ""
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data) else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
                     }
+                    return .doNothing
+                }
+                await MainActor.run {
+                    self.session.user = decodedBody.renter
+                }
+                return .loginSuccessful(userId: decodedBody.renter.id, token: token)
+            case 400:
+                let errMsg: String
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
+                    errMsg = decodedErrMsg
+                } else {
+                    errMsg = "Bad register request"
+                }
+                await MainActor.run {
+                    alertTitle = "Register failed"
+                    alertMessage = errMsg
                     showAlert = true
                 }
-                return
-            }
-
-            let token = httpResponse.value(forHTTPHeaderField: "token") ?? ""
-
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let renter = json["renter"],
-               let renterData = try? JSONSerialization.data(withJSONObject: renter),
-               let decodedUser = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: renterData) {
-
-                DispatchQueue.main.async {
-                    self.session.user = decodedUser
-                    self.token = token
-                    self.userId = decodedUser.id
-
-                    print("Registered user: \(decodedUser.name)")
-                    print("Token: \(token)")
-                    print("User ID: \(decodedUser.id)")
-                    goToCongratsView = true
+                return .doNothing
+            case 405:
+                await MainActor.run {
+                    alertTitle = "Internal Error"
+                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                    showAlert = true
+                    clearUserTriggered = true
                 }
-            } else {
-                DispatchQueue.main.async {
-                    alertMessage = "Failed to decode user data."
+                return .clearUser
+            case 406:
+                let errMsg: String
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
+                    errMsg = decodedErrMsg
+                } else {
+                    errMsg = "Unexpeted error while registering"
+                }
+                await MainActor.run {
+                    alertTitle = "Register failed"
+                    alertMessage = errMsg
                     showAlert = true
                 }
+                return .doNothing
+            default:
+                await MainActor.run {
+                    alertTitle = "Application Error"
+                    alertMessage = "Unrecognized response, make sure you are running the latest version"
+                    showAlert = true
+                }
+                return .doNothing
             }
-        }.resume()
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
     }
-}
-
-#Preview {
-    PasswordView(signup: .init(), path: .constant(.init()))
 }

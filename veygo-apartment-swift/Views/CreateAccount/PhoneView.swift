@@ -13,7 +13,7 @@ struct PhoneView: View {
         ("Phone number has to be in the correct format", false),
         ("Your phone number will be used for communication of important account updates.", false)
     ]
-    @ObservedObject var signup: SignupSession
+    @Binding var signup: SignupSession
     @Binding var path: NavigationPath
 
     var body: some View {
