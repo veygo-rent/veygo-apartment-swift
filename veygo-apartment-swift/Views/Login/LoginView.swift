@@ -77,8 +77,14 @@ struct LoginView: View {
                         }
                     }
                 }
-                .alert(isPresented: $showAlert) {
-                    Alert(title: Text("Login Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                .alert(alertTitle, isPresented: $showAlert) {
+                    Button("OK") {
+                        if clearUserTriggered {
+                            session.user = nil
+                        }
+                    }
+                } message: {
+                    Text(alertMessage)
                 }
 
                 Spacer().frame(height: 20)

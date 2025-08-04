@@ -69,8 +69,12 @@ struct CreditCardView: View {
                     }
                 }
             }
-            .alert("Error", isPresented: $showAlert) {
-                Button("OK", role: .cancel) {}
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("OK") {
+                    if clearUserTriggered {
+                        session.user = nil
+                    }
+                }
             } message: {
                 Text(alertMessage)
             }

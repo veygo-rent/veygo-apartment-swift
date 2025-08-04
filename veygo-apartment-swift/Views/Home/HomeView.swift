@@ -9,6 +9,12 @@ enum HomeDestination: Hashable {
 }
 
 struct HomeView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @EnvironmentObject var session: UserSession
     
     @AppStorage("apns_token") var apns_token: String = ""
@@ -110,31 +116,95 @@ struct HomeView: View {
                 case .university: FindCarView(path: $path, startDate: $startDate, endDate: $endDate)
                 }
             }
-            .task {
-                await fetchUniversities()
+            .onAppear {
+                Task {
+                    await ApiCallActor.shared.appendApi { token, userId in
+                        await fetchUniversitiesAsync()
+                    }
+                }
             }
         }
         .refreshable {
-            await fetchUniversities()
+            Task {
+                await ApiCallActor.shared.appendApi { token, userId in
+                    await fetchUniversitiesAsync()
+                }
+            }
         }
         .scrollContentBackground(.hidden)
     }
-    func fetchUniversities() async {
+    
+    @ApiCallActor func fetchUniversitiesAsync() async -> ApiTaskResponse {
         let request = veygoCurlRequest(
             url: "/api/v1/apartment/get-universities",
             method: "GET"
         )
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let decoded = try VeygoJsonStandard.shared.decoder.decode([String: [Apartment]].self, from: data)
-            if let unis = decoded["universities"] {
-                DispatchQueue.main.async {
-                    self.universities = unis
-                    self.selectedLocation = unis.first?.id
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid protocol"
+                    showAlert = true
                 }
+                return .doNothing
+            }
+            
+            guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                await MainActor.run {
+                    alertTitle = "Server Error"
+                    alertMessage = "Invalid content"
+                    showAlert = true
+                }
+                return .doNothing
+            }
+            
+            switch httpResponse.statusCode {
+            case 200:
+                nonisolated struct RequestSuccessBody: Decodable {
+                    let universities: [Apartment]
+                }
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(RequestSuccessBody.self, from: data) else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                await MainActor.run {
+                    self.universities = decodedBody.universities
+                    if let rentersUniversity = self.universities.getItemBy(id: session.user!.apartmentId),
+                       rentersUniversity.uniId == 1 {
+                        self.selectedLocation = rentersUniversity.id
+                    } else {
+                        self.selectedLocation = 2
+                    }
+                }
+                return .doNothing
+            case 405:
+                await MainActor.run {
+                    alertTitle = "Internal Error"
+                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
+                    showAlert = true
+                }
+                return .doNothing
+            default:
+                await MainActor.run {
+                    alertTitle = "Application Error"
+                    alertMessage = "Unrecognized response, make sure you are running the latest version"
+                    showAlert = true
+                }
+                return .doNothing
             }
         } catch {
-            print("Failed to fetch universities: \(error)")
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
         }
     }
 }

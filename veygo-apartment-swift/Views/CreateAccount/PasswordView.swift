@@ -82,8 +82,14 @@ struct PasswordView: View {
         .navigationDestination(isPresented: $goToCongratsView) {
             CongratsView(user: $session.user)
         }
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("Registration Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearUserTriggered {
+                    session.user = nil
+                }
+            }
+        } message: {
+            Text(alertMessage)
         }
         .modifier(BackButtonHiddenModifier())
         .swipeBackGesture {

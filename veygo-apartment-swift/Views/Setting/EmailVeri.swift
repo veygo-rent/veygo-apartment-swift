@@ -68,8 +68,12 @@ struct EmailVeri: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color("AccentColor"), for: .navigationBar)
-        .alert("Verification", isPresented: $showAlert) {
-            Button("OK", role: .cancel) {}
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearUserTriggered {
+                    session.user = nil
+                }
+            }
         } message: {
             Text(alertMessage)
         }
