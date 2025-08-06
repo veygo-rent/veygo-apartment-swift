@@ -173,7 +173,7 @@ struct HomeView: View {
                 }
                 await MainActor.run {
                     self.universities = decodedBody.universities
-                    if let rentersUniversity = self.universities.getItemBy(id: session.user!.apartmentId),
+                    if let rentersUniversity = self.universities.getItemBy(id: session.user?.apartmentId ?? 2),
                        rentersUniversity.uniId == 1 {
                         self.selectedLocation = rentersUniversity.id
                     } else {
