@@ -67,6 +67,7 @@ struct TabBar: View {
                     .tag(RootDestination.trips)
 
                 RewardView()
+                    .background(Color("MainBG").ignoresSafeArea())
                     .tabItem { Label("Reward", systemImage: rewardImg) }
                     .tag(RootDestination.reward)
 

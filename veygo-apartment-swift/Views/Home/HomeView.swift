@@ -1,7 +1,5 @@
 import SwiftUI
-import UIKit
 import UserNotifications
-import GooglePlacesSwift
 
 enum HomeDestination: Hashable {
     case university
@@ -123,6 +121,7 @@ struct HomeView: View {
                     }
                 }
             }
+            .background(Color("MainBG"))
         }
         .refreshable {
             Task {
@@ -131,7 +130,6 @@ struct HomeView: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
     }
     
     @ApiCallActor func fetchUniversitiesAsync() async -> ApiTaskResponse {

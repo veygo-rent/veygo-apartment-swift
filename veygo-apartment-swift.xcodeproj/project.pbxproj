@@ -15,7 +15,6 @@
 		4C1745B32DEE4FF400A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B22DEE4FF400A51DCA /* StripePaymentsUI */; };
 		8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADBE2DD44DA9007148E6 /* Stripe */; };
 		8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADC02DD44DA9007148E6 /* StripeCardScan */; };
-		8EE5D1DB2E2A9AE600705DB0 /* GooglePlacesSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE5D1DA2E2A9AE600705DB0 /* GooglePlacesSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +64,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */,
-				8EE5D1DB2E2A9AE600705DB0 /* GooglePlacesSwift in Frameworks */,
 				4C1745AD2DEE4B6B00A51DCA /* StripePaymentSheet in Frameworks */,
 				4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */,
 				8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */,
@@ -128,7 +126,6 @@
 				8EA1ADC02DD44DA9007148E6 /* StripeCardScan */,
 				4C1745AC2DEE4B6B00A51DCA /* StripePaymentSheet */,
 				4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */,
-				8EE5D1DA2E2A9AE600705DB0 /* GooglePlacesSwift */,
 			);
 			productName = "veygo-apartment-swift";
 			productReference = 8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */;
@@ -191,7 +188,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */,
-				8EE5D1D92E2A9AE600705DB0 /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8EA1ADB02DD44C53007148E6 /* Products */;
@@ -541,14 +537,6 @@
 				minimumVersion = 24.16.1;
 			};
 		};
-		8EE5D1D92E2A9AE600705DB0 /* XCRemoteSwiftPackageReference "ios-places-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googlemaps/ios-places-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 10.1.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -591,11 +579,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
 			productName = StripeCardScan;
-		};
-		8EE5D1DA2E2A9AE600705DB0 /* GooglePlacesSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8EE5D1D92E2A9AE600705DB0 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
-			productName = GooglePlacesSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -6,7 +6,6 @@
 //
 import SwiftUI
 @preconcurrency import Stripe
-import GooglePlacesSwift
 
 @main
 struct veygo_apartment_swift: App {
@@ -22,7 +21,6 @@ struct veygo_apartment_swift: App {
 
     init() {
         StripeAPI.defaultPublishableKey = "pk_live_51QzCjkL87NN9tQEdbASm7SXLCkcDPiwlEbBpOVQk5wZcjOPISrtTVFfK1SFKIlqyoksRIHusp5UcRYJLvZwkyK0a00kdPmuxhM"
-        let _ = PlacesClient.provideAPIKey("AIzaSyBC77KySd7uLVpHMuaxMq5-cwFydp4DuWQ")
     }
 
     var body: some Scene {
