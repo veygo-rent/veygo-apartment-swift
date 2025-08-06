@@ -91,7 +91,7 @@ struct FullStripeCardEntryView: View {
                 
                 let request = veygoCurlRequest(
                     url: "/api/v1/payment-method/create",
-                    method: "POST",
+                    method: .post,
                     headers: [
                         "auth": "\(token)$\(userId)",
                     ],

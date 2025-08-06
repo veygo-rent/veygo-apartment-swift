@@ -137,7 +137,7 @@ struct HomeView: View {
     @ApiCallActor func fetchUniversitiesAsync() async -> ApiTaskResponse {
         let request = veygoCurlRequest(
             url: "/api/v1/apartment/get-universities",
-            method: "GET"
+            method: .get
         )
         do {
             let (data, response) = try await URLSession.shared.data(for: request)

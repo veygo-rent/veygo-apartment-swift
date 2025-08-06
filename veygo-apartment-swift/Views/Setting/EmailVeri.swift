@@ -87,7 +87,7 @@ struct EmailVeri: View {
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
                 let request = veygoCurlRequest(
                     url: "/api/v1/verification/request-token",
-                    method: "POST",
+                    method: .post,
                     headers: [
                         "auth": "\(token)$\(userId)"
                     ],
@@ -173,7 +173,7 @@ struct EmailVeri: View {
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
                 let request = veygoCurlRequest(
                     url: "/api/v1/verification/verify-token",
-                    method: "POST",
+                    method: .post,
                     headers: [
                         "auth": "\(token)$\(userId)",
                         "Content-Type": "application/json"

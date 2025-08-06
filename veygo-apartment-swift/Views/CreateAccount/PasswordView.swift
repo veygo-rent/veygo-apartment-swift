@@ -10,7 +10,7 @@ struct PasswordView: View {
     @EnvironmentObject var session: UserSession
     @State private var password: String = ""
     @State private var goToCongratsView = false
-
+    
     @State private var descriptions: [(String, Bool)] = [
         ("Password must be at least:", false),
         ("· at least 8 digits long", false),
@@ -19,7 +19,7 @@ struct PasswordView: View {
     
     @Binding var signup: SignupSession
     @Binding var path: NavigationPath
-
+    
     var body: some View {
         ZStack(alignment: .topLeading) {
             if #unavailable(iOS 26) {
@@ -31,14 +31,14 @@ struct PasswordView: View {
                 .padding(.top, 90)
                 .padding(.leading, 30)
             }
-
+            
             VStack(alignment: .leading, spacing: 20) {
                 Spacer()
-
+                
                 LargeTitleText(text: "Keep Your\nAccount Safe")
                     .padding(.bottom, 90)
                     .frame(maxWidth: .infinity, alignment: .center)
-
+                
                 VStack(alignment: .leading, spacing: 5) {
                     InputWithLabel(
                         label: "Your Account Password",
@@ -49,9 +49,9 @@ struct PasswordView: View {
                     )
                 }
                 .padding(.horizontal, 32)
-
+                
                 Spacer()
-
+                
                 ArrowButton(isDisabled: !isPasswordValid(password)) {
                     signup.password = password
                     Task {
@@ -62,7 +62,7 @@ struct PasswordView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 30)
-
+                
                 LegalText(
                     fullText: "By joining, you agree to Veygo’s Terms and Conditions",
                     highlightedText: "Terms and Conditions"
@@ -96,17 +96,17 @@ struct PasswordView: View {
             path.removeLast()
         }
     }
-
+    
     private func containsNumber(_ text: String) -> Bool {
         let numberRegex = ".*[0-9].*"
         return NSPredicate(format: "SELF MATCHES %@", numberRegex).evaluate(with: text)
     }
-
+    
     private func containsSpecialChar(_ text: String) -> Bool {
         let specialCharacterRegex = ".*[!@#$%^&*()_+=?/~';,<>\\|].*"
         return NSPredicate(format: "SELF MATCHES %@", specialCharacterRegex).evaluate(with: text)
     }
-
+    
     private func isPasswordValid(_ password: String) -> Bool {
         return password.count >= 8 && containsNumber(password) && containsSpecialChar(password)
     }
@@ -126,7 +126,7 @@ struct PasswordView: View {
                 "date_of_birth": dob
             ]
             let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
-            let request = veygoCurlRequest(url: "/api/v1/user/create", method: "POST", body: jsonData)
+            let request = veygoCurlRequest(url: "/api/v1/user/create", method: .post, body: jsonData)
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
@@ -158,7 +158,8 @@ struct PasswordView: View {
                 }
                 
                 let token = extractToken(from: response) ?? ""
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data) else {
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data),
+                      !token.isEmpty else {
                     await MainActor.run {
                         alertTitle = "Server Error"
                         alertMessage = "Invalid content"
@@ -171,6 +172,7 @@ struct PasswordView: View {
                 }
                 return .loginSuccessful(userId: decodedBody.renter.id, token: token)
             case 400:
+                // BAD_REQUEST
                 let errMsg: String
                 if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
                     errMsg = decodedErrMsg
@@ -191,6 +193,7 @@ struct PasswordView: View {
                 }
                 return .doNothing
             case 406:
+                // BAD_REQUEST
                 let errMsg: String
                 if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
                     errMsg = decodedErrMsg

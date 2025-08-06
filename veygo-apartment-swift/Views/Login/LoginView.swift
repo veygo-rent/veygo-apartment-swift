@@ -132,7 +132,7 @@ struct LoginView: View {
             let body = await ["email": email, "password": password]
             let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
             
-            let request = veygoCurlRequest(url: "/api/v1/user/login", method: "POST", body: jsonData)
+            let request = veygoCurlRequest(url: "/api/v1/user/login", method: .post, body: jsonData)
             
             let (data, response) = try await URLSession.shared.data(for: request)
             

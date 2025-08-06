@@ -106,7 +106,7 @@ struct EmailView: View {
         do {
             let request = veygoCurlRequest(
                 url: "/api/v1/apartment/get-universities",
-                method: "GET"
+                method: .get
             )
             let (data, response) = try await URLSession.shared.data(for: request)
             

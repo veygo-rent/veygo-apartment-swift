@@ -86,7 +86,7 @@ struct CreditCardView: View {
             if !token.isEmpty && userId > 0 {
                 let request = veygoCurlRequest(
                     url: "/api/v1/payment-method/get",
-                    method: "GET",
+                    method: .get,
                     headers: [
                         "auth": "\(token)$\(userId)"
                     ]
@@ -187,7 +187,7 @@ struct CreditCardView: View {
                 
                 let request = veygoCurlRequest(
                     url: "/api/v1/payment-method/delete",
-                    method: "POST",
+                    method: .post,
                     headers: [
                         "auth": "\(token)$\(userId)"
                     ],

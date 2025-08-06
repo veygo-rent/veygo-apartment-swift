@@ -55,7 +55,7 @@ struct ContentView: View {
                 }
                 let body: [String: String] = ["apns": apns_token]
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
-                let request = veygoCurlRequest(url: "/api/v1/user/update-apns", method: "POST", headers: ["auth": "\(token)$\(userId)"], body: jsonData)
+                let request = veygoCurlRequest(url: "/api/v1/user/update-apns", method: .post, headers: ["auth": "\(token)$\(userId)"], body: jsonData)
                 let (_, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
