@@ -86,19 +86,11 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4C1745A72DEE4B1E00A51DCA /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		8EA1ADA62DD44C53007148E6 = {
 			isa = PBXGroup;
 			children = (
 				8EA1ADB12DD44C53007148E6 /* veygo-apartment-swift */,
 				8EA1ADE82DD850DA007148E6 /* veygo-apartment-swift-tests */,
-				4C1745A72DEE4B1E00A51DCA /* Frameworks */,
 				8EA1ADB02DD44C53007148E6 /* Products */,
 			);
 			sourceTree = "<group>";
