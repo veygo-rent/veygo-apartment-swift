@@ -122,7 +122,8 @@ struct SettingView: View {
     
     @ApiCallActor func logoutRequestAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: .get, headers: ["auth": "\(token)$\(userId)"])
                 let (_, response) = try await URLSession.shared.data(for: request)
                 

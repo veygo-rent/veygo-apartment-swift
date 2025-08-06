@@ -80,7 +80,8 @@ struct EmailVeri: View {
     }
     @ApiCallActor func sendVerificationCodeAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let body: [String: String] = [
                     "verification_method": "Email"
                 ]
@@ -155,7 +156,8 @@ struct EmailVeri: View {
     
     @ApiCallActor func verifyCodeAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let verificationCode = await verificationCode.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !verificationCode.isEmpty else {
                     await MainActor.run {

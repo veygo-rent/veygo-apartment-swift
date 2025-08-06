@@ -54,7 +54,8 @@ struct veygo_apartment_swift: App {
     
     @ApiCallActor func validateTokenAndFetchUser (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let request = veygoCurlRequest(url: "/api/v1/user/retrieve", method: .get, headers: ["auth": "\(token)$\(userId)"])
                 let (data, response) = try await URLSession.shared.data(for: request)
                 

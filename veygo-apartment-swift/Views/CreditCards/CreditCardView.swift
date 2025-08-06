@@ -83,7 +83,8 @@ struct CreditCardView: View {
     
     @ApiCallActor func loadCardsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let request = veygoCurlRequest(
                     url: "/api/v1/payment-method/get",
                     method: .get,
@@ -168,7 +169,8 @@ struct CreditCardView: View {
     
     @ApiCallActor func deleteCardAsync (_ token: String, _ userId: Int, at offsets: IndexSet) async -> ApiTaskResponse {
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let cards = await cards
                 guard cards.count > 0, let index = offsets.first else {
                     await MainActor.run {

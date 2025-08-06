@@ -49,7 +49,9 @@ struct ContentView: View {
             NotificationManager.shared.requestPermission()
             let apns_token = await apns_token
             let prev_apns_token = await prev_apns_token
-            if !apns_token.isEmpty && apns_token != prev_apns_token {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil,
+               !apns_token.isEmpty && apns_token != prev_apns_token {
                 await MainActor.run {
                     self.prev_apns_token = apns_token
                 }

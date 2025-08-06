@@ -78,7 +78,8 @@ struct FullStripeCardEntryView: View {
             metadata: nil
         )
         do {
-            if !token.isEmpty && userId > 0 {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
                 let payment = try await STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams, additionalPaymentUserAgentValues: [])
                 
                 let body = await [
