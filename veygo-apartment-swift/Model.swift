@@ -5,14 +5,18 @@
 //  Created by 魔法玛丽大炮 on 5/27/25.
 //
 
-import SwiftUI
-import MapKit
-
 import Foundation
 
 enum VerificationType: String, Codable {
     case email = "Email"
     case phone = "Phone"
+}
+
+enum RemoteMgmtType: String, Codable {
+    case revers = "Revers"
+    case smartcar = "Smartcar"
+    case tesla = "Tesla"
+    case none = "None"
 }
 
 enum AgreementStatus: String, Codable {
@@ -29,13 +33,13 @@ enum EmployeeTier: String, Codable {
 }
 
 enum PaymentType: String, Codable {
-    case canceled = "canceled"
-    case processing = "processing"
-    case requiresAction = "requires_action"
-    case requiresCapture = "requires_capture"
-    case requiresConfirmation = "requires_confirmation"
-    case requiresPaymentMethod = "requires_payment_method"
-    case succeeded = "succeeded"
+    case canceled = "Canceled"
+    case processing = "Processing"
+    case requiresAction = "RequiresAction"
+    case requiresCapture = "RequiresCapture"
+    case requiresConfirmation = "RequiresConfirmation"
+    case requiresPaymentMethod = "RequiresPaymentMethod"
+    case succeeded = "Succeeded"
 }
 
 enum PlanTier: String, Codable {
@@ -55,6 +59,14 @@ enum Gender: String, Codable {
 enum TransactionType: String, Codable {
     case credit = "Credit"
     case cash = "Cash"
+}
+
+nonisolated struct RentalTransaction: Identifiable, Equatable, Codable {
+    var id: Int
+    var agreementId: Int
+    var transactionType: TransactionType
+    var duration: Double
+    var transactionTime: Date
 }
 
 nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
@@ -86,16 +98,20 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var subscriptionPaymentMethodId: Int?
 }
 
-struct DoNotRentList: Identifiable, Equatable, Codable {
+nonisolated struct PublishPaymentMethod: Identifiable, Equatable, Codable {
     var id: Int
-    var name: String?
-    var email: String?
-    var phone: String?
-    var note: String
-    var exp: String?
+    var cardholderName: String
+    var maskedCardNumber: String
+    var network: String
+    var expiration: String
+    var nickname: String?
+    var isEnabled: Bool
+    var renterId: Int
+    var lastUsedDateTime: Date?
+    var cdwEnabled: Bool
 }
 
-struct Apartment: Identifiable, Equatable, Codable, HasName {
+nonisolated struct Apartment: Identifiable, Equatable, Codable, HasName {
     var id: Int
     var name: String
     var email: String
@@ -122,7 +138,7 @@ struct Apartment: Identifiable, Equatable, Codable, HasName {
     var taxes: [Int?]
 }
 
-nonisolated struct ApartmentNew: Equatable, Codable, HasName {
+nonisolated struct NewApartment: Equatable, Codable, HasName {
     var name: String
     var email: String
     var phone: String
@@ -148,14 +164,17 @@ nonisolated struct ApartmentNew: Equatable, Codable, HasName {
     var taxes: [Int?]
 }
 
-struct Tax: Identifiable, Equatable, Codable, HasName {
+nonisolated struct Location: Identifiable, Equatable, Codable, HasName {
     var id: Int
+    var apartmentId: Int
     var name: String
-    var multiplier: Double
-    var isEffective: Bool
+    var description: String?
+    var latitude: Double
+    var longitude: Double
+    var isOperational: Bool
 }
 
-struct TransponderCompany: Identifiable, Equatable, Codable {
+nonisolated struct TransponderCompany: Identifiable, Equatable, Codable {
     var id: Int
     var name: String
     var correspondingKeyForVehicleId: String
@@ -167,53 +186,166 @@ struct TransponderCompany: Identifiable, Equatable, Codable {
     var timezone: String?
 }
 
-struct Car: Identifiable {
-    let id = UUID()
-    var location: String
-    var timeText: String
+nonisolated struct PublishVehicle: Identifiable, Equatable, Codable {
+    var id: Int
+    var vin: String
     var name: String
-    var price: String
-    var features: [String]
-    var imageName: String
-    var iconName: String // 小人图标
+    var licenseNumber: String
+    var licenseState: String
+    var year: String
+    var make: String
+    var model: String
+    var msrpFactor: Double
+    var odometer: Int
+    var tankSize: Double
+    var tankLevelPercentage: Int
+    var locationId: Int
+    var remoteMgmt: RemoteMgmtType
+    var remoteMgmtId: String
+    var requiresOwnInsurance: Bool
 }
 
-struct PublishVehicle: Identifiable, Decodable {
-    let id: Int
-    let vin: String
-    let name: String
-    let licenseNumber: String
-    let licenseState: String
-    let year: String
-    let make: String
-    let model: String
-    let msrpFactor: Double
-    let imageLink: String? // 这是图片 URL（可选）
-    let odometer: Int
-    let tankSize: Double
-    let tankLevelPercentage: Int
-    let apartmentId: Int
+nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
+    var id: Int
+    var vin: String
+    var name: String
+    var available: Bool
+    var licenseNumber: String
+    var licenseState: String
+    var year: String
+    var make: String
+    var model: String
+    var msrpFactor: Double
+    var odometer: Int
+    var tankSize: Double
+    var tankLevelPercentage: Int
+    var firstTransponderNumber: String?
+    var firstTransponderCompanyId: Int?
+    var secondTransponderNumber: String?
+    var secondTransponderCompanyId: Int?
+    var thirdTransponderNumber: String?
+    var thirdTransponderCompanyId: Int?
+    var fourthTransponderNumber: String?
+    var fourthTransponderCompanyId: Int?
+    var locationId: Int
+    var remoteMgmt: RemoteMgmtType
+    var remoteMgmtId: String
+    var requiresOwnInsurance: Bool
 }
 
-struct PublishPaymentMethod: Identifiable, Codable, Equatable {
-    let id: Int
-    let cardholderName: String
-    let maskedCardNumber: String
-    let network: String
-    let expiration: String
-    let nickname: String?
-    let isEnabled: Bool
-    let renterId: Int
-    let lastUsedDateTime: String?
+nonisolated struct PublishDamageSubmission: Identifiable, Equatable, Codable {
+    var id: Int
+    var reportedBy: Int
+    var description: String
+    var processed: Bool
 }
 
-struct CarLocation: Identifiable, Equatable {
-    let id = UUID()
-    let coordinate: CLLocationCoordinate2D
-    let title: String
-    let cars: [Car]
+nonisolated struct PublishDamage: Identifiable, Equatable, Codable {
+    var id: Int
+    var note: String
+    var recordDate: Date
+    var occurDate: Date
+    var standardCoordinationXPrecentage: Int
+    var standardCoordinationYPrecentage: Int
+    var fixedDate: Date?
+    var fixedAmount: Double?
+    var agreementId: Int?
+}
 
-    static func == (lhs: CarLocation, rhs: CarLocation) -> Bool {
-        return lhs.id == rhs.id
-    }
+nonisolated struct Promo: Identifiable, Equatable, Codable {
+    var id: String { code }
+    var code: String
+    var name: String
+    var amount: Double
+    var isEnabled: Bool
+    var isOneTime: Bool
+    var exp: Date
+    var userId: Int
+    var aptId: Int
+    var uniId: Int
+}
+
+nonisolated struct Agreement: Identifiable, Equatable, Codable {
+    var id: Int
+    var confirmation: String
+    var status: AgreementStatus
+    var userName: String
+    var userDateOfBirth: String
+    var userEmail: String
+    var userPhone: String
+    var userBillingAddress: String
+    var rsvpPickupTime: Date
+    var rsvpDropOffTime: Date
+    var liabilityProtectionRate: Double
+    var pcdwProtectionRate: Double
+    var pcdwExtProtectionRate: Double
+    var rsaProtectionRate: Double
+    var paiProtectionRate: Double
+    
+    var actualPickupTime: Date?
+    var pickupOdometer: Int?
+    var pickupLevel: Int?
+    
+    var actualDropOffTime: Date?
+    var dropOffOdometer: Int?
+    var dropOffLevel: Int?
+    var vehicleSnapshotBefore: Int?
+    
+    var msrpFactor: Double
+    var durationRate: Double
+    var vehicleId: Int
+    var vehicleSnapshotAfter: Int?
+    
+    var renterId: Int
+    var paymentMethodId: Int
+    var promoId: String?
+    
+    var damageIds: [Int?]
+    
+    var taxes: [Int?]
+    var locationId: Int
+}
+
+nonisolated struct Charge: Identifiable, Equatable, Codable {
+    var id: Int
+    var name: String
+    var time: Date
+    var amount: Double
+    var note: String?
+    var agreementId: Int?
+    var vehicleId: Int
+    var checksum: String
+    var transponderCompanyId: Int?
+    var vehicleIdentifier: String?
+}
+
+nonisolated struct Payment: Identifiable, Equatable, Codable {
+    var id: Int
+    var paymentType: PaymentType
+    var time: Date
+    var amount: Double
+    var note: String?
+    var referenceNumber: String?
+    var agreementId: Int?
+    var renterId: Int
+    var paymentMethodId: Int
+    var amountAuthorized: Double?
+    var captureBefore: Date?
+    var isDeposit: Bool
+}
+
+nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {
+    var id: Int
+    var name: String?
+    var email: String?
+    var phone: String?
+    var note: String
+    var exp: String?
+}
+
+struct Tax: Identifiable, Equatable, Codable, HasName {
+    var id: Int
+    var name: String
+    var multiplier: Double
+    var isEffective: Bool
 }

@@ -76,24 +76,3 @@ struct CarBasicInfo: View {
             }
         }
 }
-
-#Preview {
-    let vehicle = PublishVehicle(
-        id: 1,
-        vin: "XYZ123",
-        name: "Bagel",
-        licenseNumber: "CEJ463",
-        licenseState: "IN",
-        year: "2024",
-        make: "Tesla",
-        model: "Model 3",
-        msrpFactor: 1.0,
-        imageLink: nil, // 后续可以启用
-        odometer: 10000,
-        tankSize: 60.0,
-        tankLevelPercentage: 80,
-        apartmentId: 1
-    )
-
-    return CarBasicInfo(vehicle: vehicle)
-}

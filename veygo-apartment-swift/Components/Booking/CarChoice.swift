@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CarsChoiceView: View {
-    var cars: [Car]
+    var cars: [PublishVehicle]
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -95,35 +95,4 @@ struct CarsChoiceView: View {
             }
         }
     }
-}
-
-#Preview {
-    CarsChoiceView(cars: [
-        Car(
-            location: "Purdue: Hillenbrand Hall",
-            timeText: "16 min",
-            name: "Kia Forte",
-            price: "$9.99/hr - $69.99/day",
-            features: [
-                "Android Auto / Apple CarPlay",
-                "Automatic Transmission",
-                "Collision Detection"
-            ],
-            imageName: "kia_forte",
-            iconName: "figure.walk"
-        ),
-        Car(
-            location: "Purdue: Hawkins Hall",
-            timeText: "12 min",
-            name: "Toyota Corolla",
-            price: "$10.99/hr - $74.99/day",
-            features: [
-                "Bluetooth Audio",
-                "Backup Camera",
-                "Lane Assist"
-            ],
-            imageName: "toyota_corolla",
-            iconName: "figure.walk"
-        )
-    ])
 }
