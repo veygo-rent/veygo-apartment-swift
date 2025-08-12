@@ -82,12 +82,17 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var dateOfRegistration: Date
     var driversLicenseNumber: String?
     var driversLicenseStateRegion: String?
+    var driversLicenseImage: String?
+    var driversLicenseImageSecondary: String?
     var driversLicenseExpiration: String? // Admin needs to verify
+    var insuranceIdImage: String?
     var insuranceLiabilityExpiration: String? // Admin needs to verify
     var insuranceCollisionExpiration: String? // Admin needs to verify
+    var leaseAgreementImage: String?
     var apartmentId: Int
     var leaseAgreementExpiration: String? // Admin needs to verify
     var billingAddress: String?
+    var signatureImage: String?
     var signatureDatetime: Date?
     var planTier: PlanTier
     var planRenewalDay: String
@@ -196,6 +201,7 @@ nonisolated struct PublishVehicle: Identifiable, Equatable, Codable {
     var make: String
     var model: String
     var msrpFactor: Double
+    var imageLink: String?
     var odometer: Int
     var tankSize: Double
     var tankLevelPercentage: Int
@@ -215,6 +221,7 @@ nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
     var make: String
     var model: String
     var msrpFactor: Double
+    var imageLink: String?
     var odometer: Int
     var tankSize: Double
     var tankLevelPercentage: Int
@@ -232,23 +239,39 @@ nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
     var requiresOwnInsurance: Bool
 }
 
-nonisolated struct PublishDamageSubmission: Identifiable, Equatable, Codable {
+nonisolated struct DamageSubmission: Identifiable, Equatable, Codable {
     var id: Int
     var reportedBy: Int
+    var firstImage: String
+    var secondImage: String
+    var thirdImage: String?
+    var fourthImage: String?
     var description: String
     var processed: Bool
 }
 
-nonisolated struct PublishDamage: Identifiable, Equatable, Codable {
+nonisolated struct Damage: Identifiable, Equatable, Codable {
     var id: Int
     var note: String
     var recordDate: Date
     var occurDate: Date
     var standardCoordinationXPrecentage: Int
     var standardCoordinationYPrecentage: Int
+    var firstImage: String?
+    var secondImage: String?
+    var thirdImage: String?
+    var fourthImage: String?
     var fixedDate: Date?
     var fixedAmount: Double?
     var agreementId: Int?
+}
+
+nonisolated struct VehicleSnapshot: Identifiable, Equatable, Codable {
+    var id: Int
+    var leftImage: String
+    var rightImage: String
+    var frontImage: String
+    var backImage: String
 }
 
 nonisolated struct Promo: Identifiable, Equatable, Codable {
@@ -342,7 +365,7 @@ nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {
     var exp: String?
 }
 
-struct Tax: Identifiable, Equatable, Codable, HasName {
+nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var id: Int
     var name: String
     var multiplier: Double
