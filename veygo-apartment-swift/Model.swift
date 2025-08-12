@@ -201,7 +201,6 @@ nonisolated struct PublishVehicle: Identifiable, Equatable, Codable {
     var tankLevelPercentage: Int
     var locationId: Int
     var remoteMgmt: RemoteMgmtType
-    var remoteMgmtId: String
     var requiresOwnInsurance: Bool
 }
 
