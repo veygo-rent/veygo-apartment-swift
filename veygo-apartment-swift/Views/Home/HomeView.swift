@@ -19,8 +19,8 @@ struct HomeView: View {
     
     @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation: Apartment.ID? = nil
-    @State private var startDate: Date = Date()
-    @State private var endDate: Date = Date().addingTimeInterval(3600)
+    @State private var startDate: Date = Date().addingTimeInterval(1800)
+    @State private var endDate: Date = Date().addingTimeInterval(3600 + 1800)
     @State private var promoCode: String = ""
     @Binding var universities: [Apartment]
     
@@ -79,8 +79,11 @@ struct HomeView: View {
                     .padding(.horizontal, 24)
                     
                     PrimaryButtonLg(text: "Vehicle Look Up") {
-                        path.append(.university)
+                        if selectedLocation != nil {
+                            path.append(.university)
+                        }
                     }
+                    .disabled(selectedLocation == nil)
                     .padding(.horizontal, 24)
                 }
                 .padding(.bottom, 120)
@@ -110,8 +113,14 @@ struct HomeView: View {
             .ignoresSafeArea()
             .navigationDestination(for: HomeDestination.self) { dest in
                 switch dest {
-                case .apartment: Text("Apartment")
-                case .university: FindCarView(path: $path, startDate: $startDate, endDate: $endDate)
+                case .apartment:
+                    Text("Apartment")
+                case .university:
+                    if let id = selectedLocation {
+                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartmentId: id)
+                    } else {
+                        Text("Select a location first")
+                    }
                 }
             }
             .onAppear {
@@ -122,11 +131,11 @@ struct HomeView: View {
                 }
             }
             .background(Color("MainBG"))
-        }
-        .refreshable {
-            Task {
-                await ApiCallActor.shared.appendApi { token, userId in
-                    await fetchUniversitiesAsync()
+            .refreshable {
+                Task {
+                    await ApiCallActor.shared.appendApi { token, userId in
+                        await fetchUniversitiesAsync()
+                    }
                 }
             }
         }

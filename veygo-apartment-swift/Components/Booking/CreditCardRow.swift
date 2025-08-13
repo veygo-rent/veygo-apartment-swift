@@ -46,7 +46,7 @@ struct CreditCardRow: View {
                     Divider()
                     Text("Nickname: \(card.nickname ?? "None")")
                     Text("Enabled: \(card.isEnabled ? "Yes" : "No")")
-                    Text("Last Used: \(card.lastUsedDateTime ?? "Never")")
+                    Text("Last Used: \(card.lastUsedDateTime)")
                         .font(.footnote)
                         .foregroundColor(.gray)
                 }
@@ -61,40 +61,19 @@ struct CreditCardRow: View {
 }
 
 @ViewBuilder
-    func cardBrandImage(for brand: String) -> some View {
-        let lowercased = brand.lowercased()
-        let knownBrands = ["visa", "master", "amex", "discover", "union", "jcb", "dinner"]
+func cardBrandImage(for brand: String) -> some View {
+    let lowercased = brand.lowercased()
+    let knownBrands = ["visa", "master", "amex", "discover", "union", "jcb", "dinner"]
 
-        if knownBrands.contains(lowercased) {
-            Image(lowercased)
-                .resizable()
-        } else {
-            Image(systemName: "creditcard")
-                .resizable()
-                .frame(width: 32, height: 22)
-                .foregroundColor(.primaryButtonBg)
-        }
-    }
-
-struct CreditCardRow_Previews: PreviewProvider {
-    static var previews: some View {
-        CreditCardRow(
-            card: PublishPaymentMethod(
-                id: 1,
-                cardholderName: "Xinyi Guan",
-                maskedCardNumber: "**** **** **** 4242",
-                network: "Visa",
-                expiration: "12/26",
-                nickname: "My Visa",
-                isEnabled: true,
-                renterId: 1001,
-                lastUsedDateTime: "2025-07-23T12:00:00Z"
-            ),
-            isExpanded: true,
-            onTap: {}
-        )
-        .previewLayout(.sizeThatFits)
-        .padding()
+    if knownBrands.contains(lowercased) {
+        Image(lowercased)
+            .resizable()
+    } else {
+        Image(systemName: "creditcard")
+            .resizable()
+            .frame(width: 32, height: 22)
+            .foregroundColor(.primaryButtonBg)
     }
 }
+
 
