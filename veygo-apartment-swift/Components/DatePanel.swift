@@ -59,6 +59,10 @@ struct DatePanel: View {
                     VStack {
                         DatePicker("Select Start Date & Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
+                            .onAppear {
+                                UIDatePicker.appearance().minuteInterval = 15
+                                UIDatePicker.appearance().minimumDate = Date().addingTimeInterval(30 * 60)
+                            }
                         PrimaryButton(text: "Complete") {
                             showStartPicker.toggle()
                         }
@@ -71,6 +75,10 @@ struct DatePanel: View {
                     VStack {
                         DatePicker("Select End Date & Time", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
+                            .onAppear {
+                                UIDatePicker.appearance().minuteInterval = 15
+                                UIDatePicker.appearance().minimumDate = Date().addingTimeInterval(60 * 60)
+                            }
                         PrimaryButton(text: "Complete") {
                             showEndPicker.toggle()
                         }

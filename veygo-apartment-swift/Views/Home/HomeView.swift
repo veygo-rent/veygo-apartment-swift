@@ -6,6 +6,16 @@ enum HomeDestination: Hashable {
     case apartment
 }
 
+private func roundUpToNextQuarter(from date: Date) -> Date {
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+    guard let hour = components.hour, let minute = components.minute else { return date }
+    let quarter = ((minute / 15) + 1) * 15
+    let newHour = hour + (quarter / 60)
+    let newMinute = quarter % 60
+    return calendar.date(from: DateComponents(year: components.year, month: components.month, day: components.day, hour: newHour, minute: newMinute)) ?? date
+}
+
 struct HomeView: View {
     
     @State private var showAlert: Bool = false
@@ -19,8 +29,16 @@ struct HomeView: View {
     
     @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation: Apartment.ID? = nil
-    @State private var startDate: Date = Date().addingTimeInterval(1800)
-    @State private var endDate: Date = Date().addingTimeInterval(3600 + 1800)
+    
+    @State private var startDate: Date = {
+        let start = Date().addingTimeInterval(1800)
+        return roundUpToNextQuarter(from: start)
+    }()
+    @State private var endDate: Date = {
+        let end = Date().addingTimeInterval(3600)
+        return roundUpToNextQuarter(from: end)
+    }()
+    
     @State private var promoCode: String = ""
     @Binding var universities: [Apartment]
     
