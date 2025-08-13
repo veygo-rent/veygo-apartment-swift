@@ -31,11 +31,11 @@ struct HomeView: View {
     @State private var selectedLocation: Apartment.ID? = nil
     
     @State private var startDate: Date = {
-        let start = Date().addingTimeInterval(1800)
+        let start = Date().addingTimeInterval(15 * 60)
         return roundUpToNextQuarter(from: start)
     }()
     @State private var endDate: Date = {
-        let end = Date().addingTimeInterval(3600)
+        let end = Date().addingTimeInterval(45 * 60)
         return roundUpToNextQuarter(from: end)
     }()
     

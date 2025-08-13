@@ -61,7 +61,7 @@ struct DatePanel: View {
                             .datePickerStyle(.graphical)
                             .onAppear {
                                 UIDatePicker.appearance().minuteInterval = 15
-                                UIDatePicker.appearance().minimumDate = Date().addingTimeInterval(30 * 60)
+                                UIDatePicker.appearance().minimumDate = Date().addingTimeInterval(15 * 60)
                             }
                         PrimaryButton(text: "Complete") {
                             showStartPicker.toggle()
@@ -77,7 +77,7 @@ struct DatePanel: View {
                             .datePickerStyle(.graphical)
                             .onAppear {
                                 UIDatePicker.appearance().minuteInterval = 15
-                                UIDatePicker.appearance().minimumDate = Date().addingTimeInterval(60 * 60)
+                                UIDatePicker.appearance().minimumDate = Date().addingTimeInterval(45 * 60)
                             }
                         PrimaryButton(text: "Complete") {
                             showEndPicker.toggle()

@@ -16,6 +16,7 @@ enum RemoteMgmtType: String, Codable {
     case revers = "Revers"
     case smartcar = "Smartcar"
     case tesla = "Tesla"
+    case geotab = "Geotab"
     case none = "None"
 }
 
