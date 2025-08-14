@@ -13,6 +13,7 @@
 		4C1745AF2DEE4B7200A51DCA /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745AE2DEE4B7200A51DCA /* Stripe */; };
 		4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */; };
 		4C1745B32DEE4FF400A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B22DEE4FF400A51DCA /* StripePaymentsUI */; };
+		8E2B0BC12E4D729200F5A362 /* Crisp in Frameworks */ = {isa = PBXBuildFile; productRef = 8E2B0BC02E4D729200F5A362 /* Crisp */; };
 		8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADBE2DD44DA9007148E6 /* Stripe */; };
 		8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADC02DD44DA9007148E6 /* StripeCardScan */; };
 /* End PBXBuildFile section */
@@ -66,6 +67,7 @@
 				8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */,
 				4C1745AD2DEE4B6B00A51DCA /* StripePaymentSheet in Frameworks */,
 				4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */,
+				8E2B0BC12E4D729200F5A362 /* Crisp in Frameworks */,
 				8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -126,6 +128,7 @@
 				8EA1ADC02DD44DA9007148E6 /* StripeCardScan */,
 				4C1745AC2DEE4B6B00A51DCA /* StripePaymentSheet */,
 				4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */,
+				8E2B0BC02E4D729200F5A362 /* Crisp */,
 			);
 			productName = "veygo-apartment-swift";
 			productReference = 8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */;
@@ -188,6 +191,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */,
+				8E2B0BBF2E4D729200F5A362 /* XCRemoteSwiftPackageReference "crisp-sdk-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8EA1ADB02DD44C53007148E6 /* Products */;
@@ -529,6 +533,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		8E2B0BBF2E4D729200F5A362 /* XCRemoteSwiftPackageReference "crisp-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/crisp-im/crisp-sdk-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.2;
+			};
+		};
 		8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stripe/stripe-ios";
@@ -569,6 +581,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */;
 			productName = StripePaymentsUI;
+		};
+		8E2B0BC02E4D729200F5A362 /* Crisp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E2B0BBF2E4D729200F5A362 /* XCRemoteSwiftPackageReference "crisp-sdk-ios" */;
+			productName = Crisp;
 		};
 		8EA1ADBE2DD44DA9007148E6 /* Stripe */ = {
 			isa = XCSwiftPackageProductDependency;

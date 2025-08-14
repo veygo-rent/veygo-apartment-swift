@@ -4,7 +4,10 @@
 //
 //  Created by Shenghong Zhou on 5/13/25.
 //
+
 import SwiftUI
+
+import Crisp
 @preconcurrency import Stripe
 
 @main
@@ -21,6 +24,7 @@ struct veygo_apartment_swift: App {
 
     init() {
         StripeAPI.defaultPublishableKey = "pk_live_51QzCjkL87NN9tQEdbASm7SXLCkcDPiwlEbBpOVQk5wZcjOPISrtTVFfK1SFKIlqyoksRIHusp5UcRYJLvZwkyK0a00kdPmuxhM"
+        CrispSDK.configure(websiteID: "11d81aa1-c3e9-4295-a6ca-b207d63f37de")
     }
 
     var body: some Scene {
