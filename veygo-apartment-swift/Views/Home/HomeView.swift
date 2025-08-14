@@ -106,6 +106,15 @@ struct HomeView: View {
                 }
                 .padding(.bottom, 120)
             }
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("OK") {
+                    if clearUserTriggered {
+                        session.user = nil
+                    }
+                }
+            } message: {
+                Text(alertMessage)
+            }
             .safeAreaInset(edge: .top, spacing: 0) {
                 // 顶部图片 + 文字
                 ZStack(alignment: .bottomLeading) {

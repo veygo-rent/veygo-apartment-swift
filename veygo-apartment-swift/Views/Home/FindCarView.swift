@@ -38,10 +38,7 @@ struct FindCarView: View {
     @Binding var startDate: Date
     @Binding var endDate: Date
     var apartmentId: Apartment.ID
-    @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 40.4237, longitude: -86.9212),
-        span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-    )
+    
     @State private var selectedLocation: Location.ID? = nil
     @State private var locations: [LocationWithVehicles] = []
     
@@ -50,31 +47,21 @@ struct FindCarView: View {
         formatter.dateFormat = "MMM d, h:mm a"
         return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
     }
+    
     var body: some View {
         ZStack (alignment: .bottom) {
-            Map(coordinateRegion: $region, annotationItems: locations) { location in
-                MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude)) {
-                    Button(action: {
-                        withAnimation {
-                            region.center = CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude)
-                            region.span = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-                            selectedLocation = location.id
-                        }
-                    }) {
-                        Image("Pin")
-                            .resizable()
-                            .frame(width: 48, height: 48)
-                    }
+            
+            Map (selection: $selectedLocation) {
+                ForEach(locations) { location in
+                    Marker(location.location.name, coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
+                        .tag(location.id)
                 }
             }
-            .ignoresSafeArea(.container, edges: [.bottom, .top])
-            .simultaneousGesture(
-                TapGesture().onEnded {
-                    selectedLocation = nil
-                }
-            )
+            .mapControls {
+                MapCompass()
+            }
 
-            if let selected = selectedLocation {
+            if selectedLocation != nil {
                 ScrollView(.horizontal) {
                     LazyHStack(spacing: 20) {
                         ForEach(locations) { location in
@@ -96,7 +83,18 @@ struct FindCarView: View {
                 .frame(height: 300)
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity, alignment: .bottom)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
+        }
+        .animation(.easeInOut(duration: 0.5), value: selectedLocation)
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearUserTriggered {
+                    session.user = nil
+                }
+            }
+        } message: {
+            Text(alertMessage)
         }
         .navigationTitle(formattedDateRange)
         .toolbarBackground(.visible, for: .navigationBar)
