@@ -83,7 +83,7 @@ struct FindCarView: View {
                 guard let loc = locations.getItemBy(id: sel) else { return }
                 let coord = CLLocationCoordinate2D(latitude: loc.location.latitude, longitude: loc.location.longitude)
                 withAnimation(.smooth) {
-                    cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 1600, heading: 0, pitch: 0))
+                    cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 3_600, heading: 0, pitch: 0))
                 }
             } else {
                 guard let saved = savedPosition else { return }
@@ -297,7 +297,7 @@ struct FindCarView: View {
                 let seconds = try await walkingETASeconds(from: userCoord, to: dest)
                 locations[i].duration = seconds / 60.0
             } catch {
-                // Silently ignore failures for individual locations
+                print(error.localizedDescription)
             }
         }
         
@@ -319,8 +319,8 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
     let req = MKDirections.Request()
     req.source = src
     req.destination = dst
-    req.transportType = .walking
-    req.requestsAlternateRoutes = false
+    req.transportType = .transit
+    req.requestsAlternateRoutes = true
 
     let directions = MKDirections(request: req)
     let response = try await directions.calculate()
@@ -400,5 +400,6 @@ private struct LocationStripView: View {
             }
             .scrollTargetLayout()
         }
+        .scrollTargetBehavior(.viewAligned)
     }
 }
