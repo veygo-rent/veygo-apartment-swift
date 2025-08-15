@@ -37,7 +37,7 @@ struct FindCarView: View {
     
     @Binding var startDate: Date
     @Binding var endDate: Date
-    var apartmentId: Apartment.ID
+    var apartment: Apartment
     
     @State private var selectedLocation: Location.ID? = nil
     @State private var locations: [LocationWithVehicles] = []
@@ -49,43 +49,66 @@ struct FindCarView: View {
     }
     
     var body: some View {
-        ZStack (alignment: .bottom) {
-            
-            Map (selection: $selectedLocation) {
-                ForEach(locations) { location in
-                    Marker(location.location.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
-                        .tag(location.id)
-                }
+        Map (selection: $selectedLocation) {
+            ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
+                Marker(location.location.name, systemImage:"car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
+                    .tag(location.id).tint(.purple)
             }
-            .mapControls {
-                MapCompass()
-            }
-            
-            if let _ = selectedLocation {
-                ScrollView(.horizontal) {
-                    LazyHStack(spacing: 20) {
-                        ForEach(locations) { location in
-                            VStack(alignment: .leading) {
-                                Text(location.location.name)
-                                HStack {
-                                    ForEach(location.vehicles) { vehicle in
-                                        VStack {
-                                            Text("Name: \(vehicle.vehicle.name)")
+        }
+        .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .all, showsTraffic: true))
+        .mapControls {
+            MapCompass()
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { selectedLocation != nil },
+                set: { if !$0 { selectedLocation = nil } }
+            )
+        ) {
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 0) {
+                    ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
+                        VStack (alignment: .leading) {
+                            Text(location.location.name)
+                                .padding(.leading)
+                            HStack {
+                                ForEach(Array(location.vehicles.enumerated()), id: \.element.id) { vehicleIndex, vehicle in
+                                    VStack {
+                                        HStack {
+                                            VStack (alignment: .leading, spacing: 8) {
+                                                Text("\(vehicle.vehicle.make) \(vehicle.vehicle.model)")
+                                                Text("$\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate))/hr • $\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate * 7))/day")
+                                                HStack {
+                                                    Image(systemName: "fuelpump")
+                                                    Text(" \(vehicle.vehicle.tankLevelPercentage)%")
+                                                }
+                                            }
+                                            Spacer()
+                                            Image("carImg")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(height: 60)
                                         }
                                     }
+                                    .padding()
+                                    .background {
+                                        Color("CardBG")
+                                    }
+                                    .cornerRadius(18)
                                 }
                             }
                         }
+                        .padding(.leading, 16)
+                        .padding(.trailing, (locationIndex == locations.count - 1) ? 16 : 0)
                     }
-                    .scrollTargetLayout()
                 }
-                .scrollPosition(id: $selectedLocation)
-                .frame(height: 300)
-                .background(.ultraThinMaterial)
-                .frame(maxWidth: .infinity, alignment: .bottom)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .scrollTargetLayout()
+                .scrollIndicators(.hidden)
             }
-
+            .scrollPosition(id: $selectedLocation)
+            .frame(maxWidth: .infinity, alignment: .bottom)
+            .presentationDetents([.height(280)])
+            .presentationBackgroundInteraction(.enabled)
         }
         .animation(.easeInOut(duration: 0.5), value: selectedLocation)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -102,31 +125,29 @@ struct FindCarView: View {
         .toolbarBackground(
             .ultraThinMaterial,
             for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
         .toolbar(content: {
-            if #unavailable(iOS 26) {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.5)) {
                         selectedLocation = nil
-                        path.removeLast()
-                    }) {
+                    }
+                    path.removeLast()
+                }) {
+                    if #unavailable(iOS 26) {
                         BackButton()
+                    } else {
+                        Image(systemName: "chevron.left")
                     }
                 }
             }
         })
-        .modifier(BackButtonHiddenModifier())
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             Task {
                 await ApiCallActor.shared.appendApi { token, userId in
-                    let result = await loadLocationsAsync(token, userId)
-                    await print(locations)
-                    return result
+                    await loadLocationsAsync(token, userId)
                 }
             }
-        }
-        .onDisappear {
-            selectedLocation = nil
         }
     }
     
@@ -138,7 +159,7 @@ struct FindCarView: View {
                 let body = await [
                     "start_time": Int(startDate.timeIntervalSince1970),
                     "end_time": Int(endDate.timeIntervalSince1970),
-                    "apartment_id": apartmentId
+                    "apartment_id": apartment.id
                 ]
                 
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
@@ -224,22 +245,5 @@ struct FindCarView: View {
             }
             return .doNothing
         }
-    }
-}
-
-private struct VehicleCard: View {
-    let vehicle: PublishVehicle
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("\(vehicle.name)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            // Add any other fields you want to show here (e.g., plate, model)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 110)
-        .padding(12)
-        .background(.thinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }

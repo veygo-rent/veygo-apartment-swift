@@ -144,7 +144,7 @@ struct HomeView: View {
                     Text("Apartment")
                 case .university:
                     if let id = selectedLocation {
-                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartmentId: id)
+                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: universities.getItemBy(id: id)!)
                     } else {
                         Text("Select a location first")
                     }
