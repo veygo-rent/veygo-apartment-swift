@@ -319,7 +319,7 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
     let req = MKDirections.Request()
     req.source = src
     req.destination = dst
-    req.transportType = .transit
+    req.transportType = .walking
     req.requestsAlternateRoutes = true
 
     let directions = MKDirections(request: req)
