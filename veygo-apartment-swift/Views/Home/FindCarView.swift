@@ -41,6 +41,7 @@ struct FindCarView: View {
     
     @State private var selectedLocation: Location.ID? = nil
     @State private var locations: [LocationWithVehicles] = []
+    @State private var cameraPosition: MapCameraPosition = .automatic
     
     var formattedDateRange: String {
         let formatter = DateFormatter()
@@ -49,15 +50,24 @@ struct FindCarView: View {
     }
     
     var body: some View {
-        Map (selection: $selectedLocation) {
+        Map(position: $cameraPosition, selection: $selectedLocation) {
             ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
-                Marker(location.location.name, systemImage:"car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
-                    .tag(location.id).tint(.purple)
+                Marker(location.location.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
+                    .tag(location.id)
+                    .tint(.purple)
             }
         }
         .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .all, showsTraffic: true))
         .mapControls {
             MapCompass()
+        }
+        .onChange(of: selectedLocation) { _, newValue in
+            guard let sel = newValue,
+                  let loc = locations.first(where: { $0.id == sel }) else { return }
+            let coord = CLLocationCoordinate2D(latitude: loc.location.latitude, longitude: loc.location.longitude)
+            withAnimation(.easeInOut(duration: 0.35)) {
+                cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 1600, heading: 0, pitch: 0))
+            }
         }
         .sheet(
             isPresented: Binding(
@@ -70,14 +80,18 @@ struct FindCarView: View {
                     ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
                         VStack (alignment: .leading) {
                             Text(location.location.name)
+                                .font(.title3)
                                 .padding(.leading)
                             HStack {
                                 ForEach(Array(location.vehicles.enumerated()), id: \.element.id) { vehicleIndex, vehicle in
                                     VStack {
                                         HStack {
-                                            VStack (alignment: .leading, spacing: 8) {
+                                            VStack (alignment: .leading, spacing: 12) {
                                                 Text("\(vehicle.vehicle.make) \(vehicle.vehicle.model)")
                                                 Text("$\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate))/hr • $\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate * 7))/day")
+                                                    .font(.subheadline)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundStyle(Color("SecondaryButtonText"))
                                                 HStack {
                                                     Image(systemName: "fuelpump")
                                                     Text(" \(vehicle.vehicle.tankLevelPercentage)%")
@@ -87,14 +101,16 @@ struct FindCarView: View {
                                             Image("carImg")
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
-                                                .frame(height: 60)
+                                                .frame(width: 80)
                                         }
                                     }
                                     .padding()
+                                    .frame(width: 340)
                                     .background {
                                         Color("CardBG")
                                     }
                                     .cornerRadius(18)
+                                    .shadow(radius: 0.5)
                                 }
                             }
                         }
@@ -103,9 +119,9 @@ struct FindCarView: View {
                     }
                 }
                 .scrollTargetLayout()
-                .scrollIndicators(.hidden)
             }
             .scrollPosition(id: $selectedLocation)
+            .scrollIndicators(.hidden)
             .frame(maxWidth: .infinity, alignment: .bottom)
             .presentationDetents([.height(280)])
             .presentationBackgroundInteraction(.enabled)
