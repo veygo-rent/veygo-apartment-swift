@@ -378,19 +378,19 @@ private struct LocationStripView: View {
         ScrollView(.horizontal) {
             LazyHStack(spacing: 0) {
                 ForEach(Array(locations.enumerated()), id: \.element.id) { index, loc in
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text(loc.location.name)
-                                .font(.title3)
-                            Spacer()
-                            if let duration = loc.duration {
-                                Image(systemName: "figure.walk")
-                                Text("\(String(format: "%.0f", duration)) minutes")
-                            }
-                        }
-                        .padding(.horizontal)
-                        HStack {
-                            ForEach(loc.vehicles, id: \.id) { v in
+                    HStack {
+                        ForEach(loc.vehicles, id: \.id) { v in
+                            VStack (alignment: .leading) {
+                                HStack {
+                                    Text(loc.location.name)
+                                        .font(.title3)
+                                    Spacer()
+                                    if let duration = loc.duration {
+                                        Image(systemName: "figure.walk")
+                                        Text("\(String(format: "%.0f", duration)) minutes")
+                                    }
+                                }
+                                .padding(.horizontal)
                                 VehicleCardView(vehicle: v, apartment: apartment)
                             }
                         }
