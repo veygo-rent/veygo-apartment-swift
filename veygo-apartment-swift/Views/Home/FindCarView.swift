@@ -53,41 +53,39 @@ struct FindCarView: View {
             
             Map (selection: $selectedLocation) {
                 ForEach(locations) { location in
-                    Marker(location.location.name, coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
+                    Marker(location.location.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
                         .tag(location.id)
                 }
             }
             .mapControls {
                 MapCompass()
             }
-        }
-        .sheet(
-            isPresented: Binding(
-                get: { selectedLocation != nil },
-                set: { if !$0 { selectedLocation = nil } }
-            )
-        ) {
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 20) {
-                    ForEach(locations) { location in
-                        VStack (alignment: .leading) {
-                            Text(location.location.name)
-                            HStack {
-                                ForEach(location.vehicles) { vehicle in
-                                    VStack {
-                                        Text("Name: \(vehicle.vehicle.name)")
+            
+            if let _ = selectedLocation {
+                ScrollView(.horizontal) {
+                    LazyHStack(spacing: 20) {
+                        ForEach(locations) { location in
+                            VStack(alignment: .leading) {
+                                Text(location.location.name)
+                                HStack {
+                                    ForEach(location.vehicles) { vehicle in
+                                        VStack {
+                                            Text("Name: \(vehicle.vehicle.name)")
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    .scrollTargetLayout()
                 }
-                .scrollTargetLayout()
+                .scrollPosition(id: $selectedLocation)
+                .frame(height: 300)
+                .background(.ultraThinMaterial)
+                .frame(maxWidth: .infinity, alignment: .bottom)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            .scrollPosition(id: $selectedLocation)
-            .frame(maxWidth: .infinity, alignment: .bottom)
-            .presentationDetents([.height(300)])
-            .presentationBackgroundInteraction(.enabled)
+
         }
         .animation(.easeInOut(duration: 0.5), value: selectedLocation)
         .alert(alertTitle, isPresented: $showAlert) {
