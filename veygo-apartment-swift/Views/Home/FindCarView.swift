@@ -43,6 +43,7 @@ struct FindCarView: View {
     var apartment: Apartment
     
     @State private var selectedLocation: Location.ID? = nil
+    @State private var selectedVehicle: PublishVehicle.ID? = nil
     @State private var locations: [LocationWithVehicles] = []
     @State private var cameraPosition: MapCameraPosition = .automatic
     
@@ -99,14 +100,13 @@ struct FindCarView: View {
             )
         ) {
             LocationStripView(
-                locations: locations,
                 selectedLocation: $selectedLocation,
+                selectedVehicle: $selectedVehicle,
+                locations: locations,
                 apartment: apartment
             )
             .presentationDetents([.height(280)])
             .presentationBackgroundInteraction(.enabled)
-            .scrollPosition(id: $selectedLocation)
-            .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, alignment: .bottom)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -369,8 +369,9 @@ private struct VehicleCardView: View {
 }
 
 private struct LocationStripView: View {
-    let locations: [LocationWithVehicles]
     @Binding var selectedLocation: Location.ID?
+    @Binding var selectedVehicle: PublishVehicle.ID?
+    let locations: [LocationWithVehicles]
     let apartment: Apartment
 
     var body: some View {
@@ -400,6 +401,7 @@ private struct LocationStripView: View {
             }
             .scrollTargetLayout()
         }
-        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $selectedLocation)
+        .scrollIndicators(.hidden)
     }
 }
