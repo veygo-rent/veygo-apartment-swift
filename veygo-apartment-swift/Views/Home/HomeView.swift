@@ -54,6 +54,7 @@ struct HomeView: View {
                         .padding(.horizontal, 24)
                     SlidingToggleButton(selectedOption: $selectedToggle)
                         .padding(.horizontal, 24)
+                        .sensoryFeedback(.selection, trigger: selectedToggle)
                     Dropdown(
                         selectedOption: $selectedLocation,
                         labelText: .constant("Rental location"),

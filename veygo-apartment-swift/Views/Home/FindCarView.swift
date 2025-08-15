@@ -72,6 +72,7 @@ struct FindCarView: View {
                 .annotationSubtitles(.visible)
             }
         }
+        .sensoryFeedback(.selection, trigger: selectedLocation)
         .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .all, showsTraffic: true))
         .mapControls {
             MapCompass()
