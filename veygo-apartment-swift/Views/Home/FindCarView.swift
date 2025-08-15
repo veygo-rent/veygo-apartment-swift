@@ -68,11 +68,9 @@ struct FindCarView: View {
                 )
                 .tag(location.id)
                 .tint(.purple)
+                .annotationSubtitles(.visible)
             }
         }
-        .onAppear(perform: {
-            locationManager.requestWhenInUseAuthorization()
-        })
         .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .all, showsTraffic: true))
         .mapControls {
             MapCompass()
@@ -84,12 +82,12 @@ struct FindCarView: View {
             if let sel = newValue {
                 guard let loc = locations.getItemBy(id: sel) else { return }
                 let coord = CLLocationCoordinate2D(latitude: loc.location.latitude, longitude: loc.location.longitude)
-                withAnimation(.easeInOut(duration: 0.5)) {
+                withAnimation(.smooth) {
                     cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 1600, heading: 0, pitch: 0))
                 }
             } else {
                 guard let saved = savedPosition else { return }
-                withAnimation(.easeInOut(duration: 0.5)) {
+                withAnimation(.smooth) {
                     cameraPosition = saved
                 }
             }
@@ -111,7 +109,6 @@ struct FindCarView: View {
             .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, alignment: .bottom)
-        .animation(.easeInOut(duration: 0.5), value: selectedLocation)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
                 if clearUserTriggered {
@@ -144,14 +141,47 @@ struct FindCarView: View {
         })
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            locationManager.requestWhenInUseAuthorization()
             Task {
                 await ApiCallActor.shared.appendApi { token, userId in
                     await loadLocationsAsync(token, userId)
                 }
-                savedPosition = cameraPosition
                 await updateWalkingETAs()
             }
         }
+    }
+    
+    // Compute a region that fits all locations with a little extra padding.
+    @MainActor private func fitAllLocationsRegion(paddingPercent: Double) -> MKCoordinateRegion? {
+        guard !locations.isEmpty else { return nil }
+
+        var minLat =  90.0, maxLat = -90.0
+        var minLon = 180.0, maxLon = -180.0
+        for l in locations {
+            let lat = l.location.latitude
+            let lon = l.location.longitude
+            minLat = min(minLat, lat); maxLat = max(maxLat, lat)
+            minLon = min(minLon, lon); maxLon = max(maxLon, lon)
+        }
+
+        // If there's only one point, use a small default span.
+        if minLat == maxLat && minLon == maxLon {
+            let center = CLLocationCoordinate2D(latitude: minLat, longitude: minLon)
+            let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            return MKCoordinateRegion(center: center, span: span)
+        }
+
+        let center = CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLon + maxLon) / 2
+        )
+        var span = MKCoordinateSpan(
+            latitudeDelta: (maxLat - minLat),
+            longitudeDelta: (maxLon - minLon)
+        )
+        span.latitudeDelta *= (1.0 + paddingPercent)
+        span.longitudeDelta *= (1.0 + paddingPercent)
+        return MKCoordinateRegion(center: center, span: span)
     }
     
     @ApiCallActor func loadLocationsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
@@ -268,6 +298,13 @@ struct FindCarView: View {
                 locations[i].duration = seconds / 60.0
             } catch {
                 // Silently ignore failures for individual locations
+            }
+        }
+        
+        if let re = fitAllLocationsRegion(paddingPercent: 0.75) {
+            withAnimation(.easeInOut(duration: 3)) {
+                cameraPosition = .region(re)
+                savedPosition = cameraPosition
             }
         }
     }
