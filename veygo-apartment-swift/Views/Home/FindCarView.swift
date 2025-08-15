@@ -21,6 +21,7 @@ nonisolated private struct LocationWithVehicles: Decodable, Identifiable {
     var location: Location
     var vehicles: [VehicleWithBlockedDurations]
     var id: Location.ID { location.id }
+    var duration: TimeInterval? = nil
 }
 
 
@@ -30,6 +31,8 @@ struct FindCarView: View {
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
+    
+    @State private var locationManager = CLLocationManager()
     
     @Binding var path: [HomeDestination]
     
@@ -51,15 +54,22 @@ struct FindCarView: View {
     
     var body: some View {
         Map(position: $cameraPosition, selection: $selectedLocation) {
+            UserAnnotation()
             ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
                 Marker(location.location.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
                     .tag(location.id)
                     .tint(.purple)
             }
         }
+        .onAppear(perform: {
+            locationManager.requestWhenInUseAuthorization()
+        })
         .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .all, showsTraffic: true))
         .mapControls {
             MapCompass()
+            if locationManager.authorizationStatus == .authorizedWhenInUse {
+                MapUserLocationButton()
+            }
         }
         .onChange(of: selectedLocation) { _, newValue in
             guard let sel = newValue,
@@ -79,9 +89,14 @@ struct FindCarView: View {
                 LazyHStack(spacing: 0) {
                     ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
                         VStack (alignment: .leading) {
-                            Text(location.location.name)
-                                .font(.title3)
-                                .padding(.leading)
+                            HStack {
+                                Text(location.location.name)
+                                    .font(.title3)
+                                    .padding(.leading)
+                                if let duration = location.duration {
+                                    Text("\(String(format: "%.1f", duration)) hr")
+                                }
+                            }
                             HStack {
                                 ForEach(Array(location.vehicles.enumerated()), id: \.element.id) { vehicleIndex, vehicle in
                                     VStack {
@@ -162,6 +177,22 @@ struct FindCarView: View {
             Task {
                 await ApiCallActor.shared.appendApi { token, userId in
                     await loadLocationsAsync(token, userId)
+                }
+                if [.authorizedWhenInUse, .authorizedAlways].contains(locationManager.authorizationStatus) {
+                    // Try to use the last known location. For one-shot fetching, you’d set a delegate and call requestLocation().
+                    if let userCoord = locationManager.location?.coordinate {
+                        for i in locations.indices {
+                            let dest = CLLocationCoordinate2D(latitude: locations[i].location.latitude, longitude: locations[i].location.longitude)
+                            do {
+                                let seconds = try await walkingETASeconds(from: userCoord, to: dest)
+                                await MainActor.run {
+                                    locations[i].duration = seconds
+                                }
+                            } catch error {
+                                print(error.localizedDescription)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -262,4 +293,25 @@ struct FindCarView: View {
             return .doNothing
         }
     }
+}
+
+
+func walkingETASeconds(from: CLLocationCoordinate2D,
+                       to: CLLocationCoordinate2D) async throws -> TimeInterval {
+    let src = MKMapItem(placemark: MKPlacemark(coordinate: from))
+    let dst = MKMapItem(placemark: MKPlacemark(coordinate: to))
+
+    let req = MKDirections.Request()
+    req.source = src
+    req.destination = dst
+    req.transportType = .walking
+    req.requestsAlternateRoutes = false
+
+    let directions = MKDirections(request: req)
+    let response = try await directions.calculate()
+    // Take the first route (there can be several)
+    guard let route = response.routes.first else {
+        throw NSError(domain: "Directions", code: 0, userInfo: [NSLocalizedDescriptionKey: "No walking route"])
+    }
+    return route.expectedTravelTime // seconds
 }

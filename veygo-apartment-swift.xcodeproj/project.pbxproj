@@ -387,6 +387,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera will be utilized to capture credit card information as well as document the condition and any damages of the rental vehicle.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app will use the user’s location to find the nearest vehicle for a better experience.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +429,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera will be utilized to capture credit card information as well as document the condition and any damages of the rental vehicle.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app will use the user’s location to find the nearest vehicle for a better experience.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
