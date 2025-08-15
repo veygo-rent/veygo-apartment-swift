@@ -46,6 +46,8 @@ struct FindCarView: View {
     @State private var locations: [LocationWithVehicles] = []
     @State private var cameraPosition: MapCameraPosition = .automatic
     
+    @State private var savedPosition: MapCameraPosition? = nil
+    
     var formattedDateRange: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, h:mm a"
@@ -55,10 +57,17 @@ struct FindCarView: View {
     var body: some View {
         Map(position: $cameraPosition, selection: $selectedLocation) {
             UserAnnotation()
-            ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
-                Marker(location.location.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: location.location.latitude, longitude: location.location.longitude))
-                    .tag(location.id)
-                    .tint(.purple)
+            ForEach(locations, id: \.id) { location in
+                Marker(
+                    location.location.name,
+                    systemImage: "car",
+                    coordinate: CLLocationCoordinate2D(
+                        latitude: location.location.latitude,
+                        longitude: location.location.longitude
+                    )
+                )
+                .tag(location.id)
+                .tint(.purple)
             }
         }
         .onAppear(perform: {
@@ -72,11 +81,17 @@ struct FindCarView: View {
             }
         }
         .onChange(of: selectedLocation) { _, newValue in
-            guard let sel = newValue,
-                  let loc = locations.first(where: { $0.id == sel }) else { return }
-            let coord = CLLocationCoordinate2D(latitude: loc.location.latitude, longitude: loc.location.longitude)
-            withAnimation(.easeInOut(duration: 0.35)) {
-                cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 1600, heading: 0, pitch: 0))
+            if let sel = newValue {
+                guard let loc = locations.getItemBy(id: sel) else { return }
+                let coord = CLLocationCoordinate2D(latitude: loc.location.latitude, longitude: loc.location.longitude)
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 1600, heading: 0, pitch: 0))
+                }
+            } else {
+                guard let saved = savedPosition else { return }
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    cameraPosition = saved
+                }
             }
         }
         .sheet(
@@ -85,62 +100,17 @@ struct FindCarView: View {
                 set: { if !$0 { selectedLocation = nil } }
             )
         ) {
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 0) {
-                    ForEach(Array(locations.enumerated()), id: \.element.id) { locationIndex, location in
-                        VStack (alignment: .leading) {
-                            HStack {
-                                Text(location.location.name)
-                                    .font(.title3)
-                                    .padding(.leading)
-                                if let duration = location.duration {
-                                    Text("\(String(format: "%.1f", duration)) hr")
-                                }
-                            }
-                            HStack {
-                                ForEach(Array(location.vehicles.enumerated()), id: \.element.id) { vehicleIndex, vehicle in
-                                    VStack {
-                                        HStack {
-                                            VStack (alignment: .leading, spacing: 12) {
-                                                Text("\(vehicle.vehicle.make) \(vehicle.vehicle.model)")
-                                                Text("$\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate))/hr • $\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate * 7))/day")
-                                                    .font(.subheadline)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundStyle(Color("SecondaryButtonText"))
-                                                HStack {
-                                                    Image(systemName: "fuelpump")
-                                                    Text(" \(vehicle.vehicle.tankLevelPercentage)%")
-                                                }
-                                            }
-                                            Spacer()
-                                            Image("carImg")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 80)
-                                        }
-                                    }
-                                    .padding()
-                                    .frame(width: 340)
-                                    .background {
-                                        Color("CardBG")
-                                    }
-                                    .cornerRadius(18)
-                                    .shadow(radius: 0.5)
-                                }
-                            }
-                        }
-                        .padding(.leading, 16)
-                        .padding(.trailing, (locationIndex == locations.count - 1) ? 16 : 0)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollPosition(id: $selectedLocation)
-            .scrollIndicators(.hidden)
-            .frame(maxWidth: .infinity, alignment: .bottom)
+            LocationStripView(
+                locations: locations,
+                selectedLocation: $selectedLocation,
+                apartment: apartment
+            )
             .presentationDetents([.height(280)])
             .presentationBackgroundInteraction(.enabled)
+            .scrollPosition(id: $selectedLocation)
+            .scrollIndicators(.hidden)
         }
+        .frame(maxWidth: .infinity, alignment: .bottom)
         .animation(.easeInOut(duration: 0.5), value: selectedLocation)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
@@ -178,22 +148,8 @@ struct FindCarView: View {
                 await ApiCallActor.shared.appendApi { token, userId in
                     await loadLocationsAsync(token, userId)
                 }
-                if [.authorizedWhenInUse, .authorizedAlways].contains(locationManager.authorizationStatus) {
-                    // Try to use the last known location. For one-shot fetching, you’d set a delegate and call requestLocation().
-                    if let userCoord = locationManager.location?.coordinate {
-                        for i in locations.indices {
-                            let dest = CLLocationCoordinate2D(latitude: locations[i].location.latitude, longitude: locations[i].location.longitude)
-                            do {
-                                let seconds = try await walkingETASeconds(from: userCoord, to: dest)
-                                await MainActor.run {
-                                    locations[i].duration = seconds
-                                }
-                            } catch error {
-                                print(error.localizedDescription)
-                            }
-                        }
-                    }
-                }
+                savedPosition = cameraPosition
+                await updateWalkingETAs()
             }
         }
     }
@@ -257,6 +213,7 @@ struct FindCarView: View {
                     await MainActor.run {
                         self.locations = decodedBody.vehicles
                     }
+                    Task { await updateWalkingETAs() }
                     return .renewSuccessful(token: token)
                 case 401:
                     await MainActor.run {
@@ -293,6 +250,27 @@ struct FindCarView: View {
             return .doNothing
         }
     }
+    
+    // Recompute walking ETAs for all loaded locations
+    @MainActor private func updateWalkingETAs() async {
+        // Require location permission and a known user coordinate
+        guard [.authorizedWhenInUse, .authorizedAlways].contains(locationManager.authorizationStatus),
+              let userCoord = locationManager.location?.coordinate else { return }
+
+        // Compute ETAs and store in hours for display
+        for i in locations.indices {
+            let dest = CLLocationCoordinate2D(
+                latitude: locations[i].location.latitude,
+                longitude: locations[i].location.longitude
+            )
+            do {
+                let seconds = try await walkingETASeconds(from: userCoord, to: dest)
+                locations[i].duration = seconds / 60.0
+            } catch {
+                // Silently ignore failures for individual locations
+            }
+        }
+    }
 }
 
 
@@ -314,4 +292,76 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
         throw NSError(domain: "Directions", code: 0, userInfo: [NSLocalizedDescriptionKey: "No walking route"])
     }
     return route.expectedTravelTime // seconds
+}
+
+private struct VehicleCardView: View {
+    let vehicle: VehicleWithBlockedDurations
+    let apartment: Apartment
+
+    var body: some View {
+        VStack {
+            HStack {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("\(vehicle.vehicle.make) \(vehicle.vehicle.model)")
+                        Text(vehicle.vehicle.name)
+                            .fontWeight(.light)
+                    }
+                    Text("$\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate))/hr • $\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate * 7))/day")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color("SecondaryButtonText"))
+                    HStack {
+                        Image(systemName: "fuelpump")
+                        Text(" \(vehicle.vehicle.tankLevelPercentage)%")
+                    }
+                }
+                Spacer()
+                Image("carImg")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 80)
+            }
+        }
+        .padding()
+        .frame(width: 340)
+        .background { Color("CardBG") }
+        .cornerRadius(18)
+        .shadow(radius: 0.5)
+    }
+}
+
+private struct LocationStripView: View {
+    let locations: [LocationWithVehicles]
+    @Binding var selectedLocation: Location.ID?
+    let apartment: Apartment
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(Array(locations.enumerated()), id: \.element.id) { index, loc in
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text(loc.location.name)
+                                .font(.title3)
+                            Spacer()
+                            if let duration = loc.duration {
+                                Image(systemName: "figure.walk")
+                                Text("\(String(format: "%.0f", duration)) minutes")
+                            }
+                        }
+                        .padding(.horizontal)
+                        HStack {
+                            ForEach(loc.vehicles, id: \.id) { v in
+                                VehicleCardView(vehicle: v, apartment: apartment)
+                            }
+                        }
+                    }
+                    .padding(.leading, 16)
+                    .padding(.trailing, (index == locations.count - 1) ? 16 : 0)
+                }
+            }
+            .scrollTargetLayout()
+        }
+    }
 }
