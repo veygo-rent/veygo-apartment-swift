@@ -60,31 +60,34 @@ struct FindCarView: View {
             .mapControls {
                 MapCompass()
             }
-
-            if selectedLocation != nil {
-                ScrollView(.horizontal) {
-                    LazyHStack(spacing: 20) {
-                        ForEach(locations) { location in
-                            VStack (alignment: .leading) {
-                                Text(location.location.name)
-                                HStack {
-                                    ForEach(location.vehicles) { vehicle in
-                                        VStack {
-                                            Text("Name: \(vehicle.vehicle.name)")
-                                        }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { selectedLocation != nil },
+                set: { if !$0 { selectedLocation = nil } }
+            )
+        ) {
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 20) {
+                    ForEach(locations) { location in
+                        VStack (alignment: .leading) {
+                            Text(location.location.name)
+                            HStack {
+                                ForEach(location.vehicles) { vehicle in
+                                    VStack {
+                                        Text("Name: \(vehicle.vehicle.name)")
                                     }
                                 }
                             }
                         }
                     }
-                    .scrollTargetLayout()
                 }
-                .scrollPosition(id: $selectedLocation)
-                .frame(height: 300)
-                .background(.ultraThinMaterial)
-                .frame(maxWidth: .infinity, alignment: .bottom)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .scrollTargetLayout()
             }
+            .scrollPosition(id: $selectedLocation)
+            .frame(maxWidth: .infinity, alignment: .bottom)
+            .presentationDetents([.height(300)])
+            .presentationBackgroundInteraction(.enabled)
         }
         .animation(.easeInOut(duration: 0.5), value: selectedLocation)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -99,13 +102,14 @@ struct FindCarView: View {
         .navigationTitle(formattedDateRange)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(
-            .thinMaterial,
+            .ultraThinMaterial,
             for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .toolbar(content: {
             if #unavailable(iOS 26) {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: {
+                        selectedLocation = nil
                         path.removeLast()
                     }) {
                         BackButton()
@@ -122,6 +126,9 @@ struct FindCarView: View {
                     return result
                 }
             }
+        }
+        .onDisappear {
+            selectedLocation = nil
         }
     }
     

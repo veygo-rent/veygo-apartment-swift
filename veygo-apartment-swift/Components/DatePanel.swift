@@ -107,15 +107,3 @@ struct DatePanel: View {
         }
     }
 }
-
-#Preview {
-    StatefulPreviewWrapper(Date()) { startDate in
-        StatefulPreviewWrapper(Date().addingTimeInterval(3600)) { endDate in
-            DatePanel(
-                startDate: startDate,
-                endDate: endDate, isEditMode: true
-            )
-        }
-    }
-}
-
