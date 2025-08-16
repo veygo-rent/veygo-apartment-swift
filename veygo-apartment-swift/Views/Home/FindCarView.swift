@@ -370,7 +370,58 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
 private struct VehicleCardView: View {
     let vehicle: VehicleWithBlockedDurations
     let apartment: Apartment
-
+    
+    private struct HourlyBlock: Identifiable {
+        let id = UUID()
+        let hourStr: String
+        let firstQtrWanted: Bool
+        let secondQtrWanted: Bool
+        let thirdQtrWanted: Bool
+        let fourthQtrWanted: Bool
+        let firstQtrTaken: Bool
+        let secondQtrTaken: Bool
+        let thirdQtrTaken: Bool
+        let fourthQtrTaken: Bool
+    }
+    
+    @ViewBuilder
+    private func QuarterlyBlock(wanted: Bool, taken: Bool) -> some View {
+        if wanted {
+            if taken {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color(.systemRed))
+                    .frame(width: 16, height: 18)
+            } else {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color(.systemGreen))
+                    .frame(width: 16, height: 18)
+            }
+        } else {
+            if taken {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color(.systemGray))
+                    .frame(width: 16, height: 18)
+            } else {
+                RoundedRectangle(cornerRadius: 4)
+                    .foregroundColor(.secondary)
+                    .frame(width: 16, height: 18)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func HourlyAvailability(availability: HourlyBlock) -> some View {
+        VStack (alignment: .center) {
+            HStack {
+                QuarterlyBlock(wanted: availability.firstQtrWanted, taken: availability.firstQtrTaken)
+                QuarterlyBlock(wanted: availability.secondQtrWanted, taken: availability.secondQtrTaken)
+                QuarterlyBlock(wanted: availability.thirdQtrWanted, taken: availability.thirdQtrTaken)
+                QuarterlyBlock(wanted: availability.fourthQtrWanted, taken: availability.fourthQtrTaken)
+            }
+            Text("\(availability.hourStr)")
+        }
+    }
+    
     var body: some View {
         VStack {
             HStack {
