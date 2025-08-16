@@ -248,6 +248,14 @@ struct FindCarView: View {
                         }
                         return .renewSuccessful(token: token)
                     }
+                    if decodedBody.vehicles.isEmpty {
+                        await MainActor.run {
+                            alertTitle = "No cars available"
+                            alertMessage = "Uh oh, this university isn't ready. Please try again later."
+                            showAlert = true
+                            backButtonTriggered = true
+                        }
+                    }
                     await MainActor.run {
                         self.locations = decodedBody.vehicles
                     }
