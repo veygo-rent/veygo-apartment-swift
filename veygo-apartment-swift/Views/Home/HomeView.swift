@@ -55,55 +55,60 @@ struct HomeView: View {
                     SlidingToggleButton(selectedOption: $selectedToggle)
                         .padding(.horizontal, 24)
                         .sensoryFeedback(.selection, trigger: selectedToggle)
-                    Dropdown(
-                        selectedOption: $selectedLocation,
-                        labelText: .constant("Rental location"),
-                        universityOptions: $universities
-                    )
-                    .padding(.horizontal, 24)
-                    DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                    if selectedToggle == .university {
+                        Dropdown(
+                            selectedOption: $selectedLocation,
+                            labelText: .constant("Rental location"),
+                            universityOptions: $universities
+                        )
                         .padding(.horizontal, 24)
-                    
-                    // Promo code + Apply
-                    HStack(spacing: 16) {
-                        InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCode)
-                            .onChange(of: promoCode) { old, newValue in
-                                var result = ""
-                                var previousWasDash = false
-                                for (_, char) in newValue.enumerated() {
-                                    if char.isLetter || char.isNumber {
-                                        result.append(char)
-                                        previousWasDash = false
-                                    } else if char == "-" && !previousWasDash && !result.isEmpty {
-                                        result.append(char)
-                                        previousWasDash = true
-                                    }
-                                    // skip if it's a dash and previousWasDash is true, or if would be the first character
-                                }
-                                let finalResult = result.uppercased()
-                                if promoCode != finalResult {
-                                    promoCode = finalResult
-                                }
-                            }
+                        DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                            .padding(.horizontal, 24)
                         
-                        SecondaryButtonLg(text: "Apply") {
-                            if !promoCode.isEmpty {
-                                print("Apply tapped with promo code: \(promoCode)")
-                            } else {
-                                
+                        // Promo code + Apply
+                        HStack(spacing: 16) {
+                            InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCode)
+                                .onChange(of: promoCode) { old, newValue in
+                                    var result = ""
+                                    var previousWasDash = false
+                                    for (_, char) in newValue.enumerated() {
+                                        if char.isLetter || char.isNumber {
+                                            result.append(char)
+                                            previousWasDash = false
+                                        } else if char == "-" && !previousWasDash && !result.isEmpty {
+                                            result.append(char)
+                                            previousWasDash = true
+                                        }
+                                        // skip if it's a dash and previousWasDash is true, or if would be the first character
+                                    }
+                                    let finalResult = result.uppercased()
+                                    if promoCode != finalResult {
+                                        promoCode = finalResult
+                                    }
+                                }
+                            
+                            SecondaryButtonLg(text: "Apply") {
+                                if !promoCode.isEmpty {
+                                    print("Apply tapped with promo code: \(promoCode)")
+                                } else {
+                                    
+                                }
+                            }
+                            .frame(width: 92)
+                        }
+                        .padding(.horizontal, 24)
+                        
+                        PrimaryButtonLg(text: "Vehicle Look Up") {
+                            if selectedLocation != nil {
+                                path.append(.university)
                             }
                         }
-                        .frame(width: 92)
+                        .disabled(selectedLocation == nil)
+                        .padding(.horizontal, 24)
+                    } else {
+                        Text("Coming soon...")
+                            .padding(.horizontal, 24)
                     }
-                    .padding(.horizontal, 24)
-                    
-                    PrimaryButtonLg(text: "Vehicle Look Up") {
-                        if selectedLocation != nil {
-                            path.append(.university)
-                        }
-                    }
-                    .disabled(selectedLocation == nil)
-                    .padding(.horizontal, 24)
                 }
                 .padding(.bottom, 120)
             }
@@ -142,7 +147,7 @@ struct HomeView: View {
             .navigationDestination(for: HomeDestination.self) { dest in
                 switch dest {
                 case .apartment:
-                    Text("Apartment")
+                    ListCarView()
                 case .university:
                     if let id = selectedLocation {
                         FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: universities.getItemBy(id: id)!)
