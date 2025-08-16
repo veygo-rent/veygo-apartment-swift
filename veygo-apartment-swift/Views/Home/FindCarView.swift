@@ -31,6 +31,7 @@ struct FindCarView: View {
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
+    @State private var backButtonTriggered: Bool = false
     
     @State private var locationManager = CLLocationManager()
     
@@ -114,6 +115,12 @@ struct FindCarView: View {
             Button("OK") {
                 if clearUserTriggered {
                     session.user = nil
+                }
+                if backButtonTriggered {
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        selectedLocation = nil
+                    }
+                    path.removeLast()
                 }
             }
         } message: {
@@ -246,6 +253,26 @@ struct FindCarView: View {
                     }
                     Task { await updateWalkingETAs() }
                     return .renewSuccessful(token: token)
+                case 400:
+                    nonisolated struct FetchSuccessBody: Decodable {
+                        let error: String
+                    }
+                    
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .renewSuccessful(token: token)
+                    }
+                    await MainActor.run {
+                        alertTitle = "Invalid Request"
+                        alertMessage = decodedBody.error
+                        showAlert = true
+                        backButtonTriggered = true
+                    }
+                    return .doNothing
                 case 401:
                     await MainActor.run {
                         alertTitle = "Session Expired"
