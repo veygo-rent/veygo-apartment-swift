@@ -109,7 +109,7 @@ struct FindCarView: View {
                 startDate: startDate,
                 endDate: endDate
             )
-            .presentationDetents([.height(280)])
+            .presentationDetents([.height(300)])
             .presentationBackgroundInteraction(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .bottom)
@@ -528,6 +528,9 @@ private struct VehicleCardView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80)
             }
+            Text(vehicle.vehicle.requiresOwnInsurance ? "Provide your own liability" : "Liability available for purchase")
+                .fontWeight(.light)
+                .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 8) {
                 ForEach(makeFourHourBlocks()) { hour in
                     HourlyAvailability(availability: hour)
@@ -552,33 +555,40 @@ private struct LocationStripView: View {
     let endDate: Date
 
     var body: some View {
-        ScrollView(.horizontal) {
-            LazyHStack(spacing: 0) {
-                ForEach(Array(locations.enumerated()), id: \.element.id) { index, loc in
-                    HStack {
-                        ForEach(loc.vehicles, id: \.id) { v in
-                            VStack (alignment: .leading) {
-                                HStack {
-                                    Text(loc.location.name)
-                                        .font(.title3)
-                                    Spacer()
-                                    if let duration = loc.duration {
-                                        Image(systemName: "figure.walk")
-                                        Text("\(String(format: "%.0f", duration)) minutes")
+        VStack(alignment: .leading) {
+            
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 0) {
+                    ForEach(Array(locations.enumerated()), id: \.element.id) { index, loc in
+                        HStack {
+                            ForEach(loc.vehicles, id: \.id) { v in
+                                VStack (alignment: .leading) {
+                                    HStack {
+                                        Text(loc.location.name)
+                                            .font(.title3)
+                                        Spacer()
+                                        if let duration = loc.duration {
+                                            Image(systemName: "figure.walk")
+                                            Text("\(String(format: "%.0f", duration)) minutes")
+                                        }
                                     }
+                                    .padding(.horizontal)
+                                    VehicleCardView(vehicle: v, apartment: apartment, startDate: startDate, endDate: endDate)
                                 }
-                                .padding(.horizontal)
-                                VehicleCardView(vehicle: v, apartment: apartment, startDate: startDate, endDate: endDate)
                             }
                         }
+                        .padding(.leading, 16)
+                        .padding(.trailing, (index == locations.count - 1) ? 16 : 0)
                     }
-                    .padding(.leading, 16)
-                    .padding(.trailing, (index == locations.count - 1) ? 16 : 0)
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
+            .scrollPosition(id: $selectedLocation)
+            .scrollIndicators(.hidden)
+            
+            Text("* Veygo requires full coverage at all times.")
+                .font(.caption.italic())
+                .padding(.leading, 32)
         }
-        .scrollPosition(id: $selectedLocation)
-        .scrollIndicators(.hidden)
     }
 }
