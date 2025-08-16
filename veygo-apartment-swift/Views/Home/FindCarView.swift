@@ -387,6 +387,36 @@ private struct VehicleCardView: View {
         let thirdQtrTaken: Bool
         let fourthQtrTaken: Bool
     }
+
+    // Diagonal hatch fill for unavailable/taken blocks
+    private struct DiagonalHatch: View {
+        var cornerRadius: CGFloat = 4
+        var lineSpacing: CGFloat = 3
+        var lineWidth: CGFloat = 1
+        var lineColor: Color = Color(.systemGray)
+
+        var body: some View {
+            ZStack {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(lineColor, lineWidth: 1)
+                GeometryReader { geo in
+                    let w = geo.size.width
+                    let h = geo.size.height
+                    let step = lineSpacing + lineWidth
+                    Path { path in
+                        var x: CGFloat = -h
+                        while x < w {
+                            path.move(to: CGPoint(x: x, y: 0))
+                            path.addLine(to: CGPoint(x: x + h, y: h))
+                            x += step
+                        }
+                    }
+                    .stroke(lineColor, lineWidth: lineWidth)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        }
+    }
     
     @ViewBuilder
     private func QuarterlyBlock(wanted: Bool, taken: Bool) -> some View {
@@ -402,8 +432,7 @@ private struct VehicleCardView: View {
             }
         } else {
             if taken {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color(.systemGray))
+                DiagonalHatch(cornerRadius: 4, lineSpacing: 3, lineWidth: 1, lineColor: Color(.systemGray))
                     .frame(width: 14, height: 16)
             } else {
                 RoundedRectangle(cornerRadius: 4)
