@@ -105,7 +105,9 @@ struct FindCarView: View {
                 selectedLocation: $selectedLocation,
                 selectedVehicle: $selectedVehicle,
                 locations: locations,
-                apartment: apartment
+                apartment: apartment,
+                startDate: startDate,
+                endDate: endDate
             )
             .presentationDetents([.height(280)])
             .presentationBackgroundInteraction(.enabled)
@@ -370,6 +372,8 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
 private struct VehicleCardView: View {
     let vehicle: VehicleWithBlockedDurations
     let apartment: Apartment
+    let startDate: Date
+    let endDate: Date
     
     private struct HourlyBlock: Identifiable {
         let id = UUID()
@@ -390,21 +394,21 @@ private struct VehicleCardView: View {
             if taken {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color(.systemRed))
-                    .frame(width: 16, height: 18)
+                    .frame(width: 14, height: 16)
             } else {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color(.systemGreen))
-                    .frame(width: 16, height: 18)
+                    .frame(width: 14, height: 16)
             }
         } else {
             if taken {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color(.systemGray))
-                    .frame(width: 16, height: 18)
+                    .frame(width: 14, height: 16)
             } else {
                 RoundedRectangle(cornerRadius: 4)
-                    .foregroundColor(.secondary)
-                    .frame(width: 16, height: 18)
+                    .stroke(lineWidth: 1)
+                    .frame(width: 14, height: 16)
             }
         }
     }
@@ -412,14 +416,63 @@ private struct VehicleCardView: View {
     @ViewBuilder
     private func HourlyAvailability(availability: HourlyBlock) -> some View {
         VStack (alignment: .center) {
-            HStack {
+            HStack (spacing: 4) {
                 QuarterlyBlock(wanted: availability.firstQtrWanted, taken: availability.firstQtrTaken)
                 QuarterlyBlock(wanted: availability.secondQtrWanted, taken: availability.secondQtrTaken)
                 QuarterlyBlock(wanted: availability.thirdQtrWanted, taken: availability.thirdQtrTaken)
                 QuarterlyBlock(wanted: availability.fourthQtrWanted, taken: availability.fourthQtrTaken)
             }
-            Text("\(availability.hourStr)")
+            Text("\(availability.hourStr)").font(.caption)
         }
+    }
+
+    private func overlaps(_ aStart: Date, _ aEnd: Date, _ bStart: Date, _ bEnd: Date) -> Bool {
+        max(aStart, bStart) < min(aEnd, bEnd)
+    }
+
+    private func makeFourHourBlocks() -> [HourlyBlock] {
+        let cal = Calendar.current
+        // Start at the floor of the startDate to the hour
+        let comps = cal.dateComponents([.year,.month,.day,.hour], from: startDate)
+        guard let hourStart = cal.date(from: comps) else { return [] }
+        let hours: [Date] = [
+            hourStart,
+            cal.date(byAdding: .hour, value: 1, to: hourStart)!,
+            cal.date(byAdding: .hour, value: 2, to: hourStart)!,
+            cal.date(byAdding: .hour, value: 3, to: hourStart)!
+        ]
+
+        func quarterWanted(_ qStart: Date) -> Bool {
+            let qEnd = cal.date(byAdding: .minute, value: 15, to: qStart)!
+            return overlaps(qStart, qEnd, startDate, endDate)
+        }
+        func quarterTaken(_ qStart: Date) -> Bool {
+            let qEnd = cal.date(byAdding: .minute, value: 15, to: qStart)!
+            return vehicle.blockedDurations.contains { br in overlaps(qStart, qEnd, br.startTime, br.endTime) }
+        }
+
+        var blocks: [HourlyBlock] = []
+        let df = DateFormatter(); df.dateFormat = "h a"
+
+        for h in hours {
+            let q1 = h
+            let q2 = cal.date(byAdding: .minute, value: 15, to: h)!
+            let q3 = cal.date(byAdding: .minute, value: 30, to: h)!
+            let q4 = cal.date(byAdding: .minute, value: 45, to: h)!
+            let block = HourlyBlock(
+                hourStr: df.string(from: h),
+                firstQtrWanted: quarterWanted(q1),
+                secondQtrWanted: quarterWanted(q2),
+                thirdQtrWanted: quarterWanted(q3),
+                fourthQtrWanted: quarterWanted(q4),
+                firstQtrTaken: quarterTaken(q1),
+                secondQtrTaken: quarterTaken(q2),
+                thirdQtrTaken: quarterTaken(q3),
+                fourthQtrTaken: quarterTaken(q4)
+            )
+            blocks.append(block)
+        }
+        return blocks
     }
     
     var body: some View {
@@ -446,6 +499,12 @@ private struct VehicleCardView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80)
             }
+            HStack(spacing: 8) {
+                ForEach(makeFourHourBlocks()) { hour in
+                    HourlyAvailability(availability: hour)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
         .frame(width: 340)
@@ -460,6 +519,8 @@ private struct LocationStripView: View {
     @Binding var selectedVehicle: PublishVehicle.ID?
     let locations: [LocationWithVehicles]
     let apartment: Apartment
+    let startDate: Date
+    let endDate: Date
 
     var body: some View {
         ScrollView(.horizontal) {
@@ -478,7 +539,7 @@ private struct LocationStripView: View {
                                     }
                                 }
                                 .padding(.horizontal)
-                                VehicleCardView(vehicle: v, apartment: apartment)
+                                VehicleCardView(vehicle: v, apartment: apartment, startDate: startDate, endDate: endDate)
                             }
                         }
                     }
