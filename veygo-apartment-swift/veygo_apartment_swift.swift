@@ -7,11 +7,14 @@
 
 import SwiftUI
 
+import UserNotifications
+
 import Crisp
 @preconcurrency import Stripe
 
 @main
 struct veygo_apartment_swift: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -135,4 +138,22 @@ struct veygo_apartment_swift: App {
         }
     }
 
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
+        return true
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        var tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        #if DEBUG
+        tokenString = "!\(tokenString)"
+        #endif
+        UserDefaults.standard.set(tokenString, forKey: "apns_token")
+    }
+    
 }
