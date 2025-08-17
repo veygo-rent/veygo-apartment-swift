@@ -424,20 +424,20 @@ private struct VehicleCardView: View {
             if taken {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color(.systemRed))
-                    .frame(width: 14, height: 16)
+                    .frame(width: 15, height: 16)
             } else {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color(.systemGreen))
-                    .frame(width: 14, height: 16)
+                    .frame(width: 15, height: 16)
             }
         } else {
             if taken {
                 DiagonalHatch(cornerRadius: 4, lineSpacing: 3, lineWidth: 1, lineColor: Color(.systemGray))
-                    .frame(width: 14, height: 16)
+                    .frame(width: 15, height: 16)
             } else {
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(lineWidth: 1)
-                    .frame(width: 14, height: 16)
+                    .frame(width: 15, height: 16)
             }
         }
     }
