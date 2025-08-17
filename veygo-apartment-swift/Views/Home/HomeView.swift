@@ -169,9 +169,6 @@ struct HomeView: View {
                     await ApiCallActor.shared.appendApi { token, userId in
                         await fetchUniversitiesAsync()
                     }
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await updateApnsTokenAsync(token, userId)
-                    }
                 }
             }
             .background(Color("MainBG"))
