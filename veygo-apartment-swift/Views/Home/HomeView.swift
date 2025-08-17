@@ -26,7 +26,6 @@ struct HomeView: View {
     @EnvironmentObject var session: UserSession
     
     @AppStorage("apns_token") var apns_token: String = ""
-    @AppStorage("prev_apns_token") var prev_apns_token: String = ""
     
     @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation: Apartment.ID? = nil
@@ -183,26 +182,24 @@ struct HomeView: View {
                     }
                 }
             }
+            .onChange(of: apns_token) { oldValue, newValue in
+                Task {
+                    await ApiCallActor.shared.appendApi { token, userId in
+                        await updateApnsTokenAsync(token, userId)
+                    }
+                }
+            }
         }
     }
     
     @ApiCallActor func updateApnsTokenAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
-            let notificationAuthStatus = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            guard notificationAuthStatus else { return .doNothing }
-            
-            await UIApplication.shared.registerForRemoteNotifications()
-            
             let apns_token = await apns_token
-            let prev_apns_token = await prev_apns_token
             let user = await MainActor.run { self.session.user }
             
             if !token.isEmpty && userId > 0, user != nil,
-               !apns_token.isEmpty && apns_token != prev_apns_token {
-                await MainActor.run {
-                    self.prev_apns_token = apns_token
-                }
-                var body: [String: String] = ["apns": apns_token]
+               !apns_token.isEmpty {
+                let body: [String: String] = ["apns": apns_token]
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
                 let request = veygoCurlRequest(url: "/api/v1/user/update-apns", method: .post, headers: ["auth": "\(token)$\(userId)"], body: jsonData)
                 let (_, response) = try await URLSession.shared.data(for: request)
@@ -217,7 +214,7 @@ struct HomeView: View {
                 }
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response) ?? ""
+                    let token = extractToken(from: response, for: "Updating APNs token") ?? ""
                     return .renewSuccessful(token: token)
                 case 401:
                     await MainActor.run {

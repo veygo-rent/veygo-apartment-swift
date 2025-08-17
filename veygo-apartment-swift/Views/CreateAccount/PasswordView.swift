@@ -157,7 +157,7 @@ struct PasswordView: View {
                     let renter: PublishRenter
                 }
                 
-                let token = extractToken(from: response) ?? ""
+                let token = extractToken(from: response, for: "Registering user") ?? ""
                 guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data),
                       !token.isEmpty else {
                     await MainActor.run {

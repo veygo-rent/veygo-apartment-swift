@@ -123,7 +123,7 @@ struct FullStripeCardEntryView: View {
                     nonisolated struct ResponseObject: Decodable {
                         let newPaymentMethod: PublishPaymentMethod
                     }
-                    let token = extractToken(from: response) ?? ""
+                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
                     return .renewSuccessful(token: token)
                 case 401:
                     await MainActor.run {

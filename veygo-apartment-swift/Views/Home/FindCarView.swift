@@ -241,7 +241,7 @@ struct FindCarView: View {
                         let vehicles: [LocationWithVehicles]
                     }
                     
-                    let token = extractToken(from: response) ?? ""
+                    let token = extractToken(from: response, for: "Getting availability") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"

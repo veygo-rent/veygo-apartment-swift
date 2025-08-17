@@ -116,7 +116,7 @@ struct PhoneVeri: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response) ?? ""
+                    let token = extractToken(from: response, for: "Requesting OTP code") ?? ""
                     return .renewSuccessful(token: token)
                 case 401:
                     await MainActor.run {
@@ -208,7 +208,7 @@ struct PhoneVeri: View {
                         let verifiedRenter: PublishRenter
                     }
                     
-                    let token = extractToken(from: response) ?? ""
+                    let token = extractToken(from: response, for: "Verifying OTP code") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
@@ -230,7 +230,7 @@ struct PhoneVeri: View {
                     }
                     return .clearUser
                 case 406:
-                    let token = extractToken(from: response) ?? ""
+                    let token = extractToken(from: response, for: "Verifying OTP code") ?? ""
                     await MainActor.run {
                         alertTitle = "Warning"
                         alertMessage = "Invalid verification code"
