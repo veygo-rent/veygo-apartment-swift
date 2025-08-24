@@ -1,8 +1,8 @@
 //
-//  UserModel.swift
+//  Models.swift
 //  veygo-apartment-swift
 //
-//  Created by 魔法玛丽大炮 on 5/27/25.
+//  Created by Shenghong Zhou on 6/7/25.
 //
 
 import Foundation
@@ -273,6 +273,10 @@ nonisolated struct VehicleSnapshot: Identifiable, Equatable, Codable {
     var rightImage: String
     var frontImage: String
     var backImage: String
+    var time: Date
+    var odometer: Int
+    var level: Int
+    var vehicleId: Int
 }
 
 nonisolated struct Promo: Identifiable, Equatable, Codable {
@@ -306,17 +310,13 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var paiProtectionRate: Double
     
     var actualPickupTime: Date?
-    var pickupOdometer: Int?
-    var pickupLevel: Int?
     
     var actualDropOffTime: Date?
-    var dropOffOdometer: Int?
-    var dropOffLevel: Int?
-    var vehicleSnapshotBefore: Int?
     
     var msrpFactor: Double
     var durationRate: Double
     var vehicleId: Int
+    var vehicleSnapshotBefore: Int?
     var vehicleSnapshotAfter: Int?
     
     var renterId: Int
