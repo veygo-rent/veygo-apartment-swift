@@ -1,13 +1,13 @@
 {
-  "originHash" : "d03c9c16e64b0dce34e05148c911ce6756d9be09ee815d5eec1b9df961b61b71",
+  "originHash" : "b9225c614db1fe7542795f61bc56435180c4372db35345ee26cad9421eb227f0",
   "pins" : [
     {
       "identity" : "crisp-sdk-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/crisp-im/crisp-sdk-ios.git",
       "state" : {
-        "revision" : "5f37f9e179c3d7421332c5e7bfe4f819986a4d7d",
-        "version" : "2.8.2"
+        "revision" : "30991356e5ee97153729c95fa1978f227328980a",
+        "version" : "2.11.0"
       }
     },
     {
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stripe/stripe-ios",
       "state" : {
-        "revision" : "ea52e333c0a547b3cb58a3b8abbf69b1bceb6813",
-        "version" : "24.16.2"
+        "revision" : "fbb4488a18104e080eb72e7d03ca982505cea566",
+        "version" : "24.23.3"
       }
     }
   ],
