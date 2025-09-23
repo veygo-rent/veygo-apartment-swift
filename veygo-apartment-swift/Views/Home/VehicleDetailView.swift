@@ -16,5 +16,8 @@ struct VehicleDetailView: View {
     var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+            .onAppear {
+                print(startTime, endTime, apartment, vehicleWithBlocksAndLocationInfo)
+            }
     }
 }
