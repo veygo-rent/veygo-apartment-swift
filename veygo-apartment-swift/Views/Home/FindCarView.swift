@@ -33,6 +33,8 @@ struct FindCarView: View {
     
     @State private var savedPosition: MapCameraPosition? = nil
     
+    @Binding var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)?
+    
     var formattedDateRange: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, h:mm a"
@@ -85,8 +87,10 @@ struct FindCarView: View {
             )
         ) {
             LocationStripView(
+                path: $path,
                 selectedLocation: $selectedLocation,
                 selectedVehicle: $selectedVehicle,
+                vehicleWithBlocksAndLocationInfo: $vehicleWithBlocksAndLocationInfo,
                 locations: locations,
                 apartment: apartment,
                 startDate: startDate,
@@ -530,8 +534,12 @@ private struct VehicleCardView: View {
 }
 
 private struct LocationStripView: View {
+    
+    @Binding var path: [HomeDestination]
+    
     @Binding var selectedLocation: Location.ID?
     @Binding var selectedVehicle: PublishVehicle.ID?
+    @Binding var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)?
     let locations: [LocationWithVehicles]
     let apartment: Apartment
     let startDate: Date
@@ -557,6 +565,12 @@ private struct LocationStripView: View {
                                     }
                                     .padding(.horizontal)
                                     VehicleCardView(vehicle: v, apartment: apartment, startDate: startDate, endDate: endDate)
+                                        .onTapGesture {
+                                            let temp = (v, loc.location)
+                                            vehicleWithBlocksAndLocationInfo = temp
+                                            selectedLocation = nil
+                                            path.append(.vehicleDetails)
+                                        }
                                 }
                             }
                         }
