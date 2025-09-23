@@ -8,23 +8,6 @@
 import SwiftUI
 import MapKit
 
-nonisolated private struct BlockedRange: Decodable {
-    var startTime: Date
-    var endTime: Date
-}
-nonisolated private struct VehicleWithBlockedDurations: Decodable, Identifiable {
-    var vehicle: PublishVehicle
-    var blockedDurations: [BlockedRange]
-    var id: PublishVehicle.ID { vehicle.id }
-}
-nonisolated private struct LocationWithVehicles: Decodable, Identifiable {
-    var location: Location
-    var vehicles: [VehicleWithBlockedDurations]
-    var id: Location.ID { location.id }
-    var duration: TimeInterval? = nil
-}
-
-
 struct FindCarView: View {
     
     @State private var showAlert: Bool = false

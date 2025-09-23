@@ -4,6 +4,7 @@ import UserNotifications
 enum HomeDestination: Hashable {
     case university
     case apartment
+    case vehicleDetails
 }
 
 private func roundUpToNextQuarter(from date: Date) -> Date {
@@ -44,6 +45,8 @@ struct HomeView: View {
     
     @State private var path: [HomeDestination] = []
     
+    @State private var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)? = nil
+    
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
@@ -52,9 +55,10 @@ struct HomeView: View {
                     // Make a Reservation & others
                     Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
                         .padding(.horizontal, 24)
-                    SlidingToggleButton(selectedOption: $selectedToggle)
-                        .padding(.horizontal, 24)
-                        .sensoryFeedback(.selection, trigger: selectedToggle)
+                    /// Implementing Apartment UI later
+//                    SlidingToggleButton(selectedOption: $selectedToggle)
+//                        .padding(.horizontal, 24)
+//                        .sensoryFeedback(.selection, trigger: selectedToggle)
                     if selectedToggle == .university {
                         Dropdown(
                             selectedOption: $selectedLocation,
@@ -153,6 +157,11 @@ struct HomeView: View {
                         FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: universities.getItemBy(id: id)!)
                     } else {
                         Text("Select a location first")
+                    }
+                case .vehicleDetails:
+                    if let selectedLocation, let apartment = universities.getItemBy(id: selectedLocation),
+                    let vehicleWithBlocksAndLocationInfo {
+                        VehicleDetailView(startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: vehicleWithBlocksAndLocationInfo)
                     }
                 }
             }
