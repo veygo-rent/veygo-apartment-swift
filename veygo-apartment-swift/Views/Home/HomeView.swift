@@ -4,7 +4,7 @@ import UserNotifications
 enum HomeDestination: Hashable {
     case university
     case apartment
-    case vehicleDetails
+    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, startDate: Date, endDate: Date)
 }
 
 private func roundUpToNextQuarter(from date: Date) -> Date {
@@ -44,8 +44,6 @@ struct HomeView: View {
     @Binding var universities: [Apartment]
     
     @State private var path: [HomeDestination] = []
-    
-    @State private var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)? = nil
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -154,16 +152,12 @@ struct HomeView: View {
                     ListCarView()
                 case .university:
                     if let id = selectedLocation {
-                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: universities.getItemBy(id: id)!,
-                                    vehicleWithBlocksAndLocationInfo: $vehicleWithBlocksAndLocationInfo)
+                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: universities.getItemBy(id: id)!)
                     } else {
                         Text("Select a location first")
                     }
-                case .vehicleDetails:
-                    if let selectedLocation, let apartment = universities.getItemBy(id: selectedLocation),
-                    let vehicleWithBlocksAndLocationInfo {
-                        VehicleDetailView(startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: vehicleWithBlocksAndLocationInfo)
-                    }
+                case let .vehicleDetails(vehicle, location, apartment, startDate, endDate):
+                    VehicleDetailView(startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
                 }
             }
             .onAppear {

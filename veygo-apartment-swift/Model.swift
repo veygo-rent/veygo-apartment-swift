@@ -117,7 +117,7 @@ nonisolated struct PublishPaymentMethod: Identifiable, Equatable, Codable {
     var cdwEnabled: Bool
 }
 
-nonisolated struct Apartment: Identifiable, Equatable, Codable, HasName {
+nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasName {
     var id: Int
     var name: String
     var email: String
@@ -170,7 +170,7 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var taxes: [Int?]
 }
 
-nonisolated struct Location: Identifiable, Equatable, Codable, HasName {
+nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
     var id: Int
     var apartmentId: Int
     var name: String
@@ -192,7 +192,7 @@ nonisolated struct TransponderCompany: Identifiable, Equatable, Codable {
     var timezone: String?
 }
 
-nonisolated struct PublishVehicle: Identifiable, Equatable, Codable {
+nonisolated struct PublishVehicle: Identifiable, Equatable, Codable, Hashable {
     var id: Int
     var vin: String
     var name: String

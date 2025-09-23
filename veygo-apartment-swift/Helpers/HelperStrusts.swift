@@ -8,11 +8,15 @@
 import Foundation
 
 /// Reservation Helper Structs...
-nonisolated struct BlockedRange: Decodable {
+nonisolated struct BlockedRange: Decodable, Hashable {
     var startTime: Date
     var endTime: Date
 }
-nonisolated struct VehicleWithBlockedDurations: Decodable, Identifiable {
+nonisolated struct VehicleWithBlockedDurations: Decodable, Identifiable, Equatable, Hashable {
+    static func == (lhs: VehicleWithBlockedDurations, rhs: VehicleWithBlockedDurations) -> Bool {
+        lhs.id == rhs.id
+    }
+    
     var vehicle: PublishVehicle
     var blockedDurations: [BlockedRange]
     var id: PublishVehicle.ID { vehicle.id }
