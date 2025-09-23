@@ -2,7 +2,7 @@ import SwiftUI
 import UserNotifications
 
 enum HomeDestination: Hashable {
-    case university
+    case university(apartment: Apartment)
     case apartment
     case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, startDate: Date, endDate: Date)
 }
@@ -101,8 +101,8 @@ struct HomeView: View {
                         .padding(.horizontal, 24)
                         
                         PrimaryButtonLg(text: "Vehicle Look Up") {
-                            if selectedLocation != nil {
-                                path.append(.university)
+                            if let selectedLocation, let university = universities.getItemBy(id: selectedLocation) {
+                                path.append(.university(apartment: university))
                             }
                         }
                         .disabled(selectedLocation == nil)
@@ -150,12 +150,8 @@ struct HomeView: View {
                 switch dest {
                 case .apartment:
                     ListCarView()
-                case .university:
-                    if let id = selectedLocation {
-                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: universities.getItemBy(id: id)!)
-                    } else {
-                        Text("Select a location first")
-                    }
+                case let .university(apt):
+                    FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
                 case let .vehicleDetails(vehicle, location, apartment, startDate, endDate):
                     VehicleDetailView(startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
                 }
