@@ -153,7 +153,7 @@ struct HomeView: View {
                 case let .university(apt):
                     FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
                 case let .vehicleDetails(vehicle, location, apartment, startDate, endDate):
-                    VehicleDetailView(startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
+                    VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
                 }
             }
             .onAppear {
