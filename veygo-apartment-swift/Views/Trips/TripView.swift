@@ -28,8 +28,3 @@ public struct TripView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
-
-#Preview {
-    TripView()
-}
-

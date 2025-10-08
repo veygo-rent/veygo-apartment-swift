@@ -20,6 +20,15 @@ nonisolated struct VehicleWithBlockedDurations: Decodable, Identifiable, Equatab
     var vehicle: PublishVehicle
     var blockedDurations: [BlockedRange]
     var id: PublishVehicle.ID { vehicle.id }
+
+    func isVehicleAvailable(start startTime: Date, end endTime: Date) -> Bool {
+        for blocked in blockedDurations {
+            if startTime < blocked.endTime && endTime > blocked.startTime {
+                return false
+            }
+        }
+        return true
+    }
 }
 nonisolated struct LocationWithVehicles: Decodable, Identifiable {
     var location: Location

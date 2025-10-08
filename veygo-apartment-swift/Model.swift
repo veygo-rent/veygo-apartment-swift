@@ -133,11 +133,11 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var platinumTierHours: Double
     var platinumTierRate: Double
     var durationRate: Double
-    var liabilityProtectionRate: Double
-    var pcdwProtectionRate: Double
-    var pcdwExtProtectionRate: Double
-    var rsaProtectionRate: Double
-    var paiProtectionRate: Double
+    var liabilityProtectionRate: Double?
+    var pcdwProtectionRate: Double?
+    var pcdwExtProtectionRate: Double?
+    var rsaProtectionRate: Double?
+    var paiProtectionRate: Double?
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
@@ -159,11 +159,11 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var platinumTierHours: Double
     var platinumTierRate: Double
     var durationRate: Double
-    var liabilityProtectionRate: Double
-    var pcdwProtectionRate: Double
-    var pcdwExtProtectionRate: Double
-    var rsaProtectionRate: Double
-    var paiProtectionRate: Double
+    var liabilityProtectionRate: Double?
+    var pcdwProtectionRate: Double?
+    var pcdwExtProtectionRate: Double?
+    var rsaProtectionRate: Double?
+    var paiProtectionRate: Double?
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
@@ -303,11 +303,11 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var userBillingAddress: String
     var rsvpPickupTime: Date
     var rsvpDropOffTime: Date
-    var liabilityProtectionRate: Double
-    var pcdwProtectionRate: Double
-    var pcdwExtProtectionRate: Double
-    var rsaProtectionRate: Double
-    var paiProtectionRate: Double
+    var liabilityProtectionRate: Double?
+    var pcdwProtectionRate: Double?
+    var pcdwExtProtectionRate: Double?
+    var rsaProtectionRate: Double?
+    var paiProtectionRate: Double?
     
     var actualPickupTime: Date?
     

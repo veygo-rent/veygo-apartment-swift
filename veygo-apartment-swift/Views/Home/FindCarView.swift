@@ -353,7 +353,7 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
     return route.expectedTravelTime // seconds
 }
 
-private struct VehicleCardView: View {
+struct VehicleCardView: View {
     let vehicle: VehicleWithBlockedDurations
     let apartment: Apartment
     let startDate: Date
@@ -523,7 +523,6 @@ private struct VehicleCardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
-        .frame(width: 340)
         .background { Color("CardBG") }
         .cornerRadius(18)
         .shadow(radius: 0.5)
@@ -547,7 +546,7 @@ private struct LocationStripView: View {
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 0) {
                     ForEach(Array(locations.enumerated()), id: \.element.id) { index, loc in
-                        HStack {
+                        HStack(spacing: 16) {
                             ForEach(loc.vehicles, id: \.id) { v in
                                 VStack (alignment: .leading) {
                                     HStack {
@@ -561,6 +560,7 @@ private struct LocationStripView: View {
                                     }
                                     .padding(.horizontal)
                                     VehicleCardView(vehicle: v, apartment: apartment, startDate: startDate, endDate: endDate)
+                                        .frame(width: 340)
                                         .onTapGesture {
                                             selectedLocation = nil
                                             path.append(.vehicleDetails(
