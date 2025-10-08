@@ -40,6 +40,20 @@ struct VehicleDetailView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Color("MainBG"))
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    if #unavailable(iOS 26) {
+                        BackButton()
+                    } else {
+                        Image(systemName: "chevron.left")
+                    }
+                }
+            }
+        })
+        .navigationBarBackButtonHidden(true)
     }
     
     @ViewBuilder
