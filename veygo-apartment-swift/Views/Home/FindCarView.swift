@@ -512,9 +512,6 @@ struct VehicleCardView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80)
             }
-            Text(vehicle.vehicle.requiresOwnInsurance ? "Provide your own liability" : "Liability available for purchase")
-                .fontWeight(.light)
-                .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 8) {
                 ForEach(makeFourHourBlocks()) { hour in
                     HourlyAvailability(availability: hour)
