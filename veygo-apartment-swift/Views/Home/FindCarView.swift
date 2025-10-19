@@ -507,7 +507,7 @@ struct VehicleCardView: View {
                     }
                 }
                 Spacer()
-                Image("carImg")
+                Image("TempVehicle")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80)

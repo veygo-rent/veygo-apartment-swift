@@ -25,15 +25,23 @@ struct VehicleDetailView: View {
     @State private var includePAI = false
     var body: some View {
         ScrollView {
+            ZStack {
+                Image("VehicleShowroom")
+                    .resizable()
+                    .aspectRatio(1.3, contentMode: .fill)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                Image("TempVehicle")
+                    .resizable()
+                    .aspectRatio(1.25, contentMode: .fill)
+                    .scaleEffect(0.8, anchor: .bottom)
+            }
             VStack(alignment: .leading, spacing: 20) {
-                VehicleCardView(vehicle: vehicleWithBlocksAndLocationInfo.0, apartment: apartment, startDate: startTime, endDate: endTime)
-                    .padding(.top, 24)
                 if vehicleWithBlocksAndLocationInfo.0.isVehicleAvailable(start: startTime, end: endTime) {
                     AvailableVehicle()
                 } else {
                     UnavailableVehicle()
                 }
-                Text("Your destination is: \(vehicleWithBlocksAndLocationInfo.1.name)")
                 Spacer()
             }
             .padding(.horizontal, 24)
@@ -54,88 +62,12 @@ struct VehicleDetailView: View {
             }
         })
         .navigationBarBackButtonHidden(true)
+        .ignoresSafeArea(.container)
     }
     
     @ViewBuilder
     private func AvailableVehicle() -> some View {
-        GroupBox("Protection options") {
-            VStack(alignment: .leading, spacing: 12) {
-                if let rate = apartment.liabilityProtectionRate {
-                    Toggle(isOn: $includeLiability) {
-                        HStack {
-                            Text("Liability")
-                            Spacer()
-                            Text("\(formatRate(rate))/hr")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.trailing, 4)
-                        }
-                    }
-                }
-                if let rate = apartment.pcdwProtectionRate {
-                    let weightedRate = rate * vehicleWithBlocksAndLocationInfo.0.vehicle.msrpFactor
-                    Toggle(isOn: $includePCDW) {
-                        HStack {
-                            Text("PCDW")
-                            Spacer()
-                            Text("\(formatRate(weightedRate))/hr")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.trailing, 4)
-                        }
-                    }
-                }
-                if let rate = apartment.pcdwExtProtectionRate {
-                    let weightedRate = rate * vehicleWithBlocksAndLocationInfo.0.vehicle.msrpFactor
-                    Toggle(isOn: $includePCDWExt) {
-                        HStack {
-                            Text("PCDW Extension")
-                            Spacer()
-                            Text("\(formatRate(weightedRate))/hr")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.trailing, 4)
-                        }
-                    }
-                }
-                if let rate = apartment.rsaProtectionRate {
-                    Toggle(isOn: $includeRSA) {
-                        HStack {
-                            Text("RSA (Roadside Assistance)")
-                            Spacer()
-                            Text("\(formatRate(rate))/hr")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.trailing, 4)
-                        }
-                    }
-                }
-                if let rate = apartment.paiProtectionRate {
-                    Toggle(isOn: $includePAI) {
-                        HStack {
-                            Text("PAI (Personal Accident)")
-                            Spacer()
-                            Text("\(formatRate(rate))/hr")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.trailing, 4)
-                        }
-                    }
-                }
-                if apartment.liabilityProtectionRate == nil
-                    && apartment.pcdwProtectionRate == nil
-                    && apartment.pcdwExtProtectionRate == nil
-                    && apartment.rsaProtectionRate == nil
-                    && apartment.paiProtectionRate == nil {
-                    Text("No protection options offered for this location.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
-        }
-        .cornerRadius(18)
-        .backgroundStyle(Color("CardBG"))
+        EmptyView()
     }
 
     private func formatRate(_ rate: Double) -> String {
