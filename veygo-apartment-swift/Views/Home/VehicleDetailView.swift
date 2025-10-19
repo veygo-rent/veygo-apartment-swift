@@ -10,6 +10,7 @@
 import SwiftUI
 
 struct VehicleDetailView: View {
+    @State private var offset: CGFloat = 0
     @Binding var path: [HomeDestination]
     
     var startTime: Date
@@ -23,8 +24,45 @@ struct VehicleDetailView: View {
     @State private var includePCDWExt = false
     @State private var includeRSA = false
     @State private var includePAI = false
+    private let headerHeight: CGFloat = 300
     var body: some View {
-        ScrollView {
+        ZStack (alignment: .top) {
+            ScrollView {
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(height: headerHeight)
+
+                VStack(alignment: .leading, spacing: 20) {
+                    if vehicleWithBlocksAndLocationInfo.0.isVehicleAvailable(start: startTime, end: endTime) {
+                        Text("\(offset)")
+                        AvailableVehicle()
+                    } else {
+                        UnavailableVehicle()
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .onScrollGeometryChange(for: CGFloat.self, of: { geo in
+                return 0 - geo.contentOffset.y - geo.contentInsets.top
+            }, action: { new, old in
+                offset = new
+            })
+            .background(Color("MainBG"))
+            .toolbar(content: {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        path.removeLast()
+                    }) {
+                        if #unavailable(iOS 26) {
+                            BackButton()
+                        } else {
+                            Image(systemName: "chevron.left")
+                        }
+                    }
+                }
+            })
             ZStack {
                 Image("VehicleShowroom")
                     .resizable()
@@ -36,31 +74,10 @@ struct VehicleDetailView: View {
                     .aspectRatio(1.25, contentMode: .fill)
                     .scaleEffect(0.8, anchor: .bottom)
             }
-            VStack(alignment: .leading, spacing: 20) {
-                if vehicleWithBlocksAndLocationInfo.0.isVehicleAvailable(start: startTime, end: endTime) {
-                    AvailableVehicle()
-                } else {
-                    UnavailableVehicle()
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(height: headerHeight + max(0, offset))
+            .clipped()
+            .transformEffect(.init(translationX: 0, y: min(0, offset)))
         }
-        .background(Color("MainBG"))
-        .toolbar(content: {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(action: {
-                    path.removeLast()
-                }) {
-                    if #unavailable(iOS 26) {
-                        BackButton()
-                    } else {
-                        Image(systemName: "chevron.left")
-                    }
-                }
-            }
-        })
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea(.container)
     }
