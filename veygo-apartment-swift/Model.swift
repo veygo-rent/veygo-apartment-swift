@@ -57,15 +57,9 @@ enum Gender: String, Codable {
     case pnts = "PNTS"
 }
 
-enum TransactionType: String, Codable {
-    case credit = "Credit"
-    case cash = "Cash"
-}
-
 nonisolated struct RentalTransaction: Identifiable, Equatable, Codable {
     var id: Int
     var agreementId: Int
-    var transactionType: TransactionType
     var duration: Double
     var transactionTime: Date
 }
@@ -125,7 +119,6 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var address: String
     var acceptedSchoolEmailDomain: String
     var freeTierHours: Double
-    var freeTierRate: Double
     var silverTierHours: Double
     var silverTierRate: Double
     var goldTierHours: Double
@@ -141,7 +134,6 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var taxes: [Int?]
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {

@@ -119,7 +119,6 @@ struct Dropdown: View {
             address: "101 Foundry Dr, Ste 1200, West Lafayette, IN 47906",
             acceptedSchoolEmailDomain: "veygo.rent",
             freeTierHours: 0,
-            freeTierRate: 0,
             silverTierHours: 0,
             silverTierRate: 0,
             goldTierHours: 0,
@@ -134,8 +133,7 @@ struct Dropdown: View {
             paiProtectionRate: 0,
             isOperating: true,
             isPublic: true,
-            uniId: 1,
-            taxes: []
+            uniId: 1
         )
     ]
     StatefulPreviewWrapper<Apartment.ID?>(1) { selected in
