@@ -52,29 +52,29 @@ struct VehicleDetailView: View {
                             GridRow {
                                 Image(systemName: "person.fill")
                                     .gridColumnAlignment(.center)
-                                Text("5 People")
+                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity) People")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading, 4)
                                 Image(systemName: "car.top.arrowtriangle.rear.right.fill")
                                     .gridColumnAlignment(.center)
-                                Text("4 Doors")
+                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.doors) Doors")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading, 4)
                             }
                             GridRow {
                                 Image(systemName: "suitcase.fill")
-                                Text("2 Small Bags")
+                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags) Small Bags")
                                     .padding(.leading, 4)
-                                Image(systemName: "figure.walk.suitcase.rolling.circle.fill")
-                                Text("2 Big Bags")
+                                Image(systemName: "suitcase.rolling.and.suitcase.fill")
+                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags) Big Bags")
                                     .padding(.leading, 4)
                             }
                             GridRow {
                                 Image(systemName: "location.app.fill")
-                                Text("In Car Nav")
+                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.carplay ? "Apple CarPlay" :"In Car Navigation")
                                     .padding(.leading, 4)
                                 Image(systemName: "car.rear.road.lane")
-                                Text("Lane Keep")
+                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.laneKeep ? "Lane Keeping" : "Cruise Control")
                                     .padding(.leading, 4)
                             }
                         }
@@ -110,6 +110,7 @@ struct VehicleDetailView: View {
         })
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea(.container)
+        .toolbar(.hidden, for: .tabBar)
     }
     
     @ViewBuilder

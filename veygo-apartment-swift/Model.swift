@@ -188,6 +188,12 @@ nonisolated struct PublishVehicle: Identifiable, Equatable, Codable, Hashable {
     var id: Int
     var vin: String
     var name: String
+    var capacity: Int
+    var doors: Int
+    var smallBags: Int
+    var largeBags: Int
+    var carplay: Bool
+    var laneKeep: Bool
     var licenseNumber: String
     var licenseState: String
     var year: String
@@ -207,6 +213,12 @@ nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
     var id: Int
     var vin: String
     var name: String
+    var capacity: Int
+    var doors: Int
+    var smallBags: Int
+    var largeBags: Int
+    var carplay: Bool
+    var laneKeep: Bool
     var available: Bool
     var licenseNumber: String
     var licenseState: String
