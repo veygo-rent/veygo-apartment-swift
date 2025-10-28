@@ -40,8 +40,9 @@ struct VehicleDetailView: View {
                 VStack(spacing: 0) {
                     VStack(spacing: 18) {
                         Text(vehicleWithBlocksAndLocationInfo.0.vehicle.name)
-                            .fontWeight(.bold)
+                            .textCase(.uppercase)
                             .font(.title)
+                            .fontWeight(.heavy)
                             .foregroundStyle(Color("TextBlackPrimary"))
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.year) \(vehicleWithBlocksAndLocationInfo.0.vehicle.make) \(vehicleWithBlocksAndLocationInfo.0.vehicle.model)")
@@ -52,28 +53,28 @@ struct VehicleDetailView: View {
                             GridRow {
                                 Image(systemName: "person.fill")
                                     .gridColumnAlignment(.center)
-                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity) People")
+                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity) People" : "1 Person")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading, 4)
                                 Image(systemName: "car.top.arrowtriangle.rear.right.fill")
                                     .gridColumnAlignment(.center)
-                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.doors) Doors")
+                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.doors > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.doors) Doors" : "1 Door")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading, 4)
                             }
                             GridRow {
                                 Image(systemName: "suitcase.fill")
-                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags) Small Bags")
+                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags) Small Bags" : "1 Small Bag")
                                     .padding(.leading, 4)
                                 Image(systemName: "suitcase.rolling.and.suitcase.fill")
-                                Text("\(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags) Big Bags")
+                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags) Big Bags" : "1 Big Bag")
                                     .padding(.leading, 4)
                             }
                             GridRow {
                                 Image(systemName: "location.app.fill")
                                 Text(vehicleWithBlocksAndLocationInfo.0.vehicle.carplay ? "Apple CarPlay" :"In Car Navigation")
                                     .padding(.leading, 4)
-                                Image(systemName: "car.rear.road.lane")
+                                Image(systemName: vehicleWithBlocksAndLocationInfo.0.vehicle.laneKeep ? "car.rear.road.lane" : "gauge.open.with.lines.needle.67percent.and.arrowtriangle.and.car")
                                 Text(vehicleWithBlocksAndLocationInfo.0.vehicle.laneKeep ? "Lane Keeping" : "Cruise Control")
                                     .padding(.leading, 4)
                             }
