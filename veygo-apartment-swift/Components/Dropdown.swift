@@ -109,44 +109,6 @@ struct Dropdown: View {
     }
 }
 
-#Preview {
-    let sampleUniversities: [Apartment] = [
-        Apartment(
-            id: 1,
-            name: "Veygo HQ",
-            email: "admin@veygo.rent",
-            phone: "8334683946",
-            address: "101 Foundry Dr, Ste 1200, West Lafayette, IN 47906",
-            acceptedSchoolEmailDomain: "veygo.rent",
-            freeTierHours: 0,
-            silverTierHours: 0,
-            silverTierRate: 0,
-            goldTierHours: 0,
-            goldTierRate: 0,
-            platinumTierHours: 0,
-            platinumTierRate: 0,
-            durationRate: 0,
-            liabilityProtectionRate: 0,
-            pcdwProtectionRate: 0,
-            pcdwExtProtectionRate: 0,
-            rsaProtectionRate: 0,
-            paiProtectionRate: 0,
-            isOperating: true,
-            isPublic: true,
-            uniId: 1
-        )
-    ]
-    StatefulPreviewWrapper<Apartment.ID?>(1) { selected in
-        StatefulPreviewWrapper(sampleUniversities) { universities in
-            Dropdown(
-                selectedOption: selected,
-                labelText: .constant("Rental location"),
-                universityOptions: universities
-            )
-        }
-    }
-}
-
 struct StatefulPreviewWrapper<T: Equatable>: View {
     @State private var value: T
     private var content: (Binding<T>) -> AnyView

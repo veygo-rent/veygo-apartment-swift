@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CarBasicInfo: View {
-    let vehicle: PublishVehicle
+    let vehicle: PublishRenterVehicle
 
     @State private var imageData: Data? = nil
 

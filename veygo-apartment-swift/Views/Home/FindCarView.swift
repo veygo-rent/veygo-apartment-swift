@@ -27,7 +27,7 @@ struct FindCarView: View {
     var apartment: Apartment
     
     @State private var selectedLocation: Location.ID? = nil
-    @State private var selectedVehicle: PublishVehicle.ID? = nil
+    @State private var selectedVehicle: PublishRenterVehicle.ID? = nil
     @State private var locations: [LocationWithVehicles] = []
     @State private var cameraPosition: MapCameraPosition = .automatic
     
@@ -531,7 +531,7 @@ private struct LocationStripView: View {
     @Binding var path: [HomeDestination]
     
     @Binding var selectedLocation: Location.ID?
-    @Binding var selectedVehicle: PublishVehicle.ID?
+    @Binding var selectedVehicle: PublishRenterVehicle.ID?
     let locations: [LocationWithVehicles]
     let apartment: Apartment
     let startDate: Date

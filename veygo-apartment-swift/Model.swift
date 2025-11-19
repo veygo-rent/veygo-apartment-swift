@@ -41,6 +41,7 @@ enum PaymentType: String, Codable {
     case requiresConfirmation = "RequiresConfirmation"
     case requiresPaymentMethod = "RequiresPaymentMethod"
     case succeeded = "Succeeded"
+    case veygoBadDebt = "VeygoBadDebt"
 }
 
 enum PlanTier: String, Codable {
@@ -57,7 +58,7 @@ enum Gender: String, Codable {
     case pnts = "PNTS"
 }
 
-nonisolated struct RentalTransaction: Identifiable, Equatable, Codable {
+nonisolated struct RewardTransaction: Identifiable, Equatable, Codable {
     var id: Int
     var agreementId: Int
     var duration: Double
@@ -79,13 +80,13 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var driversLicenseStateRegion: String?
     var driversLicenseImage: String?
     var driversLicenseImageSecondary: String?
-    var driversLicenseExpiration: String? // Admin needs to verify
+    var driversLicenseExpiration: String?
     var insuranceIdImage: String?
-    var insuranceLiabilityExpiration: String? // Admin needs to verify
-    var insuranceCollisionExpiration: String? // Admin needs to verify
+    var insuranceLiabilityExpiration: String?
+    var insuranceCollisionExpiration: String?
     var leaseAgreementImage: String?
     var apartmentId: Int
-    var leaseAgreementExpiration: String? // Admin needs to verify
+    var leaseAgreementExpiration: String?
     var billingAddress: String?
     var signatureImage: String?
     var signatureDatetime: Date?
@@ -114,17 +115,18 @@ nonisolated struct PublishPaymentMethod: Identifiable, Equatable, Codable {
 nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasName {
     var id: Int
     var name: String
+    var timezone: String
     var email: String
     var phone: String
     var address: String
     var acceptedSchoolEmailDomain: String
     var freeTierHours: Double
-    var silverTierHours: Double
-    var silverTierRate: Double
-    var goldTierHours: Double
-    var goldTierRate: Double
-    var platinumTierHours: Double
-    var platinumTierRate: Double
+    var silverTierHours: Double?
+    var silverTierRate: Double?
+    var goldTierHours: Double?
+    var goldTierRate: Double?
+    var platinumTierHours: Double?
+    var platinumTierRate: Double?
     var durationRate: Double
     var liabilityProtectionRate: Double?
     var pcdwProtectionRate: Double?
@@ -134,22 +136,24 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
+    var mileage_rate_overwrite: Double?
+    var mileage_package_overwrite: Double?
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {
     var name: String
+    var timezone: String
     var email: String
     var phone: String
     var address: String
     var acceptedSchoolEmailDomain: String
     var freeTierHours: Double
-    var freeTierRate: Double
-    var silverTierHours: Double
-    var silverTierRate: Double
-    var goldTierHours: Double
-    var goldTierRate: Double
-    var platinumTierHours: Double
-    var platinumTierRate: Double
+    var silverTierHours: Double?
+    var silverTierRate: Double?
+    var goldTierHours: Double?
+    var goldTierRate: Double?
+    var platinumTierHours: Double?
+    var platinumTierRate: Double?
     var durationRate: Double
     var liabilityProtectionRate: Double?
     var pcdwProtectionRate: Double?
@@ -159,7 +163,8 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var taxes: [Int?]
+    var mileage_rate_overwrite: Double?
+    var mileage_package_overwrite: Double?
 }
 
 nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
@@ -184,7 +189,7 @@ nonisolated struct TransponderCompany: Identifiable, Equatable, Codable {
     var timezone: String?
 }
 
-nonisolated struct PublishVehicle: Identifiable, Equatable, Codable, Hashable {
+nonisolated struct PublishRenterVehicle: Identifiable, Equatable, Codable, Hashable {
     var id: Int
     var vin: String
     var name: String
@@ -211,8 +216,8 @@ nonisolated struct PublishVehicle: Identifiable, Equatable, Codable, Hashable {
 
 nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
     var id: Int
-    var vin: String
     var name: String
+    var vin: String
     var capacity: Int
     var doors: Int
     var smallBags: Int
@@ -255,6 +260,15 @@ nonisolated struct DamageSubmission: Identifiable, Equatable, Codable {
     var processed: Bool
 }
 
+nonisolated struct Claim: Identifiable, Equatable, Codable {
+    var id: Int
+    var note: String?
+    var time: Date
+    var agreementId: Int
+    var adminFee: Double?
+    var towCharge: Double?
+}
+
 nonisolated struct Damage: Identifiable, Equatable, Codable {
     var id: Int
     var note: String
@@ -268,7 +282,10 @@ nonisolated struct Damage: Identifiable, Equatable, Codable {
     var fourthImage: String?
     var fixedDate: Date?
     var fixedAmount: Double?
-    var agreementId: Int?
+    var depreciation: Double?
+    var lostOfUse: Double?
+    var claimId: Int
+    var vehicleId: Int
 }
 
 nonisolated struct VehicleSnapshot: Identifiable, Equatable, Codable {
@@ -291,9 +308,9 @@ nonisolated struct Promo: Identifiable, Equatable, Codable {
     var isEnabled: Bool
     var isOneTime: Bool
     var exp: Date
-    var userId: Int
-    var aptId: Int
-    var uniId: Int
+    var userId: Int?
+    var aptId: Int?
+    var uniId: Int?
 }
 
 nonisolated struct Agreement: Identifiable, Equatable, Codable {
@@ -312,25 +329,24 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var pcdwExtProtectionRate: Double?
     var rsaProtectionRate: Double?
     var paiProtectionRate: Double?
-    
+
     var actualPickupTime: Date?
-    
     var actualDropOffTime: Date?
-    
+
     var msrpFactor: Double
     var durationRate: Double
     var vehicleId: Int
     var vehicleSnapshotBefore: Int?
     var vehicleSnapshotAfter: Int?
-    
+
     var renterId: Int
     var paymentMethodId: Int
     var promoId: String?
-    
-    var damageIds: [Int?]
-    
-    var taxes: [Int?]
     var locationId: Int
+    var manualDiscount: Double?
+    var mileagePackageId: Int?
+    var mileageRate: Double?
+    var mileageConversion: Double
 }
 
 nonisolated struct Charge: Identifiable, Equatable, Codable {
@@ -375,4 +391,17 @@ nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var name: String
     var multiplier: Double
     var isEffective: Bool
+}
+
+nonisolated struct MileagePackage: Identifiable, Equatable, Codable {
+    var id: Int
+    var miles: Int
+    var discountedRate: Int
+    var isActive: Bool
+}
+
+nonisolated struct NewMileagePackage: Equatable, Codable {
+    var miles: Int
+    var discountedRate: Int
+    var isActive: Bool
 }
