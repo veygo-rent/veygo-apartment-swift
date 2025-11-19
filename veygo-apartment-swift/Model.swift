@@ -136,8 +136,8 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var mileage_rate_overwrite: Double?
-    var mileage_package_overwrite: Double?
+    var mileageRateOverwrite: Double?
+    var mileagePackageOverwrite: Double?
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {

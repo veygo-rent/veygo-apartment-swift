@@ -165,9 +165,9 @@ struct VehicleDetailView: View {
 
                     // First option: no mileage package
                     MileagePackageRow(
-                        title: "10 Miles Included",
-                        subtitle: "\(standardMileageRate()) per mile afterwards",
-                        trailingText: nil,
+                        title: "10 Miles Free",
+                        subtitle: perMileSubtitle(),
+                        trailingText: "Included",
                         isSelected: mileagePackageId == nil,
                         position: hasPackages ? .first : .single,
                         action: {
@@ -182,7 +182,7 @@ struct VehicleDetailView: View {
 
                         MileagePackageRow(
                             title: "\(10 + pkg.miles) Miles",
-                            subtitle: "\(standardMileageRate()) per mile afterwards",
+                            subtitle: perMileSubtitle(),
                             trailingText: formatRate(mileagePackagePrice(for: pkg)),
                             isSelected: mileagePackageId == pkg.id,
                             position: position,
@@ -211,16 +211,31 @@ struct VehicleDetailView: View {
     }
     
     private func standardMileageRate() -> Double {
-        let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-        return vehicle.msrpFactor * apartment.durationRate * 0.05
+        if let overwrite = apartment.mileageRateOverwrite {
+            return overwrite
+        } else {
+            let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
+            return vehicle.msrpFactor * apartment.durationRate * 0.05
+        }
+    }
+
+    private func perMileSubtitle() -> String {
+        let cents = Int((standardMileageRate() * 100).rounded())
+        return "\(cents)\u{00a2} per mile afterwards"
     }
 
     private func mileagePackagePrice(for pkg: MileagePackage) -> Double {
-        let baseRate = standardMileageRate()
+        let baseRate: Double
+        if let overwrite = apartment.mileagePackageOverwrite {
+            baseRate = overwrite
+        } else {
+            let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
+            baseRate = vehicle.msrpFactor * apartment.durationRate * 0.05
+        }
         return baseRate * Double(pkg.miles) * (Double(pkg.discountedRate) / 100.0)
     }
     
-    // MARK: - RoundedCornerShape for custom corner rounding
+    
     private struct RoundedCornerShape: Shape {
         var radius: CGFloat
         var corners: UIRectCorner
