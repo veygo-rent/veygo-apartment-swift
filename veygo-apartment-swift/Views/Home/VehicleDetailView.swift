@@ -35,6 +35,13 @@ struct VehicleDetailView: View {
     @State private var mileagePackageId: MileagePackage.ID? = nil
     @State private var mileagePackages: [MileagePackage] = []
     
+    private enum MileageRowPosition {
+        case single
+        case first
+        case middle
+        case last
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -152,25 +159,33 @@ struct VehicleDetailView: View {
                     .foregroundStyle(Color("TextBlackPrimary"))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                VStack(spacing: 12) {
+                VStack(spacing: 0) {
+                    // Determine if there are any additional mileage packages
+                    let hasPackages = !mileagePackages.isEmpty
+
                     // First option: no mileage package
                     MileagePackageRow(
-                        title: "No mileage package",
-                        subtitle: "Miles will be billed separately.",
+                        title: "10 Miles Included",
+                        subtitle: "\(standardMileageRate()) per mile afterwards",
                         trailingText: nil,
                         isSelected: mileagePackageId == nil,
+                        position: hasPackages ? .first : .single,
                         action: {
                             mileagePackageId = nil
                         }
                     )
 
                     // API-provided mileage packages
-                    ForEach(mileagePackages) { pkg in
+                    ForEach(Array(mileagePackages.enumerated()), id: \.element.id) { index, pkg in
+                        let isLast = index == mileagePackages.count - 1
+                        let position: MileageRowPosition = isLast ? .last : .middle
+
                         MileagePackageRow(
-                            title: "\(pkg.miles) miles",
-                            subtitle: "Mileage package",
-                            trailingText: formatRate(Double(pkg.discountedRate)),
+                            title: "\(10 + pkg.miles) Miles",
+                            subtitle: "\(standardMileageRate()) per mile afterwards",
+                            trailingText: formatRate(mileagePackagePrice(for: pkg)),
                             isSelected: mileagePackageId == pkg.id,
+                            position: position,
                             action: {
                                 mileagePackageId = pkg.id
                             }
@@ -178,14 +193,13 @@ struct VehicleDetailView: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(18)
-            .background(Color("CardBG"))
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 6)
 
             Spacer(minLength: 24)
         }
+        .padding(.top, 6)
     }
 
     private func formatRate(_ rate: Double) -> String {
@@ -196,11 +210,37 @@ struct VehicleDetailView: View {
         return formatter.string(from: number) ?? "$\(String(format: "%.2f", rate))"
     }
     
+    private func standardMileageRate() -> Double {
+        let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
+        return vehicle.msrpFactor * apartment.durationRate * 0.05
+    }
+
+    private func mileagePackagePrice(for pkg: MileagePackage) -> Double {
+        let baseRate = standardMileageRate()
+        return baseRate * Double(pkg.miles) * (Double(pkg.discountedRate) / 100.0)
+    }
+    
+    // MARK: - RoundedCornerShape for custom corner rounding
+    private struct RoundedCornerShape: Shape {
+        var radius: CGFloat
+        var corners: UIRectCorner
+
+        func path(in rect: CGRect) -> Path {
+            let path = UIBezierPath(
+                roundedRect: rect,
+                byRoundingCorners: corners,
+                cornerRadii: CGSize(width: radius, height: radius)
+            )
+            return Path(path.cgPath)
+        }
+    }
+
     private struct MileagePackageRow: View {
         let title: String
         let subtitle: String
         let trailingText: String?
         let isSelected: Bool
+        let position: MileageRowPosition
         let action: () -> Void
 
         var body: some View {
@@ -225,6 +265,7 @@ struct VehicleDetailView: View {
                             .font(.footnote)
                             .foregroundStyle(Color("FootNote"))
                     }
+                    .padding(.leading, 4)
 
                     Spacer()
 
@@ -236,12 +277,31 @@ struct VehicleDetailView: View {
                 }
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(isSelected ? Color("TextBlackPrimary") : Color("FootNote").opacity(0.3), lineWidth: isSelected ? 2 : 1)
-                )
+                .background(backgroundShape)
             }
             .buttonStyle(.plain)
+        }
+
+        private var backgroundShape: some View {
+            let radius: CGFloat = 18
+            let corners: UIRectCorner = {
+                switch position {
+                case .single:
+                    return [.topLeft, .topRight, .bottomLeft, .bottomRight]
+                case .first:
+                    return [.topLeft, .topRight]
+                case .middle:
+                    return []
+                case .last:
+                    return [.bottomLeft, .bottomRight]
+                }
+            }()
+
+            return RoundedCornerShape(radius: radius, corners: corners)
+                .stroke(
+                    isSelected ? Color("TextBlackPrimary") : Color("FootNote").opacity(0.3),
+                    lineWidth: isSelected ? 2 : 1
+                )
         }
     }
     
