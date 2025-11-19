@@ -111,9 +111,10 @@ struct EmailView: View {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
+                let body = ErrorResponse.WRONG_PROTOCOL
                 await MainActor.run {
-                    alertTitle = "Server Error"
-                    alertMessage = "Invalid protocol"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing
@@ -133,9 +134,10 @@ struct EmailView: View {
                     let universities: [Apartment]
                 }
                 guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
-                        alertTitle = "Server Error"
-                        alertMessage = "Invalid content"
+                        alertTitle = body.title
+                        alertMessage = body.message
                         showAlert = true
                     }
                     return .doNothing
@@ -147,15 +149,26 @@ struct EmailView: View {
                     self.acceptedDomains = domains
                 }
             case 405:
-                await MainActor.run {
-                    alertTitle = "Internal Error"
-                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
-                    showAlert = true
+                if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                } else {
+                    let decodedBody = ErrorResponse.E405
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
                 }
+                return .doNothing
             default:
+                let body = ErrorResponse.E_DEFAULT
                 await MainActor.run {
-                    alertTitle = "Application Error"
-                    alertMessage = "Unrecognized response, make sure you are running the latest version"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
             }

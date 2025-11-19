@@ -125,7 +125,7 @@ struct SettingView: View {
             let user = await MainActor.run { self.session.user }
             if !token.isEmpty && userId > 0, user != nil {
                 let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: .get, headers: ["auth": "\(token)$\(userId)"])
-                let (_, response) = try await URLSession.shared.data(for: request)
+                let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
                     await MainActor.run {
@@ -143,16 +143,26 @@ struct SettingView: View {
                     }
                     return .clearUser
                 case 405:
-                    await MainActor.run {
-                        alertTitle = "Internal Error"
-                        alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
-                        showAlert = true
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
                     }
                     return .doNothing
                 default:
+                    let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
-                        alertTitle = "Application Error"
-                        alertMessage = "Unrecognized response, make sure you are running the latest version"
+                        alertTitle = body.title
+                        alertMessage = body.message
                         showAlert = true
                     }
                     return .doNothing

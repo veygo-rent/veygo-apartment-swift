@@ -186,10 +186,19 @@ struct PasswordView: View {
                 }
                 return .doNothing
             case 405:
-                await MainActor.run {
-                    alertTitle = "Internal Error"
-                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
-                    showAlert = true
+                if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                } else {
+                    let decodedBody = ErrorResponse.E405
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
                 }
                 return .doNothing
             case 406:
@@ -207,9 +216,10 @@ struct PasswordView: View {
                 }
                 return .doNothing
             default:
+                let body = ErrorResponse.E_DEFAULT
                 await MainActor.run {
-                    alertTitle = "Application Error"
-                    alertMessage = "Unrecognized response, make sure you are running the latest version"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing

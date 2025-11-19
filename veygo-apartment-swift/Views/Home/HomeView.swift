@@ -40,7 +40,8 @@ struct HomeView: View {
         return roundUpToNextQuarter(from: end)
     }()
     
-    @State private var promoCode: String = ""
+    @State private var promoCodeInput: String = ""
+    @State private var promoCodeActual: String = ""
     @Binding var universities: [Apartment]
     
     @State private var path: [HomeDestination] = []
@@ -69,8 +70,8 @@ struct HomeView: View {
                         
                         // Promo code + Apply
                         HStack(spacing: 16) {
-                            InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCode)
-                                .onChange(of: promoCode) { old, newValue in
+                            InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCodeInput)
+                                .onChange(of: promoCodeInput) { old, newValue in
                                     var result = ""
                                     var previousWasDash = false
                                     for (_, char) in newValue.enumerated() {
@@ -84,14 +85,18 @@ struct HomeView: View {
                                         // skip if it's a dash and previousWasDash is true, or if would be the first character
                                     }
                                     let finalResult = result.uppercased()
-                                    if promoCode != finalResult {
-                                        promoCode = finalResult
+                                    if promoCodeInput != finalResult {
+                                        promoCodeInput = finalResult
                                     }
                                 }
                             
                             SecondaryButtonLg(text: "Apply") {
-                                if !promoCode.isEmpty {
-                                    print("Apply tapped with promo code: \(promoCode)")
+                                if !promoCodeInput.isEmpty {
+                                    Task {
+                                        await ApiCallActor.shared.appendApi { token, userId in
+                                            await checkPromoAsync(token, userId)
+                                        }
+                                    }
                                 } else {
                                     
                                 }
@@ -199,40 +204,62 @@ struct HomeView: View {
                 let body: [String: String] = ["apns": apns_token]
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
                 let request = veygoCurlRequest(url: "/api/v1/user/update-apns", method: .post, headers: ["auth": "\(token)$\(userId)"], body: jsonData)
-                let (_, response) = try await URLSession.shared.data(for: request)
+                let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
                     await MainActor.run {
-                        alertTitle = "Server Error"
-                        alertMessage = "Invalid protocol"
+                        alertTitle = ErrorResponse.WRONG_PROTOCOL.title
+                        alertMessage = ErrorResponse.WRONG_PROTOCOL.message
                         showAlert = true
                     }
                     return .doNothing
                 }
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Updating APNs token") ?? ""
-                    return .renewSuccessful(token: token)
+                    if let token = extractToken(from: response, for: "Updating APNs token") {
+                        return .renewSuccessful(token: token)
+                    } else {
+                        return .doNothing
+                    }
                 case 401:
-                    await MainActor.run {
-                        alertTitle = "Session Expired"
-                        alertMessage = "Token expired, please login again"
-                        showAlert = true
-                        clearUserTriggered = true
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
                     }
                     return .clearUser
                 case 405:
-                    await MainActor.run {
-                        alertTitle = "Internal Error"
-                        alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
-                        showAlert = true
-                        clearUserTriggered = true
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
                     }
-                    return .clearUser
+                    return .doNothing
                 default:
+                    let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
-                        alertTitle = "Application Error"
-                        alertMessage = "Unrecognized response, make sure you are running the latest version"
+                        alertTitle = body.title
+                        alertMessage = body.message
                         showAlert = true
                     }
                     return .doNothing
@@ -299,16 +326,26 @@ struct HomeView: View {
                 }
                 return .doNothing
             case 405:
-                await MainActor.run {
-                    alertTitle = "Internal Error"
-                    alertMessage = "Method not allowed, please contact the developer dev@veygo.rent"
-                    showAlert = true
+                if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                } else {
+                    let decodedBody = ErrorResponse.E405
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
                 }
                 return .doNothing
             default:
+                let body = ErrorResponse.E_DEFAULT
                 await MainActor.run {
-                    alertTitle = "Application Error"
-                    alertMessage = "Unrecognized response, make sure you are running the latest version"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing
@@ -322,4 +359,118 @@ struct HomeView: View {
             return .doNothing
         }
     }
+    
+    @ApiCallActor func checkPromoAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            
+            if !token.isEmpty && userId > 0, user != nil {
+                
+                struct CheckPromoBody: Encodable {
+                    let code: String
+                    let dateOfRental: Int
+                    let apartmentId: Int
+                }
+                
+                let body = await CheckPromoBody(
+                    code: await promoCodeInput,
+                    dateOfRental: Int(await startDate.timeIntervalSince1970),
+                    apartmentId: selectedLocation ?? 1
+                )
+                
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+                
+                let request = veygoCurlRequest(url: "/api/v1/user/verify-promo", method: .post, headers: ["auth": "\(token)$\(userId)"], body: jsonData)
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                switch httpResponse.statusCode {
+                case 200:
+                    await MainActor.run {
+                        alertTitle = "Coupon Applied"
+                        alertMessage = "Todo: coupon amount"
+                        showAlert = true
+                        promoCodeActual = promoCodeInput
+                    }
+                    let token = extractToken(from: response, for: "Validating promo code") ?? ""
+                    return .renewSuccessful(token: token)
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 403:
+                    guard let errorResponse: ErrorResponse = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Request Forbidden"
+                            alertMessage = "Please check your permissions."
+                            showAlert = true
+                        }
+                        let token = extractToken(from: response, for: "Validating promo code") ?? ""
+                        return .renewSuccessful(token: token)
+                    }
+                    await MainActor.run {
+                        alertTitle = errorResponse.title
+                        alertMessage = errorResponse.message
+                        showAlert = true
+                    }
+                    let token = extractToken(from: response, for: "Validating promo code") ?? ""
+                    return .renewSuccessful(token: token)
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
+
 }
