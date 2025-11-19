@@ -137,18 +137,20 @@ struct LoginView: View {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
+                let body = ErrorResponse.WRONG_PROTOCOL
                 await MainActor.run {
-                    alertTitle = "Server Error"
-                    alertMessage = "Invalid protocol"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing
             }
             
             guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                let body = ErrorResponse.E_DEFAULT
                 await MainActor.run {
-                    alertTitle = "Server Error"
-                    alertMessage = "Invalid content"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing
@@ -217,9 +219,10 @@ struct LoginView: View {
                 return .doNothing
             }
         } catch {
+            let body = ErrorResponse.E_DEFAULT
             await MainActor.run {
-                alertTitle = "Internal Error"
-                alertMessage = "\(error.localizedDescription)"
+                alertTitle = body.title
+                alertMessage = body.message
                 showAlert = true
             }
             return .doNothing

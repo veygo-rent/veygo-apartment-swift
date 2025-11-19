@@ -130,25 +130,23 @@ struct PasswordView: View {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
+                let body = ErrorResponse.WRONG_PROTOCOL
                 await MainActor.run {
-                    alertTitle = "Server Error"
-                    alertMessage = "Invalid protocol"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing
             }
             
             guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                let body = ErrorResponse.E_DEFAULT
                 await MainActor.run {
-                    alertTitle = "Server Error"
-                    alertMessage = "Invalid content"
+                    alertTitle = body.title
+                    alertMessage = body.message
                     showAlert = true
                 }
                 return .doNothing
-            }
-            
-            nonisolated struct ErrorMsg: Decodable {
-                let error: String
             }
             
             switch httpResponse.statusCode {
@@ -160,9 +158,10 @@ struct PasswordView: View {
                 let token = extractToken(from: response, for: "Registering user") ?? ""
                 guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data),
                       !token.isEmpty else {
+                    let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
-                        alertTitle = "Server Error"
-                        alertMessage = "Invalid content"
+                        alertTitle = body.title
+                        alertMessage = body.message
                         showAlert = true
                     }
                     return .doNothing
@@ -173,16 +172,35 @@ struct PasswordView: View {
                 return .loginSuccessful(userId: decodedBody.renter.id, token: token)
             case 400:
                 // BAD_REQUEST
-                let errMsg: String
-                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
-                    errMsg = decodedErrMsg
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedErrMsg.title
+                        alertMessage = decodedErrMsg.message
+                        showAlert = true
+                    }
                 } else {
-                    errMsg = "Bad register request"
+                    let body = ErrorResponse.E400
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
                 }
-                await MainActor.run {
-                    alertTitle = "Register failed"
-                    alertMessage = errMsg
-                    showAlert = true
+                return .doNothing
+            case 403:
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedErrMsg.title
+                        alertMessage = decodedErrMsg.message
+                        showAlert = true
+                    }
+                } else {
+                    let body = ErrorResponse.E403
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
                 }
                 return .doNothing
             case 405:
@@ -202,17 +220,51 @@ struct PasswordView: View {
                 }
                 return .doNothing
             case 406:
-                // BAD_REQUEST
-                let errMsg: String
-                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorMsg.self, from: data).error {
-                    errMsg = decodedErrMsg
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedErrMsg.title
+                        alertMessage = decodedErrMsg.message
+                        showAlert = true
+                    }
                 } else {
-                    errMsg = "Unexpeted error while registering"
+                    let body = ErrorResponse.E406
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
                 }
-                await MainActor.run {
-                    alertTitle = "Register failed"
-                    alertMessage = errMsg
-                    showAlert = true
+                return .doNothing
+            case 409:
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedErrMsg.title
+                        alertMessage = decodedErrMsg.message
+                        showAlert = true
+                    }
+                } else {
+                    let body = ErrorResponse.E409
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                }
+                return .doNothing
+            case 500:
+                if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedErrMsg.title
+                        alertMessage = decodedErrMsg.message
+                        showAlert = true
+                    }
+                } else {
+                    let body = ErrorResponse.E500
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
                 }
                 return .doNothing
             default:
@@ -225,9 +277,10 @@ struct PasswordView: View {
                 return .doNothing
             }
         } catch {
+            let body = ErrorResponse.E_DEFAULT
             await MainActor.run {
-                alertTitle = "Internal Error"
-                alertMessage = "\(error.localizedDescription)"
+                alertTitle = body.title
+                alertMessage = body.message
                 showAlert = true
             }
             return .doNothing

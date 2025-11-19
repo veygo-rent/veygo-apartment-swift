@@ -412,9 +412,12 @@ nonisolated struct ErrorResponse: Equatable, Codable {
     
     static let WRONG_PROTOCOL = ErrorResponse(title: "Wrong Protocol", message: "Please use correct protocol (eg. https).")
     
+    static let E400 = ErrorResponse(title: "Bad Request", message: "The data you provided is not valid.")
     static let E401 = ErrorResponse(title: "Not Authenticated", message: "Please log in again to access this resource.")
     static let E403 = ErrorResponse(title: "Forbidden", message: "You do not have permission to access this resource.")
     static let E405 = ErrorResponse(title: "Method Not Allowed", message: "The method you have attempted to use is not supported by this endpoint.")
+    static let E406 = ErrorResponse(title: "Not Acceptable", message: "The requested format is not supported.")
+    static let E409 = ErrorResponse(title: "Conflict", message: "The requested resource already exists.")
     
     static let E500 = ErrorResponse(title: "Internal Server Error", message: "An unexpected error occurred. Please try again later.")
     static let E501 = ErrorResponse(title: "Not Implemented", message: "This feature is not yet available.")

@@ -10,6 +10,12 @@
 import SwiftUI
 
 struct VehicleDetailView: View {
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @Binding var path: [HomeDestination]
     
     var startTime: Date
@@ -23,6 +29,10 @@ struct VehicleDetailView: View {
     @State private var includePCDWExt = false
     @State private var includeRSA = false
     @State private var includePAI = false
+    
+    @State private var mileagePackageId: MileagePackage.ID? = nil
+    @State private var mileagePackages: [MileagePackage] = []
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -112,11 +122,16 @@ struct VehicleDetailView: View {
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea(.container)
         .toolbar(.hidden, for: .tabBar)
+        .task {
+            await ApiCallActor.shared.appendApi { token, userId in
+                await loadMilagePackageAsync()
+            }
+        }
     }
     
     @ViewBuilder
     private func AvailableVehicle() -> some View {
-        EmptyView()
+        Text("Hello, Im Available!")
     }
 
     private func formatRate(_ rate: Double) -> String {
@@ -130,5 +145,87 @@ struct VehicleDetailView: View {
     @ViewBuilder
     private func UnavailableVehicle() -> some View {
         EmptyView()
+    }
+    
+    @ApiCallActor
+    func loadMilagePackageAsync () async -> ApiTaskResponse {
+        let request = veygoCurlRequest(
+            url: "/api/v1/user/get-mileage-packages",
+            method: .get
+        )
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let body = ErrorResponse.WRONG_PROTOCOL
+                await MainActor.run {
+                    alertTitle = body.title
+                    alertMessage = body.message
+                    showAlert = true
+                }
+                return .doNothing
+            }
+            guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                let body = ErrorResponse.E_DEFAULT
+                await MainActor.run {
+                    alertTitle = body.title
+                    alertMessage = body.message
+                    showAlert = true
+                }
+                return .doNothing
+            }
+            
+            switch httpResponse.statusCode {
+            case 200:
+                nonisolated struct RequestSuccessBody: Decodable {
+                    let mileagePackages: [MileagePackage]
+                }
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(RequestSuccessBody.self, from: data) else {
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                await MainActor.run {
+                    mileagePackages = decodedBody.mileagePackages
+                }
+                return .doNothing
+            case 405:
+                if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                } else {
+                    let decodedBody = ErrorResponse.E405
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                }
+                return .doNothing
+            default:
+                let body = ErrorResponse.E_DEFAULT
+                await MainActor.run {
+                    alertTitle = body.title
+                    alertMessage = body.message
+                    showAlert = true
+                }
+                return .doNothing
+            }
+        } catch {
+            let body = ErrorResponse.E_DEFAULT
+            await MainActor.run {
+                alertTitle = body.title
+                alertMessage = body.message
+                showAlert = true
+            }
+            return .doNothing
+        }
     }
 }
