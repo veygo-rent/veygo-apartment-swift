@@ -103,7 +103,7 @@ struct VehicleDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(18)
-                    .background(Color("CardBG"))
+                    .background(Color("MainBG"))
                     if vehicleWithBlocksAndLocationInfo.0.isVehicleAvailable(start: startTime, end: endTime) {
                         AvailableVehicle()
                     } else {
@@ -115,7 +115,7 @@ struct VehicleDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollIndicators(.hidden)
-        .background(Color("MainBG"))
+        .background(Color("CardBG"))
         .toolbar(content: {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: {
@@ -279,7 +279,7 @@ struct VehicleDetailView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title)
-                            .font(.subheadline.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(Color("TextBlackPrimary"))
                         Text(subtitle)
                             .font(.footnote)
