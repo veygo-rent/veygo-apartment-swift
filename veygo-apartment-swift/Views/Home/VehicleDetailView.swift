@@ -11,6 +11,8 @@ import SwiftUI
 
 struct VehicleDetailView: View {
     
+    @EnvironmentObject var session: UserSession
+    
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -122,16 +124,68 @@ struct VehicleDetailView: View {
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea(.container)
         .toolbar(.hidden, for: .tabBar)
-        .task {
-            await ApiCallActor.shared.appendApi { token, userId in
-                await loadMilagePackageAsync()
+        .onAppear {
+            Task {
+                await ApiCallActor.shared.appendApi { token, userId in
+                    await loadMilagePackageAsync()
+                }
             }
+        }
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearUserTriggered {
+                    session.user = nil
+                }
+            }
+        } message: {
+            Text(alertMessage)
         }
     }
     
     @ViewBuilder
     private func AvailableVehicle() -> some View {
-        Text("Hello, Im Available!")
+        VStack(alignment: .leading, spacing: 24) {
+            // Mileage package section
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Mileage package")
+                    .font(.headline)
+                    .foregroundStyle(Color("TextBlackPrimary"))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                VStack(spacing: 12) {
+                    // First option: no mileage package
+                    MileagePackageRow(
+                        title: "No mileage package",
+                        subtitle: "Miles will be billed separately.",
+                        trailingText: nil,
+                        isSelected: mileagePackageId == nil,
+                        action: {
+                            mileagePackageId = nil
+                        }
+                    )
+
+                    // API-provided mileage packages
+                    ForEach(mileagePackages) { pkg in
+                        MileagePackageRow(
+                            title: "\(pkg.miles) miles",
+                            subtitle: "Mileage package",
+                            trailingText: formatRate(Double(pkg.discountedRate)),
+                            isSelected: mileagePackageId == pkg.id,
+                            action: {
+                                mileagePackageId = pkg.id
+                            }
+                        )
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(18)
+            .background(Color("CardBG"))
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .padding(.horizontal, 18)
+
+            Spacer(minLength: 24)
+        }
     }
 
     private func formatRate(_ rate: Double) -> String {
@@ -142,6 +196,55 @@ struct VehicleDetailView: View {
         return formatter.string(from: number) ?? "$\(String(format: "%.2f", rate))"
     }
     
+    private struct MileagePackageRow: View {
+        let title: String
+        let subtitle: String
+        let trailingText: String?
+        let isSelected: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                HStack(spacing: 16) {
+                    // Selection indicator
+                    ZStack {
+                        Circle()
+                            .strokeBorder(lineWidth: 2)
+                            .frame(width: 24, height: 24)
+                        if isSelected {
+                            Circle()
+                                .frame(width: 14, height: 14)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color("TextBlackPrimary"))
+                        Text(subtitle)
+                            .font(.footnote)
+                            .foregroundStyle(Color("FootNote"))
+                    }
+
+                    Spacer()
+
+                    if let trailing = trailingText {
+                        Text(trailing)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color("TextBlackPrimary"))
+                    }
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(isSelected ? Color("TextBlackPrimary") : Color("FootNote").opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    
     @ViewBuilder
     private func UnavailableVehicle() -> some View {
         EmptyView()
@@ -150,7 +253,7 @@ struct VehicleDetailView: View {
     @ApiCallActor
     func loadMilagePackageAsync () async -> ApiTaskResponse {
         let request = veygoCurlRequest(
-            url: "/api/v1/user/get-mileage-packages",
+            url: "/api/v1/vehicle/get-mileage-packages",
             method: .get
         )
         do {
