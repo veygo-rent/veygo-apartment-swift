@@ -114,6 +114,7 @@ struct VehicleDetailView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollIndicators(.hidden)
         .background(Color("MainBG"))
         .toolbar(content: {
             ToolbarItem(placement: .topBarLeading) {
@@ -192,9 +193,13 @@ struct VehicleDetailView: View {
                         )
                     }
                 }
+                PrimaryButtonLg(text: "Continue") {
+                    // TODO
+                }
+                .padding(.top, 6)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 18)
             .padding(.vertical, 6)
 
             Spacer(minLength: 24)
