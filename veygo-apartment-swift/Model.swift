@@ -300,7 +300,7 @@ nonisolated struct VehicleSnapshot: Identifiable, Equatable, Codable {
     var vehicleId: Int
 }
 
-nonisolated struct Promo: Identifiable, Equatable, Codable {
+nonisolated struct PublishPromo: Identifiable, Equatable, Codable {
     var id: String { code }
     var code: String
     var name: String
@@ -308,9 +308,6 @@ nonisolated struct Promo: Identifiable, Equatable, Codable {
     var isEnabled: Bool
     var isOneTime: Bool
     var exp: Date
-    var userId: Int?
-    var aptId: Int?
-    var uniId: Int?
 }
 
 nonisolated struct Agreement: Identifiable, Equatable, Codable {

@@ -46,6 +46,8 @@ struct HomeView: View {
     
     @State private var path: [HomeDestination] = []
     
+    @State private var appliedPromoCode: PublishPromo? = nil
+    
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
@@ -398,9 +400,11 @@ struct HomeView: View {
                 }
                 switch httpResponse.statusCode {
                 case 200:
+                    let promo: PublishPromo = try! VeygoJsonStandard.shared.decoder.decode(PublishPromo.self, from: data)
                     await MainActor.run {
+                        appliedPromoCode = promo
                         alertTitle = "Coupon Applied"
-                        alertMessage = "Todo: coupon amount"
+                        alertMessage = "Enjoy your \(VeygoCurrencyStandard.shared.dollarFormatter.string(from: promo.amount as NSNumber)!) off!"
                         showAlert = true
                         promoCodeActual = promoCodeInput
                     }

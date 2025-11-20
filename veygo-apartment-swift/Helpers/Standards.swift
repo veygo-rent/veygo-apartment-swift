@@ -41,3 +41,14 @@ struct VeygoJsonStandard {
         return encoder
     }()
 }
+
+struct VeygoCurrencyStandard {
+    nonisolated static let shared = VeygoCurrencyStandard()
+    nonisolated let dollarFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .currency
+        f.currencyCode = "USD"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+}
