@@ -98,7 +98,12 @@ struct HomeView: View {
                                         }
                                     }
                                 } else {
-                                    promoCodeActual = ""
+                                    if !promoCodeActual.isEmpty {
+                                        alertTitle = "Coupon Removed"
+                                        alertMessage = "Code \(promoCodeActual) has been removed."
+                                        promoCodeActual = ""
+                                        showAlert = true
+                                    }
                                 }
                             }
                             .frame(width: 92)
