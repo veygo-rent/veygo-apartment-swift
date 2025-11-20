@@ -425,6 +425,8 @@ struct HomeView: View {
                             alertTitle = "Request Forbidden"
                             alertMessage = "Please check your permissions."
                             showAlert = true
+                            promoCodeInput = ""
+                            promoCodeActual = ""
                         }
                         let token = extractToken(from: response, for: "Validating promo code") ?? ""
                         return .renewSuccessful(token: token)
@@ -433,6 +435,8 @@ struct HomeView: View {
                         alertTitle = errorResponse.title
                         alertMessage = errorResponse.message
                         showAlert = true
+                        promoCodeInput = ""
+                        promoCodeActual = ""
                     }
                     let token = extractToken(from: response, for: "Validating promo code") ?? ""
                     return .renewSuccessful(token: token)
