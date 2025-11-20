@@ -19,6 +19,8 @@ private func roundUpToNextQuarter(from date: Date) -> Date {
 
 struct HomeView: View {
     
+    @FocusState private var couponIsFocused: Bool
+    
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -73,6 +75,7 @@ struct HomeView: View {
                         // Promo code + Apply
                         HStack(spacing: 16) {
                             InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCodeInput)
+                                .focused($couponIsFocused)
                                 .onChange(of: promoCodeInput) { old, newValue in
                                     var result = ""
                                     var previousWasDash = false
@@ -93,6 +96,7 @@ struct HomeView: View {
                                 }
                             
                             SecondaryButtonLg(text: "Apply") {
+                                couponIsFocused = false
                                 if !promoCodeInput.isEmpty {
                                     Task {
                                         await ApiCallActor.shared.appendApi { token, userId in
@@ -113,11 +117,12 @@ struct HomeView: View {
                         .padding(.horizontal, 24)
                         
                         PrimaryButtonLg(text: "Vehicle Look Up") {
+                            promoCodeInput = promoCodeActual
                             if let selectedLocation, let university = universities.getItemBy(id: selectedLocation) {
                                 path.append(.university(apartment: university))
                             }
                         }
-                        .disabled(selectedLocation == nil)
+                        .disabled(selectedLocation == nil || couponIsFocused)
                         .padding(.horizontal, 24)
                     } else {
                         Text("Coming soon...")
@@ -126,6 +131,7 @@ struct HomeView: View {
                 }
                 .padding(.bottom, 120)
             }
+            .scrollDismissesKeyboard(.immediately)
             .alert(alertTitle, isPresented: $showAlert) {
                 Button("OK") {
                     if clearUserTriggered {
@@ -155,7 +161,7 @@ struct HomeView: View {
                 .padding(.bottom, 16)
             }
             .onTapGesture {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                couponIsFocused = false
             }
             .ignoresSafeArea()
             .navigationDestination(for: HomeDestination.self) { dest in
