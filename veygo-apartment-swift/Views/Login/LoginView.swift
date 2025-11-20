@@ -59,6 +59,7 @@ struct LoginView: View {
                     .onChange(of: email) { oldValue, newValue in
                         email = newValue.lowercased()
                     }
+                    .autocorrectionDisabled(true)
                     .focused($focusedField, equals: .email)
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)

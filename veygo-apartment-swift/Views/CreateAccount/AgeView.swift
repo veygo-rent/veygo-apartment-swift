@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AgeView: View {
+    @FocusState private var fieldIsFocused: Bool
     @State private var dob: String = ""
     @State private var descriptions: [(String, Bool)] = [("Your age needs to be in the correct format", false), ("You must be at least 18 years old to rent from Veygo", false)]
     @Binding var signup: SignupSession
@@ -33,6 +34,7 @@ struct AgeView: View {
                     text: $dob,
                     descriptions: $descriptions
                 )
+                .focused($fieldIsFocused)
                 .padding(.horizontal, 32)
                 .onChange(of: dob) { oldValue, newValue in
                     let digits = newValue.filter { $0.isNumber }
@@ -72,6 +74,9 @@ struct AgeView: View {
             if let age = signup.date_of_birth {
                 dob = age
             }
+        }
+        .onTapGesture {
+            fieldIsFocused = false
         }
         .swipeBackGesture {
             path.removeLast()

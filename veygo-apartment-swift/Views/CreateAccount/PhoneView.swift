@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct PhoneView: View {
+    @FocusState private var fieldIsFocused: Bool
     @State private var phoneNumber: String = ""
     @State private var descriptions: [(String, Bool)] = [
         ("Phone number has to be in the correct format", false),
@@ -44,6 +45,7 @@ struct PhoneView: View {
                         text: $phoneNumber,
                         descriptions: $descriptions
                     )
+                    .focused($fieldIsFocused)
                 }
                 .padding(.horizontal, 32)
 
@@ -76,6 +78,9 @@ struct PhoneView: View {
             if let phone = signup.phone {
                 phoneNumber = phone
             }
+        }
+        .onTapGesture {
+            fieldIsFocused = false
         }
         .swipeBackGesture {
             path.removeLast()

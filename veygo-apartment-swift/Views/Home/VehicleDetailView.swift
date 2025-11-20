@@ -114,6 +114,9 @@ struct VehicleDetailView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .swipeBackGesture {
+            path.removeLast()
+        }
         .scrollIndicators(.hidden)
         .background(Color("MainBG"))
         .toolbar(content: {

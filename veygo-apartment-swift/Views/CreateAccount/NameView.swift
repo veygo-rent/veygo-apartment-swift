@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NameView: View {
+    @FocusState private var fieldIsFocused: Bool
     @State private var fullName: String = ""
     @State private var descriptions: [(String, Bool)] = [
         ("You must enter your full name", false),
@@ -44,6 +45,7 @@ struct NameView: View {
                         text: $fullName,
                         descriptions: $descriptions
                     )
+                    .focused($fieldIsFocused)
                     .onSubmit {
                         let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }
                         let formatted = filtered
@@ -77,6 +79,15 @@ struct NameView: View {
             if let name = signup.name {
                 fullName = name
             }
+        }
+        .onTapGesture {
+            let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }
+            let formatted = filtered
+                .split(separator: " ")
+                .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+                .joined(separator: " ")
+            fullName = formatted
+            fieldIsFocused = false
         }
         .swipeBackGesture {
             signup.date_of_birth = nil

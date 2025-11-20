@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct EmailView: View {
+    @FocusState private var fieldIsFocused: Bool
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -51,6 +52,8 @@ struct EmailView: View {
                         text: $email,
                         descriptions: $descriptions
                     )
+                    .focused($fieldIsFocused)
+                    .autocorrectionDisabled(true)
                 }
                 .padding(.horizontal, 32)
 
@@ -92,6 +95,9 @@ struct EmailView: View {
                 self.email = email
                 self.descriptions[1].1 = false
             }
+        }
+        .onTapGesture {
+            fieldIsFocused = false 
         }
         .swipeBackGesture {
             path.removeLast()

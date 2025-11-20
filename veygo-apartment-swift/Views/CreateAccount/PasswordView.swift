@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PasswordView: View {
+    @FocusState private var fieldIsFocused: Bool
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -47,6 +48,7 @@ struct PasswordView: View {
                         text: $password,
                         descriptions: $descriptions
                     )
+                    .focused($fieldIsFocused)
                 }
                 .padding(.horizontal, 32)
                 
@@ -92,6 +94,9 @@ struct PasswordView: View {
             Text(alertMessage)
         }
         .modifier(BackButtonHiddenModifier())
+        .onTapGesture {
+            fieldIsFocused = false
+        }
         .swipeBackGesture {
             path.removeLast()
         }
