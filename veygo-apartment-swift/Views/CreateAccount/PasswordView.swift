@@ -65,10 +65,10 @@ struct PasswordView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 30)
                 
-                LegalText(
-                    fullText: "By joining, you agree to Veygo’s Terms and Conditions",
-                    highlightedText: "Terms and Conditions"
-                )
+                TextWithLink(fullText: "By joining, you agree to Veygo’s Membership Agreement and our Privacy Policy", highlightedTexts: [
+                    ("Membership Agreement", "https://dev.veygo.rent/membership"),
+                    ("Privacy Policy", "https://dev.veygo.rent/privacy")
+                ])
                 .padding(.horizontal, 32)
                 .offset(y: -25)
             }

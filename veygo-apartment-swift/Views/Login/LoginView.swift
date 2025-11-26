@@ -101,7 +101,10 @@ struct LoginView: View {
                 .padding(.top, 50)
                 .padding(.bottom, 10)
 
-                LegalText()
+                TextWithLink(fullText: "By signing in, you agree to Veygo’s Membership Agreement and our Privacy Policy", highlightedTexts: [
+                    ("Membership Agreement", "https://dev.veygo.rent/membership"),
+                    ("Privacy Policy", "https://dev.veygo.rent/privacy")
+                ])
                 Spacer().frame(height: 15)
             }
             .padding(.horizontal, 32)

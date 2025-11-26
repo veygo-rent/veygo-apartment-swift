@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct LegalText: View {
-    var fullText: String = "By continuing, you acknowledge and agree to Veygo’s legal terms, which we recommend reviewing"
-    var highlightedText: String = "legal terms"
+struct TextWithLink: View {
+    var fullText: String
+    var highlightedTexts: [(String, String)]
 
     var body: some View {
         Text(makeAttributedString())
@@ -20,15 +20,14 @@ struct LegalText: View {
     private func makeAttributedString() -> AttributedString {
         var fullString = AttributedString(fullText)
 
-        if let range = fullString.range(of: highlightedText) {
-            fullString[range].foregroundColor = Color("TextLink")
-            fullString[range].underlineStyle = .single
+        for (highlightedText, link) in highlightedTexts {
+            if let range = fullString.range(of: highlightedText) {
+                fullString[range].foregroundColor = Color("TextLink")
+                fullString[range].underlineStyle = .single
+                fullString[range].link = URL(string: link)!
+            }
         }
 
         return fullString
     }
-}
-
-#Preview {
-    LegalText()
 }
