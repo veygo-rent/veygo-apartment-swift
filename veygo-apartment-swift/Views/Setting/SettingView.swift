@@ -23,7 +23,6 @@ enum SettingDestination: Hashable {
     case rentalAgreement
     case termsOfUse
     // Support
-    case helpCenter
     case roadside
 }
 
@@ -120,11 +119,10 @@ struct SettingView: View {
             }
         }
         .sheet(isPresented: $showHelpCenter) {
-            CrispChatView(
-                email: session.user?.studentEmail ?? "",
-                phone: session.user?.phone ?? "",
-                name: session.user?.name ?? ""
-            )
+            CrispSDK.user.email = session.user?.studentEmail ?? ""
+            CrispSDK.user.phone = session.user?.phone ?? ""
+            CrispSDK.user.nickname = session.user?.name ?? ""
+            return ChatView()
         }
     }
     
@@ -185,21 +183,5 @@ struct SettingView: View {
             }
             return .doNothing
         }
-    }
-}
-
-struct CrispChatView: UIViewControllerRepresentable {
-    let email: String
-    let phone: String
-    let name: String
-    func makeUIViewController(context: Context) -> ChatViewController {
-        CrispSDK.user.email = email
-        CrispSDK.user.phone = phone
-        CrispSDK.user.nickname = name
-        return ChatViewController()
-    }
-
-    func updateUIViewController(_ uiViewController: ChatViewController, context: Context) {
-        // No updates needed
     }
 }
