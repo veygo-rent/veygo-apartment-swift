@@ -85,12 +85,16 @@ struct SettingView: View {
                 
              
                 Section {
-                    Text("Help Center")
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .top)
-                        .onTapGesture {
-                            showHelpCenter.toggle()
-                        }
+                    Button {
+                        showHelpCenter.toggle()
+                    } label: {
+                        Text("Help Center")
+                            .foregroundStyle(Color("TextBlackPrimary"))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .listRowBackground(Color("MainBG"))
+                    .listRowSeparator(.hidden, edges: .top)
+
                     Button(role: .destructive) {
                         Task {
                             await ApiCallActor.shared.appendApi { token, userId in
