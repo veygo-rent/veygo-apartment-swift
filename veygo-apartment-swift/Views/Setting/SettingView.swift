@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Crisp
 
 enum SettingDestination: Hashable {
     // Account
@@ -32,6 +33,8 @@ struct SettingView: View {
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
+    
+    @State private var showHelpCenter: Bool = false
     
     @Binding var cards: [PublishPaymentMethod]
     @Binding var path: [SettingDestination]
@@ -75,34 +78,53 @@ struct SettingView: View {
                 .listRowSeparatorTint(Color("SeperatorLine"))
                 
                 Section {
-                    NavigationLink("Help Center", value: SettingDestination.helpCenter)
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .top)
                     NavigationLink("Roadside Assistance", value: SettingDestination.roadside)
                         .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .bottom)
+                        .listRowSeparator(.hidden, edges: .all)
                 }
                 .listRowSeparatorTint(Color("SeperatorLine"))
                 
-                // Stand‑alone “Log Out” action
-                Button(role: .destructive) {
-                    Task {
-                        await ApiCallActor.shared.appendApi { token, userId in
-                            await logoutRequestAsync(token, userId)
+             
+                Section {
+                    Text("Help Center")
+                        .listRowBackground(Color("MainBG"))
+                        .listRowSeparator(.hidden, edges: .top)
+                        .onTapGesture {
+                            showHelpCenter.toggle()
                         }
+                    Button(role: .destructive) {
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await logoutRequestAsync(token, userId)
+                            }
+                        }
+                    } label: {
+                        Text("Log Out")
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                } label: {
-                    Text("Log Out")
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    .listRowBackground(Color("MainBG"))
+                    .listRowSeparator(.hidden, edges: .bottom)
                 }
-                .listRowBackground(Color("MainBG"))
-                .listRowSeparator(.hidden, edges: .all)
+                .listRowSeparatorTint(Color("SeperatorLine"))
             }
             .listStyle(.grouped)
             .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
             .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
             .navigationTitle(Text("Setting"))
+            .navigationDestination(for: SettingDestination.self) { destination in
+                switch destination {
+                default:
+                    EmptyView()
+                }
+            }
+        }
+        .sheet(isPresented: $showHelpCenter) {
+            CrispChatView(
+                email: session.user?.studentEmail ?? "",
+                phone: session.user?.phone ?? "",
+                name: session.user?.name ?? ""
+            )
         }
     }
     
@@ -163,5 +185,21 @@ struct SettingView: View {
             }
             return .doNothing
         }
+    }
+}
+
+struct CrispChatView: UIViewControllerRepresentable {
+    let email: String
+    let phone: String
+    let name: String
+    func makeUIViewController(context: Context) -> ChatViewController {
+        CrispSDK.user.email = email
+        CrispSDK.user.phone = phone
+        CrispSDK.user.nickname = name
+        return ChatViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: ChatViewController, context: Context) {
+        // No updates needed
     }
 }
