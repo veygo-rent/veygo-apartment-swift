@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Crisp
+import _WebKit_SwiftUI
 
 enum SettingDestination: Hashable {
     // Account
@@ -117,6 +118,12 @@ struct SettingView: View {
             .navigationTitle(Text("Setting"))
             .navigationDestination(for: SettingDestination.self) { destination in
                 switch destination {
+                case .memberAgreement:
+                    WebView(url: URL(string: "https://dev.veygo.rent/membership"))
+                case .rentalAgreement:
+                    WebView(url: URL(string: "https://dev.veygo.rent/rental-agreement"))
+                case .privacyPolicy:
+                    WebView(url: URL(string: "https://dev.veygo.rent/privacy"))
                 default:
                     EmptyView()
                 }

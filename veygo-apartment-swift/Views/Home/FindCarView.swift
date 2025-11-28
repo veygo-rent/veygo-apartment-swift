@@ -125,11 +125,7 @@ struct FindCarView: View {
                     }
                     path.removeLast()
                 }) {
-                    if #unavailable(iOS 26) {
-                        BackButton()
-                    } else {
-                        Image(systemName: "chevron.left")
-                    }
+                    Image(systemName: "chevron.left")
                 }
             }
         })

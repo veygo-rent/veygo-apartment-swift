@@ -124,11 +124,7 @@ struct VehicleDetailView: View {
                 Button(action: {
                     path.removeLast()
                 }) {
-                    if #unavailable(iOS 26) {
-                        BackButton()
-                    } else {
-                        Image(systemName: "chevron.left")
-                    }
+                    Image(systemName: "chevron.left")
                 }
             }
         })

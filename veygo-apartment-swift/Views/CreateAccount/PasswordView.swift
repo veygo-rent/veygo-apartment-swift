@@ -23,15 +23,6 @@ struct PasswordView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            if #unavailable(iOS 26) {
-                Button(action: {
-                    path.removeLast()
-                }) {
-                    BackButton()
-                }
-                .padding(.top, 90)
-                .padding(.leading, 30)
-            }
             
             VStack(alignment: .leading, spacing: 20) {
                 Spacer()
@@ -93,7 +84,6 @@ struct PasswordView: View {
         } message: {
             Text(alertMessage)
         }
-        .modifier(BackButtonHiddenModifier())
         .onTapGesture {
             fieldIsFocused = false
         }

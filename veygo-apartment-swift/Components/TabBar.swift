@@ -20,63 +20,39 @@ struct TabBar: View {
     @State private var settingPath: [SettingDestination] = []
     
     var body: some View {
-        if #available(iOS 26, *) {
-            TabView(selection: $selected) {
-                Tab(value: .home) {
-                    HomeView(universities: $universities)
-                        .background(Color("MainBG").ignoresSafeArea())
-                } label: {
-                    Label("Home", systemImage: homeImg)
-                        .environment(\.symbolVariants, selected == .home ? .fill : .none)
-                }
-                
-                Tab(value: .trips) {
-                    TripView()
-                        .background(Color("MainBG").ignoresSafeArea())
-                } label: {
-                    Label("Trips", systemImage: tripsImg)
-                        .environment(\.symbolVariants, selected == .trips ? .fill : .none)
-                }
-                
-                Tab(value: .reward) {
-                    RewardView()
-                        .background(Color("MainBG").ignoresSafeArea())
-                } label: {
-                    Label("Reward", systemImage: rewardImg)
-                        .environment(\.symbolVariants, selected == .reward ? .fill : .none)
-                }
-                
-                Tab(value: .setting) {
-                    SettingView(cards: $cards, path: $settingPath)
-                        .background(Color("MainBG").ignoresSafeArea())
-                } label: {
-                    Label("Setting", systemImage: settingImg)
-                        .environment(\.symbolVariants, selected == .setting ? .fill : .none)
-                }
-
-            }
-        } else {
-            TabView(selection: $selected) {
+        TabView(selection: $selected) {
+            Tab(value: .home) {
                 HomeView(universities: $universities)
                     .background(Color("MainBG").ignoresSafeArea())
-                    .tabItem { Label("Home", systemImage: homeImg) }
-                    .tag(RootDestination.home)
-
+            } label: {
+                Label("Home", systemImage: homeImg)
+                    .environment(\.symbolVariants, selected == .home ? .fill : .none)
+            }
+            
+            Tab(value: .trips) {
                 TripView()
                     .background(Color("MainBG").ignoresSafeArea())
-                    .tabItem { Label("Trips", systemImage: tripsImg) }
-                    .tag(RootDestination.trips)
-
+            } label: {
+                Label("Trips", systemImage: tripsImg)
+                    .environment(\.symbolVariants, selected == .trips ? .fill : .none)
+            }
+            
+            Tab(value: .reward) {
                 RewardView()
                     .background(Color("MainBG").ignoresSafeArea())
-                    .tabItem { Label("Reward", systemImage: rewardImg) }
-                    .tag(RootDestination.reward)
-
+            } label: {
+                Label("Reward", systemImage: rewardImg)
+                    .environment(\.symbolVariants, selected == .reward ? .fill : .none)
+            }
+            
+            Tab(value: .setting) {
                 SettingView(cards: $cards, path: $settingPath)
                     .background(Color("MainBG").ignoresSafeArea())
-                    .tabItem { Label("Setting", systemImage: settingImg) }
-                    .tag(RootDestination.setting)
+            } label: {
+                Label("Setting", systemImage: settingImg)
+                    .environment(\.symbolVariants, selected == .setting ? .fill : .none)
             }
+
         }
     }
 }
