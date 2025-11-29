@@ -30,13 +30,16 @@ struct NameView: View {
                         descriptions: $descriptions
                     )
                     .focused($fieldIsFocused)
-                    .onSubmit {
-                        let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }
-                        let formatted = filtered
-                            .split(separator: " ")
-                            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
-                            .joined(separator: " ")
-                        fullName = formatted
+                    .textInputAutocapitalization(.words)
+                    .onChange(of: fieldIsFocused) { old, _ in
+                        if old {
+                            let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }
+                            let formatted = filtered
+                                .split(separator: " ")
+                                .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+                                .joined(separator: " ")
+                            fullName = formatted
+                        }
                     }
                 }
                 .padding(.horizontal, 32)

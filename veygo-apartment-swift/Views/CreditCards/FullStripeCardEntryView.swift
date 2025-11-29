@@ -46,6 +46,17 @@ struct FullStripeCardEntryView: View {
 
             TextInputField(placeholder: "Cardholder", text: $cardholderName)
                 .focused($focusedField, equals: .cardholder)
+                .textInputAutocapitalization(.words)
+                .onChange(of: focusedField) { oldValue, _ in
+                    if oldValue == .cardholder {
+                        let filtered = cardholderName.filter { $0.isLetter || $0.isWhitespace }
+                        let formatted = filtered
+                            .split(separator: " ")
+                            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+                            .joined(separator: " ")
+                        cardholderName = formatted
+                    }
+                }
             
             TextInputField(placeholder: "Nickname (optional)", text: $nickname)
                 .focused($focusedField, equals: .nickname)

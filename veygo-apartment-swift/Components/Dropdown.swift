@@ -16,7 +16,7 @@ struct Dropdown: View {
     @State private var showOptions = false
     
     var body: some View {
-        VStack (spacing: 16) {
+        LazyVStack (spacing: 16) {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color("TextFieldBg"))
