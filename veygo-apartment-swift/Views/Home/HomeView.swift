@@ -189,7 +189,7 @@ struct HomeView: View {
                     }
                 }
             }
-            .background(Color("MainBG"))
+            .background(Color("MainBG").ignoresSafeArea(.all))
             .refreshable {
                 Task {
                     await ApiCallActor.shared.appendApi { token, userId in

@@ -65,7 +65,7 @@ struct FullStripeCardEntryView: View {
         .padding()
         .padding(.vertical, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
+        .background(Color("MainBG").ignoresSafeArea(.all))
         .navigationTitle("Add Card")
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
