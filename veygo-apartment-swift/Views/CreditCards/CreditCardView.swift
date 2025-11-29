@@ -23,11 +23,6 @@ struct CreditCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Your Cards")
-                .font(.title2)
-                .bold()
-                .padding(.horizontal)
-
             List {
                 ForEach(cards) { card in
                     CreditCardRow(
@@ -39,6 +34,8 @@ struct CreditCardView: View {
                             }
                         }
                     )
+                    .listRowSeparator(.hidden, edges: .all)
+                    .listRowBackground(Color("MainBG"))
                 }
                 .onDelete { indexSet in
                     Task {
@@ -48,8 +45,14 @@ struct CreditCardView: View {
                     }
                 }
             }
-            .listStyle(PlainListStyle())
-            .listRowSeparator(.hidden, edges: .all)
+            .listStyle(.plain)
+            .refreshable {
+                Task {
+                    await ApiCallActor.shared.appendApi { token, userId in
+                        await loadCardsAsync(token, userId)
+                    }
+                }
+            }
 
             Spacer()
 
@@ -59,6 +62,8 @@ struct CreditCardView: View {
             .padding(.horizontal)
             .padding(.bottom, 20)
         }
+        .navigationTitle(Text("My Cards"))
+        .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
         .onAppear {
             Task {
                 await ApiCallActor.shared.appendApi { token, userId in
@@ -307,6 +312,17 @@ struct CreditCardView: View {
 }
 
 private struct CreditCardRow: View {
+    
+    private func convertDateToString(_ date: Date?) -> String {
+        if let date = date {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "Month D, Yr"
+            return formatter.string(from: date)
+        } else {
+            return "Never"
+        }
+    }
+    
     let card: PublishPaymentMethod
     let isExpanded: Bool
     let onTap: () -> Void
@@ -315,41 +331,38 @@ private struct CreditCardRow: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 16) {
                 cardBrandImage(for: card.network)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 64, height: 64)
                     .cornerRadius(4)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(card.maskedCardNumber)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(card.nickname ?? card.maskedCardNumber)
                         .font(.headline)
+                        .foregroundStyle(Color("TextBlackPrimary"))
                     Text("Exp: \(card.expiration)")
                         .font(.subheadline)
-                        .foregroundColor(.footNote)
+                        .foregroundStyle(Color("FootNote"))
                 }
-
                 Spacer()
-
-                Text(card.cardholderName)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
             }
+            .frame(maxWidth: .infinity)
             .onTapGesture {
                 onTap()
             }
 
             if isExpanded {
+                Divider()
                 VStack(alignment: .leading, spacing: 4) {
-                    Divider()
-                    Text("Nickname: \(card.nickname ?? "None")")
-                    Text("Enabled: \(card.isEnabled ? "Yes" : "No")")
-                    Text("Last Used: \(card.lastUsedDateTime)")
-                        .font(.footnote)
-                        .foregroundColor(.gray)
+                    Text("Card Number: \(card.maskedCardNumber)")
+                        .font(.subheadline)
+                        .foregroundStyle(Color("TextBlackSecondary"))
+                    Text("Last Used: \(convertDateToString(card.lastUsedDateTime))")
+                        .font(.subheadline)
+                        .foregroundStyle(Color("TextBlackSecondary"))
                 }
-                .transition(.opacity.combined(with: .slide))
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color("CardBG"), ignoresSafeAreaEdges: .all)
         .cornerRadius(12)
         .animation(.easeInOut, value: isExpanded)
     }
@@ -358,7 +371,7 @@ private struct CreditCardRow: View {
 @ViewBuilder
 func cardBrandImage(for brand: String) -> some View {
     let lowercased = brand.lowercased()
-    let knownBrands = ["visa", "master", "amex", "discover", "union", "jcb", "dinner"]
+    let knownBrands = ["visa", "mastercard", "amex", "discover", "diners"]
 
     if knownBrands.contains(lowercased) {
         Image(lowercased)
