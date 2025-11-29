@@ -136,11 +136,6 @@ struct SettingView: View {
         }
         .sheet(isPresented: $showHelpCenter) {
             ChatView()
-                .onAppear {
-                    CrispSDK.user.email = session.user?.studentEmail ?? ""
-                    CrispSDK.user.phone = session.user?.phone ?? ""
-                    CrispSDK.user.nickname = session.user?.name ?? ""
-                }
         }
     }
     

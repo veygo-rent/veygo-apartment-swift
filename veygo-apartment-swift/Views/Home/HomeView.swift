@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import Crisp
 
 enum HomeDestination: Hashable {
     case university(apartment: Apartment)
@@ -162,6 +163,13 @@ struct HomeView: View {
             }
             .onTapGesture {
                 couponIsFocused = false
+            }
+            .onAppear{
+                if let renter = session.user {
+                    CrispSDK.user.email = renter.studentEmail
+                    CrispSDK.user.phone = renter.phone
+                    CrispSDK.user.nickname = renter.name
+                }
             }
             .ignoresSafeArea()
             .navigationDestination(for: HomeDestination.self) { dest in
