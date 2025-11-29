@@ -56,8 +56,3 @@ struct TabBar: View {
         }
     }
 }
-
-
-#Preview {
-    TabBar().environmentObject(UserSession())
-}

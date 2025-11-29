@@ -117,6 +117,7 @@ struct SettingView: View {
                         }
                     } label: {
                         Text("Log Out")
+                            .foregroundStyle(Color("InvalidRed"))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .listRowBackground(Color("MainBG"))

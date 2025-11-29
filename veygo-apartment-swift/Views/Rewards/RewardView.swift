@@ -10,13 +10,11 @@ import SwiftUI
 struct RewardView: View {
     var body: some View {
         NavigationStack {
-            Plans()
+            VStack {
+                Text("Coming Soon")
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        RewardView()
     }
 }
