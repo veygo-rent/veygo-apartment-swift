@@ -129,9 +129,22 @@ struct SettingView: View {
                     CreditCardView(cards: $cards, path: $path)
                 case .addCard:
                     FullStripeCardEntryView(path: $path)
+                case .phone:
+                    PhoneVerifyView(path: $path)
+                case .email:
+                    EmailVerifyView(path: $path)
                 default:
                     EmptyView()
                 }
+            }
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("OK") {
+                    if clearUserTriggered {
+                        session.user = nil
+                    }
+                }
+            } message: {
+                Text(alertMessage)
             }
         }
         .sheet(isPresented: $showHelpCenter) {

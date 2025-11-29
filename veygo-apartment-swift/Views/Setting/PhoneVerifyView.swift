@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-struct PhoneVeri: View {
+struct PhoneVerifyView: View {
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -14,12 +14,10 @@ struct PhoneVeri: View {
     @State private var clearUserTriggered: Bool = false
     
     @EnvironmentObject var session: UserSession
-    
-    @AppStorage("phone_verified_at") var phoneVerifiedAt: Double = 0 // 让need verification消失30天 也就是说30天内用户不用再次验证
 
     @State private var verificationCode: String = ""
+    @Binding var path: [SettingDestination]
     
-    @Binding var isVerified: Bool
     var body: some View {
         VStack(spacing: 24) {
             Spacer().frame(height: 40)
@@ -62,11 +60,9 @@ struct PhoneVeri: View {
 
             Spacer()
         }
-        .padding(.horizontal, 24)
-        .navigationTitle("Verify Your Phone Number")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color("AccentColor"), for: .navigationBar)
+        .padding(.horizontal, 20)
+        .background(Color("MainBG").ignoresSafeArea(.all))
+        .navigationTitle("Verify Phone Number")
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
                 if clearUserTriggered {
@@ -237,6 +233,7 @@ struct PhoneVeri: View {
                         return .renewSuccessful(token: token)
                     }
                     await MainActor.run {
+                        path.removeLast()
                         session.user = decodedBody.verifiedRenter
                     }
                     return .renewSuccessful(token: token)
@@ -285,9 +282,3 @@ struct PhoneVeri: View {
         }
     }
 }
-
-#Preview {
-    PhoneVeri(isVerified: .constant(false))
-        .environmentObject(UserSession())
-}
-

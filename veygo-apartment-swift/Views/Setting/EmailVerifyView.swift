@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EmailVeri: View {
+struct EmailVerifyView: View {
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -15,11 +15,9 @@ struct EmailVeri: View {
     @State private var clearUserTriggered: Bool = false
     
     @EnvironmentObject var session: UserSession
-    @AppStorage("email_verified_at") var emailVerifiedAt: Double = 0
     
     @State private var verificationCode: String = ""
-    
-    @Binding var isVerified: Bool
+    @Binding var path: [SettingDestination]
     
     var body: some View {
         VStack(spacing: 24) {
@@ -63,11 +61,9 @@ struct EmailVeri: View {
             
             Spacer()
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 20)
+        .background(Color("MainBG").ignoresSafeArea(.all))
         .navigationTitle("Verify Your Email")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color("AccentColor"), for: .navigationBar)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
                 if clearUserTriggered {
@@ -237,6 +233,7 @@ struct EmailVeri: View {
                         return .renewSuccessful(token: token)
                     }
                     await MainActor.run {
+                        path.removeLast()
                         session.user = decodedBody.verifiedRenter
                     }
                     return .renewSuccessful(token: token)
@@ -285,9 +282,3 @@ struct EmailVeri: View {
         }
     }
 }
-
-#Preview {
-    EmailVeri(isVerified: .constant(false))
-        .environmentObject(UserSession())
-}
-
