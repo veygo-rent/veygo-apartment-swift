@@ -26,6 +26,14 @@ struct FullStripeCardEntryView: View {
     @EnvironmentObject var session: UserSession
     
     @Binding var path: [SettingDestination]
+    
+    @FocusState private var focusedField: Field?
+    
+    enum Field: Hashable {
+        case card
+        case cardholder
+        case nickname
+    }
 
     var body: some View {
         VStack(spacing: 28) {
@@ -34,10 +42,13 @@ struct FullStripeCardEntryView: View {
                 .background(Color("TextFieldBg"))
                 .cornerRadius(14)
                 .frame(height: 36)
+                .focused($focusedField, equals: .card)
 
             TextInputField(placeholder: "Cardholder", text: $cardholderName)
+                .focused($focusedField, equals: .cardholder)
             
             TextInputField(placeholder: "Nickname (optional)", text: $nickname)
+                .focused($focusedField, equals: .nickname)
             
             Spacer()
             
@@ -64,6 +75,9 @@ struct FullStripeCardEntryView: View {
             }
         } message: {
             Text(alertMessage)
+        }
+        .onTapGesture {
+            focusedField = nil
         }
     }
     
