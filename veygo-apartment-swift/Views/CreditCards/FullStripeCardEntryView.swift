@@ -28,33 +28,33 @@ struct FullStripeCardEntryView: View {
     @Binding var path: [SettingDestination]
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Enter Card Info")
-                .font(.title)
-                .padding()
-
+        VStack(spacing: 28) {
+            
             CardInputFieldWrapper(paymentMethodParams: $paymentMethodParams)
-                .frame(height: 50)
+                .background(Color("TextFieldBg"))
+                .cornerRadius(14)
+                .frame(height: 36)
 
-            TextField("Cardholder Name", text: $cardholderName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-            TextField("Nickname (optional)", text: $nickname)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
+            TextInputField(placeholder: "Cardholder", text: $cardholderName)
+            
+            TextInputField(placeholder: "Nickname (optional)", text: $nickname)
+            
+            Spacer()
             
             
-            Button("Confirm") {
+            PrimaryButton(text: "Confirm") {
                 Task {
                     await ApiCallActor.shared.appendApi { token, userId in
                         await createPaymentMethodAsync(token, userId)
                     }
                 }
             }
-            .disabled(paymentMethodParams == nil || cardholderName.isEmpty)
-            .padding()
+            .disabled(paymentMethodParams == nil || !NameValidator(name: cardholderName).isValidName)
         }
         .padding()
+        .padding(.vertical, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
         .navigationTitle("Add Card")
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
@@ -190,6 +190,16 @@ struct CardInputFieldWrapper: UIViewRepresentable {
 
     func makeUIView(context: Context) -> STPPaymentCardTextField {
         let textField = STPPaymentCardTextField()
+        textField.layer.borderWidth = 0
+        textField.layer.borderColor = UIColor.clear.cgColor
+        // Styling to match SwiftUI modifiers
+        textField.textColor = UIColor(named: "TextFieldWordColor") ?? .label
+        textField.backgroundColor = UIColor(named: "TextFieldBg")
+
+        // Corner radius
+        textField.layer.cornerRadius = 14
+        textField.layer.masksToBounds = true
+
         textField.delegate = context.coordinator
         return textField
     }
