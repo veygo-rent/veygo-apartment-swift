@@ -350,8 +350,8 @@ struct FindCarView: View {
 
 func walkingETASeconds(from: CLLocationCoordinate2D,
                        to: CLLocationCoordinate2D) async throws -> TimeInterval {
-    let src = MKMapItem(placemark: MKPlacemark(coordinate: from))
-    let dst = MKMapItem(placemark: MKPlacemark(coordinate: to))
+    let src = MKMapItem(location: CLLocation(latitude: from.latitude, longitude: from.longitude), address: nil)
+    let dst = MKMapItem(location: CLLocation(latitude: to.latitude, longitude: to.longitude), address: nil)
 
     let req = MKDirections.Request()
     req.source = src

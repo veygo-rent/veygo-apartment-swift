@@ -24,6 +24,8 @@ struct FullStripeCardEntryView: View {
     @State private var showCardScan = false
     
     @EnvironmentObject var session: UserSession
+    
+    @Binding var path: [SettingDestination]
 
     var body: some View {
         VStack(spacing: 20) {
@@ -54,9 +56,6 @@ struct FullStripeCardEntryView: View {
         }
         .padding()
         .navigationTitle("Add Card")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color("AccentColor"), for: .navigationBar)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
                 if clearUserTriggered {
@@ -124,6 +123,9 @@ struct FullStripeCardEntryView: View {
                         let newPaymentMethod: PublishPaymentMethod
                     }
                     let token = extractToken(from: response, for: "Creating payment method") ?? ""
+                    let _ = await MainActor.run {
+                        path.removeLast()
+                    }
                     return .renewSuccessful(token: token)
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {

@@ -18,66 +18,62 @@ struct CreditCardView: View {
     @EnvironmentObject var session: UserSession
     @Binding var cards: [PublishPaymentMethod]
     @State private var expandedCardID: PublishPaymentMethod.ID? = nil
-    @State private var navigateToAddCard = false
+    
+    @Binding var path: [SettingDestination]
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Your Cards")
-                    .font(.title2)
-                    .bold()
-                    .padding(.horizontal)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Your Cards")
+                .font(.title2)
+                .bold()
+                .padding(.horizontal)
 
-                List {
-                    ForEach(cards) { card in
-                        CreditCardRow(
-                            card: card,
-                            isExpanded: expandedCardID == card.id,
-                            onTap: {
-                                withAnimation {
-                                    expandedCardID = (expandedCardID == card.id) ? nil : card.id
-                                }
+            List {
+                ForEach(cards) { card in
+                    CreditCardRow(
+                        card: card,
+                        isExpanded: expandedCardID == card.id,
+                        onTap: {
+                            withAnimation {
+                                expandedCardID = (expandedCardID == card.id) ? nil : card.id
                             }
-                        )
-                        .listRowBackground(Color.clear)
-                    }
-                    .onDelete { indexSet in
-                        Task {
-                            await ApiCallActor.shared.appendApi { token, userId in
-                                await deleteCardAsync(token, userId, at: indexSet)
-                            }
+                        }
+                    )
+                }
+                .onDelete { indexSet in
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await deleteCardAsync(token, userId, at: indexSet)
                         }
                     }
                 }
-                .listStyle(PlainListStyle())
+            }
+            .listStyle(PlainListStyle())
+            .listRowSeparator(.hidden, edges: .all)
 
-                Spacer()
+            Spacer()
 
-                PrimaryButton(text: "Add Card") {
-                    navigateToAddCard = true
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 20)
+            PrimaryButton(text: "Add Card") {
+                path.append(.addCard)
             }
-            .navigationDestination(isPresented: $navigateToAddCard) {
-                FullStripeCardEntryView()
-            }
-            .onAppear {
-                Task {
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await loadCardsAsync(token, userId)
-                    }
+            .padding(.horizontal)
+            .padding(.bottom, 20)
+        }
+        .onAppear {
+            Task {
+                await ApiCallActor.shared.appendApi { token, userId in
+                    await loadCardsAsync(token, userId)
                 }
             }
-            .alert(alertTitle, isPresented: $showAlert) {
-                Button("OK") {
-                    if clearUserTriggered {
-                        session.user = nil
-                    }
+        }
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearUserTriggered {
+                    session.user = nil
                 }
-            } message: {
-                Text(alertMessage)
             }
+        } message: {
+            Text(alertMessage)
         }
     }
     
@@ -309,3 +305,70 @@ struct CreditCardView: View {
         }
     }
 }
+
+private struct CreditCardRow: View {
+    let card: PublishPaymentMethod
+    let isExpanded: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 16) {
+                cardBrandImage(for: card.network)
+                    .frame(width: 32, height: 32)
+                    .cornerRadius(4)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(card.maskedCardNumber)
+                        .font(.headline)
+                    Text("Exp: \(card.expiration)")
+                        .font(.subheadline)
+                        .foregroundColor(.footNote)
+                }
+
+                Spacer()
+
+                Text(card.cardholderName)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            .onTapGesture {
+                onTap()
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider()
+                    Text("Nickname: \(card.nickname ?? "None")")
+                    Text("Enabled: \(card.isEnabled ? "Yes" : "No")")
+                    Text("Last Used: \(card.lastUsedDateTime)")
+                        .font(.footnote)
+                        .foregroundColor(.gray)
+                }
+                .transition(.opacity.combined(with: .slide))
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .animation(.easeInOut, value: isExpanded)
+    }
+}
+
+@ViewBuilder
+func cardBrandImage(for brand: String) -> some View {
+    let lowercased = brand.lowercased()
+    let knownBrands = ["visa", "master", "amex", "discover", "union", "jcb", "dinner"]
+
+    if knownBrands.contains(lowercased) {
+        Image(lowercased)
+            .resizable()
+    } else {
+        Image(systemName: "creditcard")
+            .resizable()
+            .frame(width: 32, height: 22)
+            .foregroundColor(.primaryButtonBg)
+    }
+}
+
+

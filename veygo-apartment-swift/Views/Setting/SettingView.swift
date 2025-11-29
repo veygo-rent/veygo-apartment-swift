@@ -13,6 +13,7 @@ enum SettingDestination: Hashable {
     // Account
     case membership
     case wallet
+    case addCard
     case phone
     case email
     case password
@@ -124,6 +125,10 @@ struct SettingView: View {
                     WebView(url: URL(string: "https://dev.veygo.rent/rental-agreement"))
                 case .privacyPolicy:
                     WebView(url: URL(string: "https://dev.veygo.rent/privacy"))
+                case .wallet:
+                    CreditCardView(cards: $cards, path: $path)
+                case .addCard:
+                    FullStripeCardEntryView(path: $path)
                 default:
                     EmptyView()
                 }
