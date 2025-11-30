@@ -18,6 +18,15 @@ private func roundUpToNextQuarter(from date: Date) -> Date {
     return calendar.date(from: DateComponents(year: components.year, month: components.month, day: components.day, hour: newHour, minute: newMinute)) ?? date
 }
 
+private struct CurrentTrip: Codable {
+    let agreement: Agreement
+    let vehicle: PublishRenterVehicle
+    let apartment: Apartment
+    let location: Location
+    let vehicleSnapsahotBefore: VehicleSnapshot?
+    let vehicleSnapsahotAfter: VehicleSnapshot?
+}
+
 struct HomeView: View {
     
     @FocusState private var couponIsFocused: Bool
@@ -52,6 +61,8 @@ struct HomeView: View {
     @State private var path: [HomeDestination] = []
     
     @State private var appliedPromoCode: PublishPromo? = nil
+    
+    @State private var currentTrip: CurrentTrip? = nil
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -216,22 +227,24 @@ struct HomeView: View {
                     }
                 }
                 
-                Button {
-                    showCurrentTrip = true
-                } label: {
-                    HStack {
-                        Image(systemName: "key.2.on.ring")
-                            .font(.headline)
-                        Text("Current Trip")
-                            .font(.headline)
+                if let currentTrip = currentTrip {
+                    Button {
+                        showCurrentTrip = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "key.2.on.ring")
+                                .font(.headline)
+                            Text("Current Trip")
+                                .font(.headline)
+                        }
+                        .padding(4)
+                        
                     }
-                    .padding(4)
-                    
+                    .buttonStyle(.glassProminent)
+                    .tint(Color("TextLink").opacity(0.8))
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(Color("TextLink").opacity(0.8))
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
             .fullScreenCover(isPresented: $showCurrentTrip) {
                 CurrentTripView()
