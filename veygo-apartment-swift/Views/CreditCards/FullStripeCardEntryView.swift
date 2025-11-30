@@ -41,6 +41,7 @@ struct FullStripeCardEntryView: View {
             CardInputFieldWrapper(paymentMethodParams: $paymentMethodParams)
                 .background(Color("TextFieldBg"))
                 .cornerRadius(14)
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
                 .frame(height: 36)
                 .focused($focusedField, equals: .card)
 
