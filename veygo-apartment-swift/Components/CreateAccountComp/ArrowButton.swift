@@ -31,6 +31,7 @@ struct ArrowButton: View {
                     .foregroundColor(Color("MainBG"))
             }
         }
+        .glassEffect(.regular.interactive(), in: .circle)
         .disabled(isDisabled)
     }
 }
