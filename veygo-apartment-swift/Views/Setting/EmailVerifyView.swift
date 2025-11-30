@@ -21,7 +21,6 @@ struct EmailVerifyView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            Spacer().frame(height: 40)
             
             HStack(spacing: 12) {
                 InputWithInlinePrompt(promptText: "Your Email", userInput: .constant(session.user?.studentEmail ?? "Not set"))
@@ -37,6 +36,7 @@ struct EmailVerifyView: View {
                 }
                 .frame(width: 120)
             }
+            .padding(.top)
             
             InputWithInlinePrompt(promptText: "Verification code", userInput: $verificationCode)
             

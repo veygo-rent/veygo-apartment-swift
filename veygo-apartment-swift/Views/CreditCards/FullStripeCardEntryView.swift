@@ -186,6 +186,23 @@ struct FullStripeCardEntryView: View {
                         }
                     }
                     return .doNothing
+                case 406:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E406
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
+                    return .renewSuccessful(token: token)
                 default:
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {

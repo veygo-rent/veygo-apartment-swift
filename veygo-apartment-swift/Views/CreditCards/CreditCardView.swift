@@ -371,7 +371,7 @@ private struct CreditCardRow: View {
 @ViewBuilder
 func cardBrandImage(for brand: String) -> some View {
     let lowercased = brand.lowercased()
-    let knownBrands = ["visa", "mastercard", "amex", "discover", "diners"]
+    let knownBrands = [ "amex", "mastercard", "visa", "discover" ]
 
     if knownBrands.contains(lowercased) {
         Image(lowercased)

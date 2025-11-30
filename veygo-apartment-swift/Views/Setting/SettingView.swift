@@ -46,56 +46,36 @@ struct SettingView: View {
             List {
                 Section {
                     NavigationLink("Membership", value: SettingDestination.membership)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .top)
                     NavigationLink("Wallet", value: SettingDestination.wallet)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                    NavigationLink("Phone", value: SettingDestination.phone)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                    NavigationLink("Email", value: SettingDestination.email)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
+                    NavigationLink("Verify Phone Number", value: SettingDestination.phone)
+                    NavigationLink("Verify Your Email", value: SettingDestination.email)
                     NavigationLink("Password", value: SettingDestination.password)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
                     NavigationLink("Drivers License", value: SettingDestination.driversLicense)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
                     NavigationLink("Lease Agreement", value: SettingDestination.leaseAgreement)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .bottom)
                 }
+                .listRowBackground(Color("MainBG"))
+                .foregroundStyle(Color("TextBlackSecondary"))
                 .listRowSeparatorTint(Color("SeperatorLine"))
+                .listSectionSeparator(.hidden)
                 
                 Section {
                     NavigationLink("Privacy Policy", value: SettingDestination.privacyPolicy)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .top)
                     NavigationLink("Member Agreement", value: SettingDestination.memberAgreement)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
                     NavigationLink("Rental Agreement", value: SettingDestination.rentalAgreement)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
                     NavigationLink("Terms of Use", value: SettingDestination.termsOfUse)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .bottom)
                 }
+                .listRowBackground(Color("MainBG"))
+                .foregroundStyle(Color("TextBlackSecondary"))
                 .listRowSeparatorTint(Color("SeperatorLine"))
+                .listSectionSeparator(.hidden)
                 
                 Section {
                     NavigationLink("Roadside Assistance", value: SettingDestination.roadside)
-                        .foregroundStyle(Color("TextBlackSecondary"))
-                        .listRowBackground(Color("MainBG"))
-                        .listRowSeparator(.hidden, edges: .all)
                 }
+                .listRowBackground(Color("MainBG"))
+                .foregroundStyle(Color("TextBlackSecondary"))
                 .listRowSeparatorTint(Color("SeperatorLine"))
+                .listSectionSeparator(.hidden)
                 
              
                 Section {
@@ -106,8 +86,6 @@ struct SettingView: View {
                             .foregroundStyle(Color("TextBlackPrimary"))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .listRowBackground(Color("MainBG"))
-                    .listRowSeparator(.hidden, edges: .top)
 
                     Button(role: .destructive) {
                         Task {
@@ -120,10 +98,10 @@ struct SettingView: View {
                             .foregroundStyle(Color("InvalidRed"))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .listRowBackground(Color("MainBG"))
-                    .listRowSeparator(.hidden, edges: .bottom)
                 }
+                .listRowBackground(Color("MainBG"))
                 .listRowSeparatorTint(Color("SeperatorLine"))
+                .listSectionSeparator(.hidden)
             }
             .listStyle(.grouped)
             .scrollIndicators(.hidden)

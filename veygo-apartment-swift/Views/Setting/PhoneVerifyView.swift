@@ -20,7 +20,6 @@ struct PhoneVerifyView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            Spacer().frame(height: 40)
 
             HStack(spacing: 12) {
                 InputWithInlinePrompt(promptText: "Your Phone number", userInput: .constant(session.user?.phone ?? "Not set"))
@@ -36,6 +35,7 @@ struct PhoneVerifyView: View {
                 }
                 .frame(width: 120)
             }
+            .padding(.top)
 
             InputWithInlinePrompt(promptText: "Verification code", userInput: $verificationCode)
 
