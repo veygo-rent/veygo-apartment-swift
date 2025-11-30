@@ -20,7 +20,7 @@ struct PrimaryButtonLg: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .tint(Color("PrimaryButtonBg"))
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.glassProminent)
         .buttonBorderShape(.roundedRectangle(radius: 16))
         .frame(height: 53)
         .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)

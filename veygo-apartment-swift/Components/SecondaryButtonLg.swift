@@ -21,14 +21,10 @@ struct SecondaryButtonLg: View {
                 .foregroundColor(Color("SecondaryButtonText"))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.glassProminent)
         .buttonBorderShape(.roundedRectangle(radius: 16))
         .tint(Color("SecondaryButtonBg"))
         .frame(height: 53)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color("SecondaryButtonOutline").opacity(0.5), lineWidth: 1)
-        )
     }
 }
 

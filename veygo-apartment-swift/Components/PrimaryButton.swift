@@ -14,7 +14,7 @@ struct PrimaryButton: View {
                 .foregroundColor(Color("PrimaryButtonText"))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.glassProminent)
         .buttonBorderShape(.roundedRectangle(radius: 16))
         .tint(Color("PrimaryButtonBg"))
         .frame(height: 45)
