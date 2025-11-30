@@ -411,6 +411,7 @@ nonisolated struct ErrorResponse: Equatable, Codable {
     
     static let E400 = ErrorResponse(title: "Bad Request", message: "The data you provided is not valid.")
     static let E401 = ErrorResponse(title: "Not Authenticated", message: "Please log in again to access this resource.")
+    static let E402 = ErrorResponse(title: "Payment Declined", message: "Please try a different card.")
     static let E403 = ErrorResponse(title: "Forbidden", message: "You do not have permission to access this resource.")
     static let E405 = ErrorResponse(title: "Method Not Allowed", message: "The method you have attempted to use is not supported by this endpoint.")
     static let E406 = ErrorResponse(title: "Not Acceptable", message: "The requested format is not supported.")
