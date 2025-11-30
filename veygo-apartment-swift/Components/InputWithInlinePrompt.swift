@@ -37,6 +37,7 @@ struct InputWithInlinePrompt: View {
             .padding(.leading, 16)
             .padding(.top, 6)
         }
+        .glassEffect(.regular, in: .rect(cornerRadius: 16))
     }
 }
 

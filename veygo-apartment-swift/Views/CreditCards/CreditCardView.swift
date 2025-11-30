@@ -23,33 +23,37 @@ struct CreditCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            List {
-                ForEach(cards) { card in
-                    CreditCardRow(
-                        card: card,
-                        isExpanded: expandedCardID == card.id,
-                        onTap: {
-                            withAnimation {
-                                expandedCardID = (expandedCardID == card.id) ? nil : card.id
-                            }
+            GlassEffectContainer {
+                List {
+                    ForEach(cards) { card in
+                        withAnimation {
+                            CreditCardRow(
+                                card: card,
+                                isExpanded: expandedCardID == card.id,
+                                onTap: {
+                                    withAnimation {
+                                        expandedCardID = (expandedCardID == card.id) ? nil : card.id
+                                    }
+                                }
+                            )
+                            .listRowSeparator(.hidden, edges: .all)
+                            .listRowBackground(Color("MainBG"))
                         }
-                    )
-                    .listRowSeparator(.hidden, edges: .all)
-                    .listRowBackground(Color("MainBG"))
-                }
-                .onDelete { indexSet in
-                    Task {
-                        await ApiCallActor.shared.appendApi { token, userId in
-                            await deleteCardAsync(token, userId, at: indexSet)
+                    }
+                    .onDelete { indexSet in
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await deleteCardAsync(token, userId, at: indexSet)
+                            }
                         }
                     }
                 }
-            }
-            .listStyle(.plain)
-            .refreshable {
-                Task {
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await loadCardsAsync(token, userId)
+                .listStyle(.plain)
+                .refreshable {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await loadCardsAsync(token, userId)
+                        }
                     }
                 }
             }
@@ -365,6 +369,7 @@ private struct CreditCardRow: View {
         .background(Color("CardBG"), ignoresSafeAreaEdges: .all)
         .cornerRadius(12)
         .animation(.easeInOut, value: isExpanded)
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
     }
 }
 

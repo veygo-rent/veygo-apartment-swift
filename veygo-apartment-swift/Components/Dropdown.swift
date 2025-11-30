@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct Dropdown: View {
+    
     @Binding var selectedOption: Apartment.ID?
     @Binding var labelText: String
     
@@ -16,7 +17,7 @@ struct Dropdown: View {
     @State private var showOptions = false
     
     var body: some View {
-        LazyVStack (spacing: 16) {
+        VStack (spacing: 16) {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color("TextFieldBg"))
@@ -61,6 +62,8 @@ struct Dropdown: View {
                 }
                 
             }
+            .glassEffect(.regular, in: .rect(cornerRadius: 16))
+            
             if showOptions {
                 let renderedOptions = universityOptions.indices.map { index in
                     VStack(spacing: 0) {
@@ -104,6 +107,7 @@ struct Dropdown: View {
                     .transition(.opacity)
                     .animation(.easeInOut, value: showOptions)
                 }
+                .glassEffect(.regular, in: .rect(cornerRadius: 16))
             }
         }
     }
