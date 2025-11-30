@@ -62,7 +62,7 @@ struct Dropdown: View {
                 }
                 
             }
-            .glassEffect(.regular, in: .rect(cornerRadius: 16))
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
             
             if showOptions {
                 let renderedOptions = universityOptions.indices.map { index in

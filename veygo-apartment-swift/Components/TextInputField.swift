@@ -34,7 +34,7 @@ struct TextInputField: View {
                     .cornerRadius(14)
             }
         }
-        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
 }
 

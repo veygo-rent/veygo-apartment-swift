@@ -26,19 +26,17 @@ struct CreditCardView: View {
             GlassEffectContainer {
                 List {
                     ForEach(cards) { card in
-                        withAnimation {
-                            CreditCardRow(
-                                card: card,
-                                isExpanded: expandedCardID == card.id,
-                                onTap: {
-                                    withAnimation {
-                                        expandedCardID = (expandedCardID == card.id) ? nil : card.id
-                                    }
+                        CreditCardRow(
+                            card: card,
+                            isExpanded: expandedCardID == card.id,
+                            onTap: {
+                                withAnimation(.easeInOut) {
+                                    expandedCardID = (expandedCardID == card.id) ? nil : card.id
                                 }
-                            )
-                            .listRowSeparator(.hidden, edges: .all)
-                            .listRowBackground(Color("MainBG"))
-                        }
+                            }
+                        )
+                        .listRowSeparator(.hidden, edges: .all)
+                        .listRowBackground(Color("MainBG"))
                     }
                     .onDelete { indexSet in
                         Task {
@@ -47,6 +45,7 @@ struct CreditCardView: View {
                             }
                         }
                     }
+                    .sensoryFeedback(.selection, trigger: expandedCardID)
                 }
                 .listStyle(.plain)
                 .refreshable {
@@ -368,7 +367,6 @@ private struct CreditCardRow: View {
         .padding()
         .background(Color("CardBG"), ignoresSafeAreaEdges: .all)
         .cornerRadius(12)
-        .animation(.easeInOut, value: isExpanded)
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
     }
 }

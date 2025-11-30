@@ -57,6 +57,7 @@ struct SlidingToggleButton: View {
             .frame(height: 42)
         }
         .frame(height: 42)
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 19))
     }
 }
 

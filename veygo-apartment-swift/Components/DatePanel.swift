@@ -86,7 +86,7 @@ struct DatePanel: View {
                 )
             }, isEditMode: isEditMode))
         }
-        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
     
     private struct optionalDateSheet: ViewModifier {
