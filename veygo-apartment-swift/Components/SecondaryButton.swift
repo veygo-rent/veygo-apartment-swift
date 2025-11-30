@@ -17,17 +17,18 @@ struct SecondaryButton: View {
             action()
         }) {
             Text(text)
-                .font(.system(size: 17, weight: .semibold, design: .default)) // SF Pro 字体
-                .foregroundColor(Color("SecondaryButtonText")) // 使用自定义颜色
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(Color("SecondaryButtonBg"))
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color("SecondaryButtonOutline"), lineWidth: 1) // 黑色细边框
-                )
+                .font(.system(size: 17, weight: .semibold, design: .default))
+                .foregroundColor(Color("SecondaryButtonText"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle(radius: 16))
+        .tint(Color("SecondaryButtonBg"))
+        .frame(height: 45)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color("SecondaryButtonOutline").opacity(0.5), lineWidth: 1)
+        )
     }
 }
 

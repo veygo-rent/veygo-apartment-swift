@@ -10,14 +10,15 @@ struct PrimaryButton: View {
             action()
         }) {
             Text(text)
-                .font(.system(size: 17, weight: .semibold, design: .default)) // 使用 SF Pro 字体
-                .foregroundColor(Color("PrimaryButtonText")) // 使用 Assets 中的颜色
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(Color("PrimaryButtonBg"))
-                .cornerRadius(16)
-                .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
+                .font(.system(size: 17, weight: .semibold, design: .default))
+                .foregroundColor(Color("PrimaryButtonText"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.roundedRectangle(radius: 16))
+        .tint(Color("PrimaryButtonBg"))
+        .frame(height: 45)
+        .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
     }
 }
 

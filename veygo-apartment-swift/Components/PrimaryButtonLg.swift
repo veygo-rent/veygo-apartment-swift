@@ -17,12 +17,13 @@ struct PrimaryButtonLg: View {
             Text(text)
                 .font(.system(size: 17, weight: .semibold, design: .default)) // 使用 SF Pro 字体
                 .foregroundColor(Color("PrimaryButtonText"))
-                .frame(maxWidth: .infinity)
-                .frame(height: 53)
-                .background(Color("PrimaryButtonBg"))
-                .cornerRadius(16)
-                .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .tint(Color("PrimaryButtonBg"))
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.roundedRectangle(radius: 16))
+        .frame(height: 53)
+        .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
     }
 }
 
