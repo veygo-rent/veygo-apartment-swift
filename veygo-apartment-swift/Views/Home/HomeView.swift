@@ -68,83 +68,84 @@ struct HomeView: View {
         NavigationStack(path: $path) {
             ZStack {
                 ScrollView {
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Make a Reservation & others
-                        Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
-                            .padding(.horizontal, 24)
-                        /// Implementing Apartment UI later
-                        SlidingToggleButton(selectedOption: $selectedToggle)
-                            .padding(.horizontal, 24)
-                            .sensoryFeedback(.selection, trigger: selectedToggle)
-                        if selectedToggle == .university {
-                            Dropdown(
-                                selectedOption: $selectedLocation,
-                                labelText: .constant("Rental location"),
-                                universityOptions: $universities
-                            )
-                            .padding(.horizontal, 24)
-                            DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                    GlassEffectContainer {
+                        VStack(alignment: .leading, spacing: 16) {
+                            // Make a Reservation & others
+                            Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
                                 .padding(.horizontal, 24)
-                            
-                            // Promo code + Apply
-                            HStack(spacing: 16) {
-                                InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCodeInput)
-                                    .focused($couponIsFocused)
-                                    .onChange(of: promoCodeInput) { old, newValue in
-                                        var result = ""
-                                        var previousWasDash = false
-                                        for (_, char) in newValue.enumerated() {
-                                            if char.isLetter || char.isNumber {
-                                                result.append(char)
-                                                previousWasDash = false
-                                            } else if char == "-" && !previousWasDash && !result.isEmpty {
-                                                result.append(char)
-                                                previousWasDash = true
-                                            }
-                                            // skip if it's a dash and previousWasDash is true, or if would be the first character
-                                        }
-                                        let finalResult = result.uppercased()
-                                        if promoCodeInput != finalResult {
-                                            promoCodeInput = finalResult
-                                        }
-                                    }
+                            /// Implementing Apartment UI later
+                            SlidingToggleButton(selectedOption: $selectedToggle)
+                                .padding(.horizontal, 24)
+                                .sensoryFeedback(.selection, trigger: selectedToggle)
+                            if selectedToggle == .university {
+                                Dropdown(
+                                    selectedOption: $selectedLocation,
+                                    labelText: .constant("Rental location"),
+                                    universityOptions: $universities
+                                )
+                                .padding(.horizontal, 24)
+                                DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                                    .padding(.horizontal, 24)
                                 
-                                SecondaryButtonLg(text: "Apply") {
-                                    couponIsFocused = false
-                                    if !promoCodeInput.isEmpty {
-                                        Task {
-                                            await ApiCallActor.shared.appendApi { token, userId in
-                                                await checkPromoAsync(token, userId)
+                                // Promo code + Apply
+                                HStack(spacing: 16) {
+                                    InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCodeInput)
+                                        .focused($couponIsFocused)
+                                        .onChange(of: promoCodeInput) { old, newValue in
+                                            var result = ""
+                                            var previousWasDash = false
+                                            for (_, char) in newValue.enumerated() {
+                                                if char.isLetter || char.isNumber {
+                                                    result.append(char)
+                                                    previousWasDash = false
+                                                } else if char == "-" && !previousWasDash && !result.isEmpty {
+                                                    result.append(char)
+                                                    previousWasDash = true
+                                                }
+                                                // skip if it's a dash and previousWasDash is true, or if would be the first character
+                                            }
+                                            let finalResult = result.uppercased()
+                                            if promoCodeInput != finalResult {
+                                                promoCodeInput = finalResult
                                             }
                                         }
-                                    } else {
-                                        if !promoCodeActual.isEmpty {
-                                            alertTitle = "Coupon Removed"
-                                            alertMessage = "Code \(promoCodeActual) has been removed."
-                                            promoCodeActual = ""
-                                            showAlert = true
+                                    
+                                    SecondaryButtonLg(text: "Apply") {
+                                        couponIsFocused = false
+                                        if !promoCodeInput.isEmpty {
+                                            Task {
+                                                await ApiCallActor.shared.appendApi { token, userId in
+                                                    await checkPromoAsync(token, userId)
+                                                }
+                                            }
+                                        } else {
+                                            if !promoCodeActual.isEmpty {
+                                                alertTitle = "Coupon Removed"
+                                                alertMessage = "Code \(promoCodeActual) has been removed."
+                                                promoCodeActual = ""
+                                                showAlert = true
+                                            }
                                         }
                                     }
+                                    .frame(width: 92)
                                 }
-                                .frame(width: 92)
-                            }
-                            .padding(.horizontal, 24)
-                            
-                            PrimaryButtonLg(text: "Vehicle Look Up") {
-                                promoCodeInput = promoCodeActual
-                                if let selectedLocation, let university = universities.getItemBy(id: selectedLocation) {
-                                    path.append(.university(apartment: university))
-                                }
-                            }
-                            .disabled(selectedLocation == nil || couponIsFocused)
-                            .padding(.horizontal, 24)
-                        } else {
-                            Text("Coming soon...")
                                 .padding(.horizontal, 24)
+                                
+                                PrimaryButtonLg(text: "Vehicle Look Up") {
+                                    promoCodeInput = promoCodeActual
+                                    if let selectedLocation, let university = universities.getItemBy(id: selectedLocation) {
+                                        path.append(.university(apartment: university))
+                                    }
+                                }
+                                .disabled(selectedLocation == nil || couponIsFocused)
+                                .padding(.horizontal, 24)
+                            } else {
+                                Text("Coming soon...")
+                                    .padding(.horizontal, 24)
+                            }
                         }
+                        .padding(.bottom, 120)
                     }
-                    .padding(.bottom, 120)
                 }
                 .scrollDismissesKeyboard(.immediately)
                 .alert(alertTitle, isPresented: $showAlert) {
