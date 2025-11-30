@@ -15,15 +15,13 @@ struct PrimaryButtonLg: View {
             action()
         }) {
             Text(text)
-                .font(.system(size: 17, weight: .semibold, design: .default)) // 使用 SF Pro 字体
-                .foregroundColor(Color("PrimaryButtonText"))
+                .font(.system(size: 17, weight: .semibold, design: .default))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .tint(Color("PrimaryButtonBg"))
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.roundedRectangle(radius: 16))
+        .tint(Color("PrimaryButtonBg"))
         .frame(height: 53)
-        .shadow(color: Color("ShadowPrimary").opacity(0.5), radius: 3, x: 2, y: 4)
     }
 }
 
