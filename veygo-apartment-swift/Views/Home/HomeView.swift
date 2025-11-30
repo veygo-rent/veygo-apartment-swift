@@ -34,6 +34,8 @@ struct HomeView: View {
     @State private var selectedToggle: RentalOption = .university
     @State private var selectedLocation: Apartment.ID? = nil
     
+    @State private var showCurrentTrip: Bool = false
+    
     @State private var startDate: Date = {
         let start = Date().addingTimeInterval(15 * 60)
         return roundUpToNextQuarter(from: start)
@@ -53,165 +55,188 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView {
-                
-                VStack(alignment: .leading, spacing: 16) {
-                    // Make a Reservation & others
-                    Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
-                        .padding(.horizontal, 24)
-                    /// Implementing Apartment UI later
-//                    SlidingToggleButton(selectedOption: $selectedToggle)
-//                        .padding(.horizontal, 24)
-//                        .sensoryFeedback(.selection, trigger: selectedToggle)
-                    if selectedToggle == .university {
-                        Dropdown(
-                            selectedOption: $selectedLocation,
-                            labelText: .constant("Rental location"),
-                            universityOptions: $universities
-                        )
-                        .padding(.horizontal, 24)
-                        DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
-                            .padding(.horizontal, 24)
-                        
-                        // Promo code + Apply
-                        HStack(spacing: 16) {
-                            InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCodeInput)
-                                .focused($couponIsFocused)
-                                .onChange(of: promoCodeInput) { old, newValue in
-                                    var result = ""
-                                    var previousWasDash = false
-                                    for (_, char) in newValue.enumerated() {
-                                        if char.isLetter || char.isNumber {
-                                            result.append(char)
-                                            previousWasDash = false
-                                        } else if char == "-" && !previousWasDash && !result.isEmpty {
-                                            result.append(char)
-                                            previousWasDash = true
-                                        }
-                                        // skip if it's a dash and previousWasDash is true, or if would be the first character
-                                    }
-                                    let finalResult = result.uppercased()
-                                    if promoCodeInput != finalResult {
-                                        promoCodeInput = finalResult
-                                    }
-                                }
-                            
-                            SecondaryButtonLg(text: "Apply") {
-                                couponIsFocused = false
-                                if !promoCodeInput.isEmpty {
-                                    Task {
-                                        await ApiCallActor.shared.appendApi { token, userId in
-                                            await checkPromoAsync(token, userId)
-                                        }
-                                    }
-                                } else {
-                                    if !promoCodeActual.isEmpty {
-                                        alertTitle = "Coupon Removed"
-                                        alertMessage = "Code \(promoCodeActual) has been removed."
-                                        promoCodeActual = ""
-                                        showAlert = true
-                                    }
-                                }
-                            }
-                            .frame(width: 92)
-                        }
-                        .padding(.horizontal, 24)
-                        
-                        PrimaryButtonLg(text: "Vehicle Look Up") {
-                            promoCodeInput = promoCodeActual
-                            if let selectedLocation, let university = universities.getItemBy(id: selectedLocation) {
-                                path.append(.university(apartment: university))
-                            }
-                        }
-                        .disabled(selectedLocation == nil || couponIsFocused)
-                        .padding(.horizontal, 24)
-                    } else {
-                        Text("Coming soon...")
-                            .padding(.horizontal, 24)
-                    }
-                }
-                .padding(.bottom, 120)
-            }
-            .scrollDismissesKeyboard(.immediately)
-            .alert(alertTitle, isPresented: $showAlert) {
-                Button("OK") {
-                    if clearUserTriggered {
-                        session.user = nil
-                    }
-                }
-            } message: {
-                Text(alertMessage)
-            }
-            .safeAreaInset(edge: .top, spacing: 0) {
-                // 顶部图片 + 文字
-                ZStack(alignment: .bottomLeading) {
-                    Image("HomePageImage")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(maxWidth: .infinity, maxHeight: 220)
-                        .clipped()
+            ZStack {
+                ScrollView {
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Title(text: "Good Morning,", fontSize: 24, color: Color.white)
-                        Title(text: "\(session.user?.name ?? "Veygo Renter")", fontSize: 24, color: Color.white)
-                        Title(text: "Diamond Member", fontSize: 13, color: Color.white)
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Make a Reservation & others
+                        Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
+                            .padding(.horizontal, 24)
+                        /// Implementing Apartment UI later
+                        //                    SlidingToggleButton(selectedOption: $selectedToggle)
+                        //                        .padding(.horizontal, 24)
+                        //                        .sensoryFeedback(.selection, trigger: selectedToggle)
+                        if selectedToggle == .university {
+                            Dropdown(
+                                selectedOption: $selectedLocation,
+                                labelText: .constant("Rental location"),
+                                universityOptions: $universities
+                            )
+                            .padding(.horizontal, 24)
+                            DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                                .padding(.horizontal, 24)
+                            
+                            // Promo code + Apply
+                            HStack(spacing: 16) {
+                                InputWithInlinePrompt(promptText: "Promo code / coupon", userInput: $promoCodeInput)
+                                    .focused($couponIsFocused)
+                                    .onChange(of: promoCodeInput) { old, newValue in
+                                        var result = ""
+                                        var previousWasDash = false
+                                        for (_, char) in newValue.enumerated() {
+                                            if char.isLetter || char.isNumber {
+                                                result.append(char)
+                                                previousWasDash = false
+                                            } else if char == "-" && !previousWasDash && !result.isEmpty {
+                                                result.append(char)
+                                                previousWasDash = true
+                                            }
+                                            // skip if it's a dash and previousWasDash is true, or if would be the first character
+                                        }
+                                        let finalResult = result.uppercased()
+                                        if promoCodeInput != finalResult {
+                                            promoCodeInput = finalResult
+                                        }
+                                    }
+                                
+                                SecondaryButtonLg(text: "Apply") {
+                                    couponIsFocused = false
+                                    if !promoCodeInput.isEmpty {
+                                        Task {
+                                            await ApiCallActor.shared.appendApi { token, userId in
+                                                await checkPromoAsync(token, userId)
+                                            }
+                                        }
+                                    } else {
+                                        if !promoCodeActual.isEmpty {
+                                            alertTitle = "Coupon Removed"
+                                            alertMessage = "Code \(promoCodeActual) has been removed."
+                                            promoCodeActual = ""
+                                            showAlert = true
+                                        }
+                                    }
+                                }
+                                .frame(width: 92)
+                            }
+                            .padding(.horizontal, 24)
+                            
+                            PrimaryButtonLg(text: "Vehicle Look Up") {
+                                promoCodeInput = promoCodeActual
+                                if let selectedLocation, let university = universities.getItemBy(id: selectedLocation) {
+                                    path.append(.university(apartment: university))
+                                }
+                            }
+                            .disabled(selectedLocation == nil || couponIsFocused)
+                            .padding(.horizontal, 24)
+                        } else {
+                            Text("Coming soon...")
+                                .padding(.horizontal, 24)
+                        }
                     }
-                    .padding(.leading, 24)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 120)
                 }
-                .padding(.bottom, 16)
-            }
-            .onTapGesture {
-                couponIsFocused = false
-            }
-            .onAppear{
-                if let renter = session.user {
-                    CrispSDK.user.email = renter.studentEmail
-                    CrispSDK.user.phone = renter.phone
-                    CrispSDK.user.nickname = renter.name
+                .scrollDismissesKeyboard(.immediately)
+                .alert(alertTitle, isPresented: $showAlert) {
+                    Button("OK") {
+                        if clearUserTriggered {
+                            session.user = nil
+                        }
+                    }
+                } message: {
+                    Text(alertMessage)
                 }
-            }
-            .ignoresSafeArea()
-            .navigationDestination(for: HomeDestination.self) { dest in
-                switch dest {
-                case .apartment:
-                    ListCarView()
-                case let .university(apt):
-                    FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
-                case let .vehicleDetails(vehicle, location, apartment, startDate, endDate):
-                    VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    // 顶部图片 + 文字
+                    ZStack(alignment: .bottomLeading) {
+                        Image("HomePageImage")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(maxWidth: .infinity, maxHeight: 220)
+                            .clipped()
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Title(text: "Good Morning,", fontSize: 24, color: Color.white)
+                            Title(text: "\(session.user?.name ?? "Veygo Renter")", fontSize: 24, color: Color.white)
+                            Title(text: "Diamond Member", fontSize: 13, color: Color.white)
+                        }
+                        .padding(.leading, 24)
+                        .padding(.bottom, 10)
+                    }
+                    .padding(.bottom, 16)
                 }
-            }
-            .onAppear {
-                let center = UNUserNotificationCenter.current()
-                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-                    if granted {
-                        DispatchQueue.main.async {
-                            UIApplication.shared.registerForRemoteNotifications()
+                .onTapGesture {
+                    couponIsFocused = false
+                }
+                .onAppear{
+                    if let renter = session.user {
+                        CrispSDK.user.email = renter.studentEmail
+                        CrispSDK.user.phone = renter.phone
+                        CrispSDK.user.nickname = renter.name
+                    }
+                }
+                .ignoresSafeArea()
+                .navigationDestination(for: HomeDestination.self) { dest in
+                    switch dest {
+                    case .apartment:
+                        ListCarView()
+                    case let .university(apt):
+                        FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
+                    case let .vehicleDetails(vehicle, location, apartment, startDate, endDate):
+                        VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
+                    }
+                }
+                .onAppear {
+                    let center = UNUserNotificationCenter.current()
+                    center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                        if granted {
+                            DispatchQueue.main.async {
+                                UIApplication.shared.registerForRemoteNotifications()
+                            }
+                        }
+                    }
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await fetchUniversitiesAsync()
                         }
                     }
                 }
-                Task {
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await fetchUniversitiesAsync()
+                .background(Color("MainBG").ignoresSafeArea(.all))
+                .refreshable {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await fetchUniversitiesAsync()
+                        }
                     }
                 }
-            }
-            .background(Color("MainBG").ignoresSafeArea(.all))
-            .refreshable {
-                Task {
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await fetchUniversitiesAsync()
+                .onChange(of: apns_token) { oldValue, newValue in
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await updateApnsTokenAsync(token, userId)
+                        }
                     }
                 }
-            }
-            .onChange(of: apns_token) { oldValue, newValue in
-                Task {
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await updateApnsTokenAsync(token, userId)
+                
+                Button {
+                    showCurrentTrip = true
+                } label: {
+                    HStack {
+                        Image(systemName: "key.2.on.ring")
+                            .font(.headline)
+                        Text("Current Trip")
+                            .font(.headline)
                     }
+                    .padding(4)
+                    
                 }
+                .buttonStyle(.glassProminent)
+                .tint(Color("TextLink").opacity(0.8))
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
+            .fullScreenCover(isPresented: $showCurrentTrip) {
+                CurrentTripView()
+            }
+
         }
     }
     
@@ -498,4 +523,25 @@ struct HomeView: View {
         }
     }
 
+}
+
+struct CurrentTripView: View {
+    @Environment(\.dismiss) var dismiss
+    var body: some View {
+        NavigationStack {
+            VStack {
+                Text("Hello, World!")
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color("MainBG").ignoresSafeArea(.all))
+            .toolbar {
+                ToolbarItem {
+                    Button("Dismiss", systemImage: "xmark") {
+                        dismiss()
+                    }
+                }
+            }
+
+        }
+    }
 }
