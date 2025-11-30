@@ -30,6 +30,7 @@ struct NameView: View {
                         descriptions: $descriptions
                     )
                     .focused($fieldIsFocused)
+                    .sensoryFeedback(.selection, trigger: fieldIsFocused)
                     .textInputAutocapitalization(.words)
                     .onChange(of: fieldIsFocused) { old, _ in
                         if old {

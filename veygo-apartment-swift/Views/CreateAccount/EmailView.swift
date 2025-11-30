@@ -44,6 +44,7 @@ struct EmailView: View {
                         descriptions: $descriptions
                     )
                     .focused($fieldIsFocused)
+                    .sensoryFeedback(.selection, trigger: fieldIsFocused)
                     .autocorrectionDisabled(true)
                 }
                 .padding(.horizontal, 32)

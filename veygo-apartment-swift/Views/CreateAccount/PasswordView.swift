@@ -40,6 +40,7 @@ struct PasswordView: View {
                         descriptions: $descriptions
                     )
                     .focused($fieldIsFocused)
+                    .sensoryFeedback(.selection, trigger: fieldIsFocused)
                 }
                 .padding(.horizontal, 32)
                 

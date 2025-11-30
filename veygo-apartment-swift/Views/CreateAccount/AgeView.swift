@@ -26,6 +26,7 @@ struct AgeView: View {
                     descriptions: $descriptions
                 )
                 .focused($fieldIsFocused)
+                .sensoryFeedback(.selection, trigger: fieldIsFocused)
                 .padding(.horizontal, 32)
                 .onChange(of: dob) { oldValue, newValue in
                     let digits = newValue.filter { $0.isNumber }
