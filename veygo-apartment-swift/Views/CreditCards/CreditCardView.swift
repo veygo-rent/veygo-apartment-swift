@@ -10,6 +10,8 @@ import SwiftUI
 
 struct CreditCardView: View {
     
+    @State private var sensoryFeedbackTrigger: Bool = false
+    
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -30,6 +32,7 @@ struct CreditCardView: View {
                             card: card,
                             isExpanded: expandedCardID == card.id,
                             onTap: {
+                                sensoryFeedbackTrigger.toggle()
                                 withAnimation(.easeInOut) {
                                     expandedCardID = (expandedCardID == card.id) ? nil : card.id
                                 }
@@ -45,7 +48,6 @@ struct CreditCardView: View {
                             }
                         }
                     }
-                    .sensoryFeedback(.selection, trigger: expandedCardID)
                 }
                 .listStyle(.plain)
                 .refreshable {
@@ -83,6 +85,7 @@ struct CreditCardView: View {
         } message: {
             Text(alertMessage)
         }
+        .sensoryFeedback(.selection, trigger: sensoryFeedbackTrigger)
     }
     
     @ApiCallActor func loadCardsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {

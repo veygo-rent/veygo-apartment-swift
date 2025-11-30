@@ -85,7 +85,6 @@ struct HomeView: View {
                                     universityOptions: $universities
                                 )
                                 .padding(.horizontal, 24)
-                                .sensoryFeedback(.selection, trigger: selectedLocation)
                                 DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
                                     .padding(.horizontal, 24)
                                 

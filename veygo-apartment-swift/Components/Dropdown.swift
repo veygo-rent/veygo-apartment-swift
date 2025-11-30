@@ -107,9 +107,10 @@ struct Dropdown: View {
                     .transition(.opacity)
                     .animation(.easeInOut, value: showOptions)
                 }
-                .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
             }
         }
+        .sensoryFeedback(.selection, trigger: showOptions)
     }
 }
 
