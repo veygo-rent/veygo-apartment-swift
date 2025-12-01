@@ -183,7 +183,7 @@ struct VehicleDetailView: View {
                         MileagePackageRow(
                             title: "\(10 + pkg.miles) Miles",
                             subtitle: perMileSubtitle(),
-                            trailingText: formatRate(mileagePackagePrice(for: pkg)),
+                            trailingText: formatRate(mileagePackagePrice(for: pkg, at: apartment)),
                             isSelected: mileagePackageId == pkg.id,
                             position: position,
                             action: {
@@ -219,7 +219,7 @@ struct VehicleDetailView: View {
             return overwrite
         } else {
             let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-            return vehicle.msrpFactor * apartment.durationRate * 0.05
+            return vehicle.msrpFactor * apartment.durationRate * apartment.mileageConversion
         }
     }
 
@@ -228,13 +228,13 @@ struct VehicleDetailView: View {
         return "\(cents)\u{00a2} per mile afterwards"
     }
 
-    private func mileagePackagePrice(for pkg: MileagePackage) -> Double {
+    private func mileagePackagePrice(for pkg: MileagePackage, at apt: Apartment) -> Double {
         let baseRate: Double
         if let overwrite = apartment.mileagePackageOverwrite {
             baseRate = overwrite
         } else {
             let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-            baseRate = vehicle.msrpFactor * apartment.durationRate * 0.05
+            baseRate = vehicle.msrpFactor * apartment.durationRate * apt.mileageConversion
         }
         return baseRate * Double(pkg.miles) * (Double(pkg.discountedRate) / 100.0)
     }
