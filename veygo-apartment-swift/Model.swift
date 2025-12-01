@@ -424,5 +424,8 @@ nonisolated struct ErrorResponse: Equatable, Codable {
     static let E500 = ErrorResponse(title: "Internal Server Error", message: "An unexpected error occurred. Please try again later.")
     static let E501 = ErrorResponse(title: "Not Implemented", message: "This feature is not yet available.")
     
+    static let E_TIME_OUT = ErrorResponse(title: "Request Timeout", message: "The request timed out. Please try again.")
+    static let E_NO_INTERNET = ErrorResponse(title: "No Internet Connection", message: "Please check your internet connection and try again.")
+    
     static let E_DEFAULT = ErrorResponse(title: "Unknown Error", message: "This shouldn't have happened. Please contact support.")
 }

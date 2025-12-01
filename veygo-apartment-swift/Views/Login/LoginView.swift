@@ -217,11 +217,36 @@ struct LoginView: View {
                 let body = ErrorResponse.E_DEFAULT
                 await MainActor.run {
                     alertTitle = body.title
-                    alertMessage = body.message
+                    alertMessage = "\(body.message) (\(httpResponse.statusCode))"
                     showAlert = true
                 }
                 return .doNothing
             }
+        } catch let error as URLError {
+            switch error.code {
+            case .timedOut:
+                let body = ErrorResponse.E_TIME_OUT
+                await MainActor.run {
+                    alertTitle = body.title
+                    alertMessage = body.message
+                    showAlert = true
+                }
+            case .notConnectedToInternet:
+                let body = ErrorResponse.E_NO_INTERNET
+                await MainActor.run {
+                    alertTitle = body.title
+                    alertMessage = body.message
+                    showAlert = true
+                }
+            default:
+                let body = ErrorResponse.E_DEFAULT
+                await MainActor.run {
+                    alertTitle = body.title
+                    alertMessage = body.message
+                    showAlert = true
+                }
+            }
+            return .doNothing
         } catch {
             let body = ErrorResponse.E_DEFAULT
             await MainActor.run {
