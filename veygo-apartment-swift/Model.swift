@@ -42,6 +42,7 @@ enum PaymentType: String, Codable {
     case requiresPaymentMethod = "RequiresPaymentMethod"
     case succeeded = "Succeeded"
     case veygoBadDebt = "VeygoBadDebt"
+    case veygoInsurance = "VeygoInsurance"
 }
 
 enum PlanTier: String, Codable {

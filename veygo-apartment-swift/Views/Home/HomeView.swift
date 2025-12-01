@@ -28,6 +28,7 @@ struct HomeView: View {
     @State private var clearUserTriggered: Bool = false
     
     @EnvironmentObject var session: UserSession
+    @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("apns_token") var apns_token: String = ""
     
@@ -201,6 +202,9 @@ struct HomeView: View {
                         await ApiCallActor.shared.appendApi { token, userId in
                             await fetchUniversitiesAsync()
                         }
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await getCurrentAgreement(token, userId)
+                        }
                     }
                 }
                 .background(Color("MainBG").ignoresSafeArea(.all))
@@ -208,6 +212,9 @@ struct HomeView: View {
                     Task {
                         await ApiCallActor.shared.appendApi { token, userId in
                             await fetchUniversitiesAsync()
+                        }
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await getCurrentAgreement(token, userId)
                         }
                     }
                 }
@@ -218,8 +225,17 @@ struct HomeView: View {
                         }
                     }
                 }
+                .onChange(of: scenePhase) { newPhase in
+                    if newPhase == .active {
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await getCurrentAgreement(token, userId)
+                            }
+                        }
+                    }
+                }
                 
-                if let currentTrip = currentTrip {
+                if currentTrip != nil {
                     Button {
                         showCurrentTrip = true
                     } label: {
@@ -239,7 +255,7 @@ struct HomeView: View {
                 }
             }
             .fullScreenCover(isPresented: $showCurrentTrip) {
-                CurrentTripView()
+                CurrentTripView(currentTrip: $currentTrip)
             }
         }
     }
@@ -526,11 +542,120 @@ struct HomeView: View {
             return .doNothing
         }
     }
+    
+    @ApiCallActor func getCurrentAgreement (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                let request = veygoCurlRequest(
+                    url: "/api/v1/agreement/current",
+                    method: .get,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ]
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    let token = extractToken(from: response, for: "Loading current trip") ?? ""
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(CurrentTrip.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .renewSuccessful(token: token)
+                    }
+                    await MainActor.run {
+                        self.currentTrip = decodedBody
+                    }
+                    return .renewSuccessful(token: token)
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 404:
+                    await MainActor.run {
+                        self.currentTrip = nil
+                        self.showCurrentTrip = false
+                    }
+                    let token = extractToken(from: response, for: "Loading current trip") ?? ""
+                    return .renewSuccessful(token: token)
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
 
 }
 
 struct CurrentTripView: View {
     @Environment(\.dismiss) var dismiss
+    @Binding var currentTrip: CurrentTrip?
     var body: some View {
         NavigationStack {
             VStack {

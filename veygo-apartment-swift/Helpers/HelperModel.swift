@@ -45,7 +45,6 @@ nonisolated struct CurrentTrip: Codable {
     let apartment: Apartment
     let location: Location
     let vehicleSnapsahotBefore: VehicleSnapshot?
-    let vehicleSnapsahotAfter: VehicleSnapshot?
     let paymentMethod: PublishPaymentMethod
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?

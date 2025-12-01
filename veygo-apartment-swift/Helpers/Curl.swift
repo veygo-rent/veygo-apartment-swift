@@ -21,6 +21,7 @@ nonisolated public func veygoCurlRequest (url: String, method: RequestMethods, h
     }
 
     var request = URLRequest(url: fullURL)
+    request.timeoutInterval = 10.0
     request.httpMethod = method.rawValue
     request.allHTTPHeaderFields = headers
     request.httpBody = body

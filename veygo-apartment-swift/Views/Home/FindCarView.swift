@@ -227,6 +227,7 @@ struct FindCarView: View {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
+                            backButtonTriggered = true
                         }
                         return .renewSuccessful(token: token)
                     }
@@ -281,6 +282,25 @@ struct FindCarView: View {
                         }
                     }
                     return .clearUser
+                case 403:
+                    let token = extractToken(from: response, for: "Getting availability") ?? ""
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            backButtonTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E403
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            backButtonTriggered = true
+                        }
+                    }
+                    return .renewSuccessful(token: token)
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
