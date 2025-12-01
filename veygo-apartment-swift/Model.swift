@@ -138,6 +138,7 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var uniId: Int
     var mileageRateOverwrite: Double?
     var mileagePackageOverwrite: Double?
+    var mileageConversion: Double
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {
@@ -165,6 +166,7 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var uniId: Int
     var mileage_rate_overwrite: Double?
     var mileage_package_overwrite: Double?
+    var mileageConversion: Double
 }
 
 nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
@@ -344,6 +346,7 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var mileagePackageId: Int?
     var mileageRate: Double?
     var mileageConversion: Double
+    var utilizationFactor: Double
 }
 
 nonisolated struct Charge: Identifiable, Equatable, Codable {

@@ -18,15 +18,6 @@ private func roundUpToNextQuarter(from date: Date) -> Date {
     return calendar.date(from: DateComponents(year: components.year, month: components.month, day: components.day, hour: newHour, minute: newMinute)) ?? date
 }
 
-private struct CurrentTrip: Codable {
-    let agreement: Agreement
-    let vehicle: PublishRenterVehicle
-    let apartment: Apartment
-    let location: Location
-    let vehicleSnapsahotBefore: VehicleSnapshot?
-    let vehicleSnapsahotAfter: VehicleSnapshot?
-}
-
 struct HomeView: View {
     
     @FocusState private var couponIsFocused: Bool

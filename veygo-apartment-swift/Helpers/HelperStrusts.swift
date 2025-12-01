@@ -12,6 +12,7 @@ nonisolated struct BlockedRange: Decodable, Hashable {
     var startTime: Date
     var endTime: Date
 }
+
 nonisolated struct VehicleWithBlockedDurations: Decodable, Identifiable, Equatable, Hashable {
     static func == (lhs: VehicleWithBlockedDurations, rhs: VehicleWithBlockedDurations) -> Bool {
         lhs.id == rhs.id
@@ -30,9 +31,22 @@ nonisolated struct VehicleWithBlockedDurations: Decodable, Identifiable, Equatab
         return true
     }
 }
+
 nonisolated struct LocationWithVehicles: Decodable, Identifiable {
     var location: Location
     var vehicles: [VehicleWithBlockedDurations]
     var id: Location.ID { location.id }
     var duration: TimeInterval? = nil
+}
+
+nonisolated struct CurrentTrip: Codable {
+    let agreement: Agreement
+    let vehicle: PublishRenterVehicle
+    let apartment: Apartment
+    let location: Location
+    let vehicleSnapsahotBefore: VehicleSnapshot?
+    let vehicleSnapsahotAfter: VehicleSnapshot?
+    let paymentMethod: PublishPaymentMethod
+    let promo: PublishPromo?
+    let mileagePackage: MileagePackage?
 }
