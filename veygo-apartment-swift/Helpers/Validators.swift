@@ -48,7 +48,7 @@ public struct EmailValidator {
         guard let domain = email.split(separator: "@").last.map(String.init) else {
             return false
         }
-        return acceptedDomains.contains(domain)
+        return acceptedDomains.contains(domain) || domain == "veygo.rent"
     }
 }
 
