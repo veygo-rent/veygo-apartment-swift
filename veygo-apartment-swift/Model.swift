@@ -358,7 +358,6 @@ nonisolated struct Charge: Identifiable, Equatable, Codable {
     var note: String?
     var agreementId: Int?
     var vehicleId: Int
-    var checksum: String
     var transponderCompanyId: Int?
     var vehicleIdentifier: String?
 }

@@ -72,21 +72,21 @@ struct VehicleDetailView: View {
                             GridRow {
                                 Image(systemName: "person.fill")
                                     .gridColumnAlignment(.center)
-                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity) People" : "1 Person")
+                                Text("^[\(vehicleWithBlocksAndLocationInfo.0.vehicle.capacity) Person](inflect: true)")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading, 4)
                                 Image(systemName: "car.top.arrowtriangle.rear.right.fill")
                                     .gridColumnAlignment(.center)
-                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.doors > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.doors) Doors" : "1 Door")
+                                Text("^[\(vehicleWithBlocksAndLocationInfo.0.vehicle.doors) Door](inflect: true)")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading, 4)
                             }
                             GridRow {
                                 Image(systemName: "suitcase.fill")
-                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags) Small Bags" : "1 Small Bag")
+                                Text("^[\(vehicleWithBlocksAndLocationInfo.0.vehicle.smallBags) Small Bag](inflect: true)")
                                     .padding(.leading, 4)
                                 Image(systemName: "suitcase.rolling.and.suitcase.fill")
-                                Text(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags > 1 ? "\(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags) Big Bags" : "1 Big Bag")
+                                Text("^[\(vehicleWithBlocksAndLocationInfo.0.vehicle.largeBags) Large Bag](inflect: true)")
                                     .padding(.leading, 4)
                             }
                             GridRow {
