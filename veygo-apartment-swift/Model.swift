@@ -98,6 +98,7 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var isPlanAnnual: Bool
     var employeeTier: EmployeeTier
     var subscriptionPaymentMethodId: Int?
+    var requiresSecondaryDriverLic: Bool
 }
 
 nonisolated struct PublishPaymentMethod: Identifiable, Equatable, Codable {
