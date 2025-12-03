@@ -29,6 +29,8 @@ struct FullStripeCardEntryView: View {
     
     @FocusState private var focusedField: Field?
     
+    @State private var isSubmitting: Bool = false
+    
     enum Field: Hashable {
         case card
         case cardholder
@@ -66,13 +68,14 @@ struct FullStripeCardEntryView: View {
             
             
             PrimaryButton(text: "Confirm") {
+                focusedField = nil
                 Task {
                     await ApiCallActor.shared.appendApi { token, userId in
                         await createPaymentMethodAsync(token, userId)
                     }
                 }
             }
-            .disabled(paymentMethodParams == nil || !NameValidator(name: cardholderName).isValidName)
+            .disabled(paymentMethodParams == nil || !NameValidator(name: cardholderName).isValidName || isSubmitting)
         }
         .padding()
         .padding(.vertical, 20)
@@ -105,6 +108,11 @@ struct FullStripeCardEntryView: View {
         do {
             let user = await MainActor.run { self.session.user }
             if !token.isEmpty && userId > 0, user != nil {
+                
+                await MainActor.run {
+                    isSubmitting = true
+                }
+                
                 let payment = try await STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams, additionalPaymentUserAgentValues: [])
                 
                 let body = await [
@@ -123,7 +131,12 @@ struct FullStripeCardEntryView: View {
                     ],
                     body: jsonData
                 )
+                
                 let (data, response) = try await URLSession.shared.data(for: request)
+                
+                await MainActor.run {
+                    isSubmitting = false
+                }
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
                     await MainActor.run {
@@ -205,6 +218,23 @@ struct FullStripeCardEntryView: View {
                     }
                     return .doNothing
                 case 406:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E406
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
+                    return .renewSuccessful(token: token)
+                case 500:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
                             alertTitle = decodedBody.title

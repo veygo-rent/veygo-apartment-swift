@@ -124,6 +124,8 @@ struct SettingView: View {
                     PhoneVerifyView(path: $path)
                 case .email:
                     EmailVerifyView(path: $path)
+                case .driversLicense:
+                    DriversLicenseView(path: $path)
                 default:
                     EmptyView()
                 }
