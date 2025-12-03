@@ -105,7 +105,7 @@ struct SettingView: View {
                 .listRowBackground(Color("CardBG"))
                 .listSectionSeparator(.hidden)
             }
-            .listStyle(.grouped)
+            .listStyle(.automatic)
             .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
             .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
