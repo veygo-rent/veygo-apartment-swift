@@ -52,10 +52,12 @@ struct SettingView: View {
                     NavigationLink("Password", value: SettingDestination.password)
                     NavigationLink("Drivers License", value: SettingDestination.driversLicense)
                     NavigationLink("Lease Agreement", value: SettingDestination.leaseAgreement)
+                } header: {
+                    Text("Account")
+                        .fontWeight(.light)
                 }
-                .listRowBackground(Color("MainBG"))
+                .listRowBackground(Color("CardBG"))
                 .foregroundStyle(Color("TextBlackSecondary"))
-                .listRowSeparatorTint(Color("SeperatorLine"))
                 .listSectionSeparator(.hidden)
                 
                 Section {
@@ -63,30 +65,31 @@ struct SettingView: View {
                     NavigationLink("Member Agreement", value: SettingDestination.memberAgreement)
                     NavigationLink("Rental Agreement", value: SettingDestination.rentalAgreement)
                     NavigationLink("Terms of Use", value: SettingDestination.termsOfUse)
+                } header: {
+                    Text("Legal")
+                        .fontWeight(.light)
                 }
-                .listRowBackground(Color("MainBG"))
+                .listRowBackground(Color("CardBG"))
                 .foregroundStyle(Color("TextBlackSecondary"))
-                .listRowSeparatorTint(Color("SeperatorLine"))
                 .listSectionSeparator(.hidden)
                 
                 Section {
                     NavigationLink("Roadside Assistance", value: SettingDestination.roadside)
-                }
-                .listRowBackground(Color("MainBG"))
-                .foregroundStyle(Color("TextBlackSecondary"))
-                .listRowSeparatorTint(Color("SeperatorLine"))
-                .listSectionSeparator(.hidden)
-                
-             
-                Section {
                     Button {
                         showHelpCenter.toggle()
                     } label: {
                         Text("Help Center")
-                            .foregroundStyle(Color("TextBlackPrimary"))
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-
+                } header: {
+                    Text("Support")
+                        .fontWeight(.light)
+                }
+                .listRowBackground(Color("CardBG"))
+                .foregroundStyle(Color("TextBlackSecondary"))
+                .listSectionSeparator(.hidden)
+                
+             
+                Section {
                     Button(role: .destructive) {
                         Task {
                             await ApiCallActor.shared.appendApi { token, userId in
@@ -99,8 +102,7 @@ struct SettingView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .listRowBackground(Color("MainBG"))
-                .listRowSeparatorTint(Color("SeperatorLine"))
+                .listRowBackground(Color("CardBG"))
                 .listSectionSeparator(.hidden)
             }
             .listStyle(.grouped)
