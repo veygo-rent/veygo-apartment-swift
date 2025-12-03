@@ -42,108 +42,121 @@ struct SettingView: View {
     
     @EnvironmentObject var session: UserSession
     var body: some View {
-        NavigationStack (path: $path) {
-            List {
-                Section {
-                    NavigationLink("Membership", value: SettingDestination.membership)
-                    NavigationLink("Wallet", value: SettingDestination.wallet)
-                    NavigationLink("Verify Phone Number", value: SettingDestination.phone)
-                    NavigationLink("Verify Your Email", value: SettingDestination.email)
-                    NavigationLink("Password", value: SettingDestination.password)
-                    NavigationLink("Drivers License", value: SettingDestination.driversLicense)
-                    NavigationLink("Lease Agreement", value: SettingDestination.leaseAgreement)
-                } header: {
-                    Text("Account")
-                        .fontWeight(.light)
-                }
-                .listRowBackground(Color("CardBG"))
-                .foregroundStyle(Color("TextBlackSecondary"))
-                .listSectionSeparator(.hidden)
-                
-                Section {
-                    NavigationLink("Privacy Policy", value: SettingDestination.privacyPolicy)
-                    NavigationLink("Member Agreement", value: SettingDestination.memberAgreement)
-                    NavigationLink("Rental Agreement", value: SettingDestination.rentalAgreement)
-                    NavigationLink("Terms of Use", value: SettingDestination.termsOfUse)
-                } header: {
-                    Text("Legal")
-                        .fontWeight(.light)
-                }
-                .listRowBackground(Color("CardBG"))
-                .foregroundStyle(Color("TextBlackSecondary"))
-                .listSectionSeparator(.hidden)
-                
-                Section {
-                    NavigationLink("Roadside Assistance", value: SettingDestination.roadside)
-                    Button {
-                        showHelpCenter.toggle()
-                    } label: {
-                        Text("Help Center")
-                    }
-                } header: {
-                    Text("Support")
-                        .fontWeight(.light)
-                }
-                .listRowBackground(Color("CardBG"))
-                .foregroundStyle(Color("TextBlackSecondary"))
-                .listSectionSeparator(.hidden)
-                
-             
-                Section {
-                    Button(role: .destructive) {
-                        Task {
-                            await ApiCallActor.shared.appendApi { token, userId in
-                                await logoutRequestAsync(token, userId)
-                            }
+        if session.user == nil {
+            EmptyView()
+        } else {
+            NavigationStack (path: $path) {
+                List {
+                    Section {
+                        NavigationLink("Membership", value: SettingDestination.membership)
+                        NavigationLink("Wallet", value: SettingDestination.wallet)
+                        if !session.user!.phoneIsVerified {
+                            NavigationLink("Verify Phone Number", value: SettingDestination.phone)
                         }
-                    } label: {
-                        Text("Log Out")
-                            .foregroundStyle(Color("InvalidRed"))
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if let email_exp_str = session.user!.studentEmailExpiration,
+                           let email_exp = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: email_exp_str) {
+                            if Date() > email_exp {
+                                NavigationLink("Verify Your Email", value: SettingDestination.email)
+                            }
+                        } else {
+                            NavigationLink("Verify Your Email", value: SettingDestination.email)
+                        }
+                        NavigationLink("Password", value: SettingDestination.password)
+                        NavigationLink("Drivers License", value: SettingDestination.driversLicense)
+                        NavigationLink("Lease Agreement", value: SettingDestination.leaseAgreement)
+                    } header: {
+                        Text("Account")
+                            .fontWeight(.light)
+                    }
+                    .listRowBackground(Color("CardBG"))
+                    .foregroundStyle(Color("TextBlackSecondary"))
+                    .listSectionSeparator(.hidden)
+                    
+                    Section {
+                        NavigationLink("Privacy Policy", value: SettingDestination.privacyPolicy)
+                        NavigationLink("Member Agreement", value: SettingDestination.memberAgreement)
+                        NavigationLink("Rental Agreement", value: SettingDestination.rentalAgreement)
+                        NavigationLink("Terms of Use", value: SettingDestination.termsOfUse)
+                    } header: {
+                        Text("Legal")
+                            .fontWeight(.light)
+                    }
+                    .listRowBackground(Color("CardBG"))
+                    .foregroundStyle(Color("TextBlackSecondary"))
+                    .listSectionSeparator(.hidden)
+                    
+                    Section {
+                        NavigationLink("Roadside Assistance", value: SettingDestination.roadside)
+                        Button {
+                            showHelpCenter.toggle()
+                        } label: {
+                            Text("Help Center")
+                        }
+                    } header: {
+                        Text("Support")
+                            .fontWeight(.light)
+                    }
+                    .listRowBackground(Color("CardBG"))
+                    .foregroundStyle(Color("TextBlackSecondary"))
+                    .listSectionSeparator(.hidden)
+                    
+                    
+                    Section {
+                        Button(role: .destructive) {
+                            Task {
+                                await ApiCallActor.shared.appendApi { token, userId in
+                                    await logoutRequestAsync(token, userId)
+                                }
+                            }
+                        } label: {
+                            Text("Log Out")
+                                .foregroundStyle(Color("InvalidRed"))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .listRowBackground(Color("CardBG"))
+                    .listSectionSeparator(.hidden)
+                }
+                .listStyle(.automatic)
+                .scrollIndicators(.hidden)
+                .scrollContentBackground(.hidden)
+                .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
+                .navigationTitle(Text("Setting"))
+                .navigationDestination(for: SettingDestination.self) { destination in
+                    switch destination {
+                    case .memberAgreement:
+                        WebView(url: URL(string: "https://dev.veygo.rent/membership"))
+                    case .rentalAgreement:
+                        WebView(url: URL(string: "https://dev.veygo.rent/rental-agreement"))
+                    case .privacyPolicy:
+                        WebView(url: URL(string: "https://dev.veygo.rent/privacy"))
+                    case .wallet:
+                        CreditCardView(cards: $cards, path: $path)
+                    case .addCard:
+                        FullStripeCardEntryView(path: $path)
+                    case .phone:
+                        PhoneVerifyView(path: $path)
+                    case .email:
+                        EmailVerifyView(path: $path)
+                    case .driversLicense:
+                        DriversLicenseView(path: $path)
+                    default:
+                        EmptyView()
                     }
                 }
-                .listRowBackground(Color("CardBG"))
-                .listSectionSeparator(.hidden)
-            }
-            .listStyle(.automatic)
-            .scrollIndicators(.hidden)
-            .scrollContentBackground(.hidden)
-            .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
-            .navigationTitle(Text("Setting"))
-            .navigationDestination(for: SettingDestination.self) { destination in
-                switch destination {
-                case .memberAgreement:
-                    WebView(url: URL(string: "https://dev.veygo.rent/membership"))
-                case .rentalAgreement:
-                    WebView(url: URL(string: "https://dev.veygo.rent/rental-agreement"))
-                case .privacyPolicy:
-                    WebView(url: URL(string: "https://dev.veygo.rent/privacy"))
-                case .wallet:
-                    CreditCardView(cards: $cards, path: $path)
-                case .addCard:
-                    FullStripeCardEntryView(path: $path)
-                case .phone:
-                    PhoneVerifyView(path: $path)
-                case .email:
-                    EmailVerifyView(path: $path)
-                case .driversLicense:
-                    DriversLicenseView(path: $path)
-                default:
-                    EmptyView()
-                }
-            }
-            .alert(alertTitle, isPresented: $showAlert) {
-                Button("OK") {
-                    if clearUserTriggered {
-                        session.user = nil
+                .alert(alertTitle, isPresented: $showAlert) {
+                    Button("OK") {
+                        if clearUserTriggered {
+                            session.user = nil
+                        }
                     }
+                } message: {
+                    Text(alertMessage)
                 }
-            } message: {
-                Text(alertMessage)
             }
-        }
-        .sheet(isPresented: $showHelpCenter) {
-            ChatView()
+            .sheet(isPresented: $showHelpCenter) {
+                ChatView()
+            }
         }
     }
     
