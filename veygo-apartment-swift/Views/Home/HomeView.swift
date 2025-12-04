@@ -136,10 +136,10 @@ struct HomeView: View {
                                     .padding(.horizontal, 24)
                             }
                         }
-                        .padding(.bottom, 120)
+                        .padding(.bottom, 36)
                     }
                 }
-                .scrollDismissesKeyboard(.immediately)
+                .scrollDismissesKeyboard(.interactively)
                 .alert(alertTitle, isPresented: $showAlert) {
                     Button("OK") {
                         if clearUserTriggered {
