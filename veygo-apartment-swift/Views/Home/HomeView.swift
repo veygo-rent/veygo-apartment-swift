@@ -178,7 +178,7 @@ struct HomeView: View {
                         CrispSDK.user.nickname = renter.name
                     }
                 }
-                .ignoresSafeArea()
+                .ignoresSafeArea(.container)
                 .navigationDestination(for: HomeDestination.self) { dest in
                     switch dest {
                     case .apartment:
