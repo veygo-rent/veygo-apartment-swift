@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DriversLicenseView: View {
-    @State private var isImportingDl: Bool = false
+    @State private var isShowingCamera = false
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -21,35 +21,31 @@ struct DriversLicenseView: View {
     var body: some View {
         VStack {
             SecondaryButton(text: "Upload Driver's License") {
-                isImportingDl = true
+                isShowingCamera = true
             }
-            .fileImporter(
-                isPresented: $isImportingDl,
-                allowedContentTypes: [.image, .pdf], // Specify allowed file types (e.g., .text, .data, .jpeg)
-                allowsMultipleSelection: false // Set to true for multiple file selection
-            ) { result in
-                switch result {
-                case .success(let urls):
-                    if let file = urls.first,
-                       file.startAccessingSecurityScopedResource() {
-                        let data: Data? = try? Data(contentsOf: file)
-                        if let data = data {
-                            file.stopAccessingSecurityScopedResource()
-                        } else {
-                            alertMessage = "File selection error"
-                            alertTitle = "File Error"
-                            showAlert.toggle()
+            .fullScreenCover(isPresented: $isShowingCamera) {
+                CameraImagePicker { image in
+                    // Convert to Data and upload
+                    if let data = image.jpegData(compressionQuality: 0.75) {
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await submitFileAsync(
+                                    token,
+                                    userId,
+                                    data,
+                                    .DriversLicense,
+                                    "drivers_license_camera.jpg"
+                                )
+                            }
                         }
                     } else {
-                        alertMessage = "File selection error"
-                        alertTitle = "File Error"
-                        showAlert.toggle()
+                        // optional: show an error alert here
+                        alertMessage = "Failed to read captured image."
+                        alertTitle = "Camera Error"
+                        showAlert = true
                     }
-                case .failure(let error):
-                    alertMessage = "File selection error: \(error.localizedDescription)"
-                    alertTitle = "File Error"
-                    showAlert.toggle()
                 }
+                .ignoresSafeArea(edges: .all)
             }
             
             Spacer()
@@ -66,6 +62,183 @@ struct DriversLicenseView: View {
             }
         } message: {
             Text(alertMessage)
+        }
+    }
+    
+    enum FileType: String {
+        case DriversLicense
+        case DriversLicenseSecondary
+        case LeaseAgreement
+        case ProofOfInsurance
+    }
+    
+    @ApiCallActor func submitFileAsync (_ token: String, _ userId: Int, _ file: Data, _ fileType: FileType, _ fileName: String) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                
+                let request = veygoCurlRequest(
+                    url: "/api/v1/user/upload-file",
+                    method: .post,
+                    headers: [
+                        "auth": "\(token)$\(userId)",
+                        "Content-Type": "application/octet-stream",
+                        "file-type": fileType.rawValue,
+                        "file-name": fileName
+                    ],
+                    body: file
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    if let decodedString = String(data: data, encoding: .utf8) {
+                            print("Decoded String: \(decodedString)")
+                        } else {
+                            print("Decoding failed.")
+                        }
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    let token = extractToken(from: response, for: "Submitting driver's license") ?? ""
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .renewSuccessful(token: token)
+                    }
+                    await MainActor.run {
+                        alertTitle = "Uploaded Successfully"
+                        alertMessage = "Uploaded your driver's license successfully."
+                        showAlert = true
+                        session.user = decodedBody
+                    }
+                    return .renewSuccessful(token: token)
+                case 400:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
+                        let msg = ErrorResponse.E400
+                        await MainActor.run {
+                            alertTitle = msg.title
+                            alertMessage = msg.message
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
+}
+
+struct CameraImagePicker: UIViewControllerRepresentable {
+    var onImagePicked: (UIImage) -> Void
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        picker.cameraCaptureMode = .photo
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onImagePicked: onImagePicked)
+    }
+
+    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+        let onImagePicked: (UIImage) -> Void
+
+        init(onImagePicked: @escaping (UIImage) -> Void) {
+            self.onImagePicked = onImagePicked
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
+        ) {
+            if let image = info[.originalImage] as? UIImage {
+                onImagePicked(image)
+            }
+            picker.dismiss(animated: true)
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            picker.dismiss(animated: true)
         }
     }
 }
