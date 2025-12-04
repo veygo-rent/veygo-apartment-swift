@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DriversLicenseView: View {
     @State private var isShowingCamera = false
+    @State private var isShowingCamera2 = false
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -19,49 +20,81 @@ struct DriversLicenseView: View {
     
     @EnvironmentObject var session: UserSession
     var body: some View {
-        VStack {
-            SecondaryButton(text: "Upload Driver's License") {
-                isShowingCamera = true
-            }
-            .fullScreenCover(isPresented: $isShowingCamera) {
-                CameraImagePicker { image in
-                    // Convert to Data and upload
-                    if let data = image.jpegData(compressionQuality: 0.75) {
-                        Task {
-                            await ApiCallActor.shared.appendApi { token, userId in
-                                await submitFileAsync(
-                                    token,
-                                    userId,
-                                    data,
-                                    .DriversLicense,
-                                    "drivers_license_camera.jpg"
-                                )
+        if session.user != nil {
+            VStack (spacing: 36) {
+                SecondaryButton(text: "Upload Driver's License") {
+                    isShowingCamera = true
+                }
+                .fullScreenCover(isPresented: $isShowingCamera) {
+                    CameraImagePicker { image in
+                        // Convert to Data and upload
+                        if let data = image.jpegData(compressionQuality: 0.5) {
+                            Task {
+                                await ApiCallActor.shared.appendApi { token, userId in
+                                    await submitFileAsync(
+                                        token,
+                                        userId,
+                                        data,
+                                        .DriversLicense,
+                                        "drivers_license_camera.jpg"
+                                    )
+                                }
+                            }
+                        } else {
+                            // optional: show an error alert here
+                            alertMessage = "Failed to read captured image."
+                            alertTitle = "Camera Error"
+                            showAlert = true
+                        }
+                    }
+                    .ignoresSafeArea(edges: .all)
+                }
+                if session.user!.requiresSecondaryDriverLic {
+                    SecondaryButton(text: "Upload Secondary License") {
+                        isShowingCamera2 = true
+                    }
+                    .fullScreenCover(isPresented: $isShowingCamera2) {
+                        CameraImagePicker { image in
+                            // Convert to Data and upload
+                            if let data = image.jpegData(compressionQuality: 0.5) {
+                                Task {
+                                    await ApiCallActor.shared.appendApi { token, userId in
+                                        await submitFileAsync(
+                                            token,
+                                            userId,
+                                            data,
+                                            .DriversLicenseSecondary,
+                                            "drivers_license_secondary_camera.jpg"
+                                        )
+                                    }
+                                }
+                            } else {
+                                // optional: show an error alert here
+                                alertMessage = "Failed to read captured image."
+                                alertTitle = "Camera Error"
+                                showAlert = true
                             }
                         }
-                    } else {
-                        // optional: show an error alert here
-                        alertMessage = "Failed to read captured image."
-                        alertTitle = "Camera Error"
-                        showAlert = true
+                        .ignoresSafeArea(edges: .all)
                     }
                 }
-                .ignoresSafeArea(edges: .all)
+                Spacer()
+                
             }
-            
-            Spacer()
-
-        }
-        .padding(.horizontal, 20)
-        .background(Color("MainBG").ignoresSafeArea(.all))
-        .navigationTitle("Submit File")
-        .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK") {
-                if clearUserTriggered {
-                    session.user = nil
+            .padding(20)
+            .background(Color("MainBG").ignoresSafeArea(.all))
+            .navigationTitle("Submit File")
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("OK") {
+                    if clearUserTriggered {
+                        session.user = nil
+                    }
                 }
+            } message: {
+                Text(alertMessage)
             }
-        } message: {
-            Text(alertMessage)
+        } else {
+            EmptyView()
         }
     }
     
