@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DriversLicenseView: View {
-    @State private var isImporting: Bool = false
+    @State private var isImportingDl: Bool = false
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -20,11 +20,11 @@ struct DriversLicenseView: View {
     @EnvironmentObject var session: UserSession
     var body: some View {
         VStack {
-            PrimaryButton(text: "Select Driver's License") {
-                isImporting = true
+            SecondaryButton(text: "Upload Driver's License") {
+                isImportingDl = true
             }
             .fileImporter(
-                isPresented: $isImporting,
+                isPresented: $isImportingDl,
                 allowedContentTypes: [.image, .pdf], // Specify allowed file types (e.g., .text, .data, .jpeg)
                 allowsMultipleSelection: false // Set to true for multiple file selection
             ) { result in
@@ -32,7 +32,14 @@ struct DriversLicenseView: View {
                 case .success(let urls):
                     if let file = urls.first,
                        file.startAccessingSecurityScopedResource() {
-                        let data: Data = try! Data(contentsOf: file)
+                        let data: Data? = try? Data(contentsOf: file)
+                        if let data = data {
+                            file.stopAccessingSecurityScopedResource()
+                        } else {
+                            alertMessage = "File selection error"
+                            alertTitle = "File Error"
+                            showAlert.toggle()
+                        }
                     } else {
                         alertMessage = "File selection error"
                         alertTitle = "File Error"
