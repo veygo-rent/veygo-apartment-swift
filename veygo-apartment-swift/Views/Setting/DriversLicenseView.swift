@@ -20,7 +20,7 @@ struct DriversLicenseView: View {
     @EnvironmentObject var session: UserSession
     var body: some View {
         VStack {
-            PrimaryButton(text: "Select File") {
+            PrimaryButton(text: "Select Driver's License") {
                 isImporting = true
             }
             .fileImporter(
@@ -30,15 +30,18 @@ struct DriversLicenseView: View {
             ) { result in
                 switch result {
                 case .success(let urls):
-                    // Handle the selected file URLs here
-                    // For single selection, urls.first will contain the URL
-                    if let fileURL = urls.first {
-                        print("Selected file: \(fileURL.lastPathComponent)")
-                        // Further processing of the fileURL
+                    if let file = urls.first,
+                       file.startAccessingSecurityScopedResource() {
+                        let data: Data = try! Data(contentsOf: file)
+                    } else {
+                        alertMessage = "File selection error"
+                        alertTitle = "File Error"
+                        showAlert.toggle()
                     }
                 case .failure(let error):
-                    // Handle any errors during file selection
-                    print("File selection error: \(error.localizedDescription)")
+                    alertMessage = "File selection error: \(error.localizedDescription)"
+                    alertTitle = "File Error"
+                    showAlert.toggle()
                 }
             }
             
@@ -47,7 +50,7 @@ struct DriversLicenseView: View {
         }
         .padding(.horizontal, 20)
         .background(Color("MainBG").ignoresSafeArea(.all))
-        .navigationTitle("Submit Drivers License")
+        .navigationTitle("Submit File")
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
                 if clearUserTriggered {
