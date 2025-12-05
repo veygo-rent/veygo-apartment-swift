@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct DriversLicenseView: View {
+struct SubmitFileView: View {
     @State private var isShowingCamera = false
     @State private var isShowingCamera2 = false
+    @State private var isShowingCamera3 = false
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -22,7 +23,7 @@ struct DriversLicenseView: View {
     var body: some View {
         if session.user != nil {
             VStack (spacing: 36) {
-                SecondaryButton(text: "Upload Driver's License") {
+                PrimaryButton(text: "Upload Driver's License") {
                     isShowingCamera = true
                 }
                 .fullScreenCover(isPresented: $isShowingCamera) {
@@ -78,12 +79,45 @@ struct DriversLicenseView: View {
                         .ignoresSafeArea(edges: .all)
                     }
                 }
+                
+                SecondaryButton(text: "Upload Lease or Proof of Address") {
+                    isShowingCamera3 = true
+                }
+                .fullScreenCover(isPresented: $isShowingCamera3) {
+                    CameraImagePicker { image in
+                        // Convert to Data and upload
+                        if let data = image.jpegData(compressionQuality: 0.5) {
+                            Task {
+                                await ApiCallActor.shared.appendApi { token, userId in
+                                    await submitFileAsync(
+                                        token,
+                                        userId,
+                                        data,
+                                        .LeaseAgreement,
+                                        "proof_of_address_camera.jpg"
+                                    )
+                                }
+                            }
+                        } else {
+                            // optional: show an error alert here
+                            alertMessage = "Failed to read captured image."
+                            alertTitle = "Camera Error"
+                            showAlert = true
+                        }
+                    }
+                    .ignoresSafeArea(edges: .all)
+                }
+                
+                Text("* Please make sure both your name and your address are clearly visible in the photos. ")
+                    .font(.caption.italic())
+                    .foregroundStyle(Color("TextBlackSecondary"))
+                
                 Spacer()
                 
             }
             .padding(20)
             .background(Color("MainBG").ignoresSafeArea(.all))
-            .navigationTitle("Submit File")
+            .navigationTitle("Submit Documents")
             .alert(alertTitle, isPresented: $showAlert) {
                 Button("OK") {
                     if clearUserTriggered {
@@ -159,7 +193,7 @@ struct DriversLicenseView: View {
                     }
                     await MainActor.run {
                         alertTitle = "Uploaded Successfully"
-                        alertMessage = "Uploaded your driver's license successfully."
+                        alertMessage = "Uploaded your document successfully."
                         showAlert = true
                         session.user = decodedBody
                     }

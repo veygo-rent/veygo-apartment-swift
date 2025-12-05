@@ -17,8 +17,7 @@ enum SettingDestination: Hashable {
     case phone
     case email
     case password
-    case driversLicense
-    case leaseAgreement // Optional
+    case submitFile
     // Legal
     case privacyPolicy
     case memberAgreement
@@ -62,8 +61,7 @@ struct SettingView: View {
                             NavigationLink("Verify Your Email", value: SettingDestination.email)
                         }
                         NavigationLink("Password", value: SettingDestination.password)
-                        NavigationLink("Drivers License", value: SettingDestination.driversLicense)
-                        NavigationLink("Lease Agreement", value: SettingDestination.leaseAgreement)
+                        NavigationLink("Submit Documents", value: SettingDestination.submitFile)
                     } header: {
                         Text("Account")
                             .fontWeight(.light)
@@ -138,8 +136,8 @@ struct SettingView: View {
                         PhoneVerifyView(path: $path)
                     case .email:
                         EmailVerifyView(path: $path)
-                    case .driversLicense:
-                        DriversLicenseView(path: $path)
+                    case .submitFile:
+                        SubmitFileView(path: $path)
                     default:
                         EmptyView()
                     }
