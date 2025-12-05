@@ -662,77 +662,91 @@ struct CurrentTripView: View {
     @State private var route: MKPolyline? = nil
     var body: some View {
         NavigationStack {
-            Map {
-                UserAnnotation()
-                if let route = route {
-                    MapPolyline(route)
-                        .stroke(
-                            Color.blue,
-                            style: StrokeStyle(
-                                lineWidth: 1.5,
-                                lineCap: .round,
-                                lineJoin: .round,
-                                dash: [4, 3]
+            if currentTrip!.agreement.actualPickupTime == nil {
+                Map {
+                    UserAnnotation()
+                    if let route = route {
+                        MapPolyline(route)
+                            .stroke(
+                                Color.blue,
+                                style: StrokeStyle(
+                                    lineWidth: 1.5,
+                                    lineCap: .round,
+                                    lineJoin: .round,
+                                    dash: [4, 3]
+                                )
                             )
-                        )
+                    }
+                    Marker(currentTrip!.vehicle.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: currentTrip!.location.latitude, longitude: currentTrip!.location.longitude))
+                        .tint(.purple)
                 }
-                Marker(currentTrip!.vehicle.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: currentTrip!.location.latitude, longitude: currentTrip!.location.longitude))
-                    .tint(.purple)
-            }
-            .mapControls {
-                MapCompass()
-                if locationManager.authorizationStatus == .authorizedWhenInUse {
-                    MapUserLocationButton()
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color("MainBG").ignoresSafeArea(.all))
-            .safeAreaInset(edge: .bottom, content: {
-                VStack {
-                    HStack {
-                        VStack (alignment: .leading) {
-                            Text("Pick up: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpPickupTime))")
-                                .font(.footnote)
-                                .fontWeight(.regular)
-                                .foregroundStyle(.textBlackPrimary)
-                            Text("Drop off: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpDropOffTime))")
-                                .font(.footnote)
-                                .fontWeight(.regular)
-                                .foregroundStyle(.textBlackPrimary)
-                        }
-                        Spacer()
-                        SecondaryButton(text: "Extend") {
-                            print("Extend Button Pressed")
-                        }
-                        .frame(width: 100)
+                .mapControls {
+                    MapCompass()
+                    if locationManager.authorizationStatus == .authorizedWhenInUse {
+                        MapUserLocationButton()
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(28)
-                .background(.ultraThinMaterial)
-                .cornerRadius(28)
-                .padding(.horizontal)
-            })
-            .toolbar {
-                ToolbarItem {
-                    Button("Dismiss", systemImage: "xmark") {
-                        dismiss()
-                    }
-                }
-            }
-            .onAppear {
-                if let userLocation = locationManager.location,
-                   let carLocation = currentTrip?.location {
-                    let request = MKDirections.Request()
-                    request.source = MKMapItem(location: userLocation, address: nil)
-                    request.destination = MKMapItem(location: CLLocation(latitude: carLocation.latitude, longitude: carLocation.longitude), address: nil)
-                    let directions = MKDirections(request: request)
-                    Task {
-                        let response = try? await directions.calculate()
-                        if let route = response?.routes.first {
-                            self.route = route.polyline
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .safeAreaInset(edge: .bottom, content: {
+                    VStack {
+                        HStack {
+                            VStack (alignment: .leading) {
+                                Text("Pick up: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpPickupTime))")
+                                    .font(.footnote)
+                                    .fontWeight(.regular)
+                                    .foregroundStyle(.textBlackPrimary)
+                                Text("Drop off: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpDropOffTime))")
+                                    .font(.footnote)
+                                    .fontWeight(.regular)
+                                    .foregroundStyle(.textBlackPrimary)
+                            }
+                            Spacer()
+                            SecondaryButton(text: "Extend") {
+                                print("Extend Button Pressed")
+                            }
+                            .frame(width: 100)
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(28)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(28)
+                    .padding(.horizontal)
+                })
+                .toolbar {
+                    ToolbarItem {
+                        Button("Dismiss", systemImage: "xmark") {
+                            dismiss()
+                        }
+                    }
+                }
+                .onAppear {
+                    loadRoute()
+                }
+            } else {
+                EmptyView()
+                    .toolbar {
+                        ToolbarItem {
+                            Button("Dismiss", systemImage: "xmark") {
+                                dismiss()
+                            }
+                        }
+                    }
+            }
+        }
+    }
+    
+    func loadRoute() {
+        if let userLocation = locationManager.location,
+           let carLocation = currentTrip?.location {
+            let request = MKDirections.Request()
+            request.source = MKMapItem(location: userLocation, address: nil)
+            request.destination = MKMapItem(location: CLLocation(latitude: carLocation.latitude, longitude: carLocation.longitude), address: nil)
+            let directions = MKDirections(request: request)
+            Task {
+                let response = try? await directions.calculate()
+                if let route = response?.routes.first {
+                    self.route = route.polyline
                 }
             }
         }
