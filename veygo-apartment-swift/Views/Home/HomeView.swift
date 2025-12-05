@@ -1,4 +1,5 @@
 import SwiftUI
+import _MapKit_SwiftUI
 import UserNotifications
 import Crisp
 
@@ -656,10 +657,33 @@ struct HomeView: View {
 struct CurrentTripView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var currentTrip: CurrentTrip?
+    
+    @State private var locationManager = CLLocationManager()
+    @State private var route: MKPolyline? = nil
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Hello, World!")
+            Map {
+                UserAnnotation()
+                if let route = route {
+                    MapPolyline(route)
+                        .stroke(
+                            Color.blue,
+                            style: StrokeStyle(
+                                lineWidth: 1.5,
+                                lineCap: .round,
+                                lineJoin: .round,
+                                dash: [4, 3]
+                            )
+                        )
+                }
+                Marker(currentTrip!.vehicle.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: currentTrip!.location.latitude, longitude: currentTrip!.location.longitude))
+                    .tint(.purple)
+            }
+            .mapControls {
+                MapCompass()
+                if locationManager.authorizationStatus == .authorizedWhenInUse {
+                    MapUserLocationButton()
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color("MainBG").ignoresSafeArea(.all))
@@ -670,7 +694,21 @@ struct CurrentTripView: View {
                     }
                 }
             }
-
+            .onAppear {
+                if let userLocation = locationManager.location,
+                   let carLocation = currentTrip?.location {
+                    let request = MKDirections.Request()
+                    request.source = MKMapItem(location: userLocation, address: nil)
+                    request.destination = MKMapItem(location: CLLocation(latitude: carLocation.latitude, longitude: carLocation.longitude), address: nil)
+                    let directions = MKDirections(request: request)
+                    Task {
+                        let response = try? await directions.calculate()
+                        if let route = response?.routes.first {
+                            self.route = route.polyline
+                        }
+                    }
+                }
+            }
         }
     }
 }
