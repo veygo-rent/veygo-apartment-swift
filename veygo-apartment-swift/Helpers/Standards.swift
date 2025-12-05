@@ -23,6 +23,32 @@ struct VeygoDatetimeStandard {
         f.locale = Locale(identifier: "en_US_POSIX")
         return f
     }()
+    
+    func formattedDateTime(_ date: Date) -> String {
+        let calendar = Calendar.current
+
+        if calendar.isDateInToday(date) {
+            return "Today, " + timeFormatter.string(from: date)
+        } else if calendar.isDateInTomorrow(date) {
+            return "Tomorrow, " + timeFormatter.string(from: date)
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday, " + timeFormatter.string(from: date)
+        } else {
+            return fullDateFormatter.string(from: date)
+        }
+    }
+
+    private var timeFormatter: DateFormatter {
+        let df = DateFormatter()
+        df.timeStyle = .short       // "6:10 PM"
+        return df
+    }
+
+    private var fullDateFormatter: DateFormatter {
+        let df = DateFormatter()
+        df.dateFormat = "MMM d, h:mm a"
+        return df
+    }
 }
 
 struct VeygoJsonStandard {

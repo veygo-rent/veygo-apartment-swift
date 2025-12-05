@@ -687,6 +687,32 @@ struct CurrentTripView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color("MainBG").ignoresSafeArea(.all))
+            .safeAreaInset(edge: .bottom, content: {
+                VStack {
+                    HStack {
+                        VStack (alignment: .leading) {
+                            Text("Pick up: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpPickupTime))")
+                                .font(.footnote)
+                                .fontWeight(.regular)
+                                .foregroundStyle(.textBlackPrimary)
+                            Text("Drop off: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpDropOffTime))")
+                                .font(.footnote)
+                                .fontWeight(.regular)
+                                .foregroundStyle(.textBlackPrimary)
+                        }
+                        Spacer()
+                        SecondaryButton(text: "Extend") {
+                            print("Extend Button Pressed")
+                        }
+                        .frame(width: 100)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(28)
+                .background(.ultraThinMaterial)
+                .cornerRadius(28)
+                .padding(.horizontal)
+            })
             .toolbar {
                 ToolbarItem {
                     Button("Dismiss", systemImage: "xmark") {
