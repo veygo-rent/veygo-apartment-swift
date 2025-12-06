@@ -706,6 +706,49 @@ struct CurrentTripView: View {
                             }
                             .frame(width: 100)
                         }
+                        HStack {
+                            VStack (alignment: .leading) {
+                                HStack {
+                                    Text("\(currentTrip!.vehicle.make) \(currentTrip!.vehicle.model)")
+                                        .foregroundStyle(.textBlackSecondary)
+                                    Text(currentTrip!.vehicle.name)
+                                        .foregroundStyle(.textBlackPrimary)
+                                        .fontWeight(.light)
+                                }
+                                Text("License Plate: \(currentTrip!.vehicle.licenseState) \(currentTrip!.vehicle.licenseNumber)")
+                                    .foregroundStyle(.textBlackPrimary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Image("TempVehicle")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100)
+                        }
+                        HStack(alignment: .center, spacing: 16) {
+                            Button("Direction", systemImage: "map.fill") {
+                                guard let trip = currentTrip else { return }
+                                let item = MKMapItem(location: CLLocation(latitude: trip.location.latitude, longitude: trip.location.longitude), address: nil)
+                                item.name = "\(trip.vehicle.name)"
+                                let options = [
+                                    MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeTransit,
+                                ]
+                                item.openInMaps(launchOptions: options)
+                            }
+                            .buttonStyle(.glass)
+                            .tint(.accent)
+                            Button("Honk", systemImage: "speaker.wave.3.fill") {
+                                print("Honk honk")
+                            }
+                            .buttonStyle(.glass)
+                            .tint(.accent)
+                            .disabled(currentTrip!.agreement.rsvpPickupTime > Date())
+                        }
+                        PrimaryButton(text: "Check In") {
+                            print("Check in")
+                        }
+                        .padding(.top, 24)
+                        .disabled(currentTrip!.agreement.rsvpPickupTime > Date())
                     }
                     .frame(maxWidth: .infinity)
                     .padding(28)
