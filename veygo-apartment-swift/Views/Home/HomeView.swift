@@ -657,6 +657,12 @@ struct HomeView: View {
 struct CurrentTripView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var currentTrip: CurrentTrip?
+    @EnvironmentObject var session: UserSession
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
     
     @State private var locationManager = CLLocationManager()
     @State private var route: MKPolyline? = nil
@@ -738,11 +744,15 @@ struct CurrentTripView: View {
                             .buttonStyle(.glass)
                             .tint(.accent)
                             Button("Honk", systemImage: "speaker.wave.3.fill") {
-                                print("Honk honk")
+                                Task {
+                                    await ApiCallActor.shared.appendApi { token, userId in
+                                        await honkCurrentVehicle(token, userId)
+                                    }
+                                }
                             }
                             .buttonStyle(.glass)
                             .tint(.accent)
-                            .disabled(currentTrip!.agreement.rsvpPickupTime > Date())
+                            .disabled(Date() < currentTrip!.agreement.rsvpPickupTime.addingTimeInterval(-15 * 60))
                         }
                         PrimaryButton(text: "Check In") {
                             print("Check in")
@@ -765,6 +775,15 @@ struct CurrentTripView: View {
                 }
                 .onAppear {
                     loadRoute()
+                }
+                .alert(alertTitle, isPresented: $showAlert) {
+                    Button("OK") {
+                        if clearUserTriggered {
+                            session.user = nil
+                        }
+                    }
+                } message: {
+                    Text(alertMessage)
                 }
             } else {
                 EmptyView()
@@ -792,6 +811,99 @@ struct CurrentTripView: View {
                     self.route = route.polyline
                 }
             }
+        }
+    }
+    
+    @ApiCallActor func honkCurrentVehicle (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                let request = veygoCurlRequest(
+                    url: "/api/v1/vehicle/user-identify",
+                    method: .get,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ]
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    let token = extractToken(from: response, for: "Honking current vehicle") ?? ""
+                    return .renewSuccessful(token: token)
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 404:
+                    let token = extractToken(from: response, for: "Loading current trip") ?? ""
+                    return .renewSuccessful(token: token)
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
         }
     }
 }
