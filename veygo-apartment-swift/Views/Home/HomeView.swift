@@ -945,23 +945,78 @@ struct CheckInView: View {
     @State private var frontRight: (String, UIImage)? = nil
     @State private var frontLeft: (String, UIImage)? = nil
 
+    private let gridColumns: [GridItem] = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    @ViewBuilder
+    private func imageTile(label: String, binding: Binding<(String, UIImage)?>) -> some View {
+        let tileCorner: CGFloat = 16
+
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(.footnote)
+                .foregroundStyle(.textBlackPrimary)
+
+            ZStack(alignment: .topTrailing) {
+                if let img = binding.wrappedValue?.1 {
+                    Image(uiImage: img)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 140)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                        .cornerRadius(tileCorner)
+
+                    Button {
+                        binding.wrappedValue = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(.red)
+                            .symbolRenderingMode(.hierarchical)
+                            .padding(8)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Remove \(label)")
+                } else {
+                    RoundedRectangle(cornerRadius: tileCorner)
+                        .strokeBorder(.gray.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
+                        .frame(height: 140)
+                        .overlay {
+                            VStack(spacing: 6) {
+                                Image(systemName: "camera")
+                                    .font(.title2)
+                                    .foregroundStyle(.textBlackSecondary)
+                                Text("Not captured")
+                                    .font(.footnote)
+                                    .foregroundStyle(.textBlackSecondary)
+                            }
+                        }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var nextCaptureButtonTitle: String {
         if leftImage == nil {
-            return "Capture left image"
+            return "Capture Left Image"
         } else if rightImage == nil {
-            return "Capture right image"
+            return "Capture Right Image"
         } else if frontImage == nil {
-            return "Capture front image"
+            return "Capture Front Image"
         } else if backImage == nil {
-            return "Capture back image"
+            return "Capture Back Image"
         } else if rearRight == nil {
-            return "Capture rear-right image"
+            return "Capture Rear-right Image"
         } else if rearLeft == nil {
-            return "Capture rear-left image"
+            return "Capture Rear-left Image"
         } else if frontRight == nil {
-            return "Capture front-right image"
+            return "Capture Front-right Image"
         } else if frontLeft == nil {
-            return "Capture front-left image"
+            return "Capture Front-left Image"
         } else {
             return "All photos captured"
         }
@@ -991,7 +1046,21 @@ struct CheckInView: View {
                 }
                 .padding()
                 .disabled(isSubmitting || !allImagesCaptured)
+
+                LazyVGrid(columns: gridColumns, spacing: 36) {
+                    imageTile(label: "Left Image", binding: $leftImage)
+                    imageTile(label: "Right Image", binding: $rightImage)
+                    imageTile(label: "Front Image", binding: $frontImage)
+                    imageTile(label: "Back Image", binding: $backImage)
+                    imageTile(label: "Rear-Right Image", binding: $rearRight)
+                    imageTile(label: "Rear-Left Image", binding: $rearLeft)
+                    imageTile(label: "Front-Right Image", binding: $frontRight)
+                    imageTile(label: "Front-Left Image", binding: $frontLeft)
+                }
+                .padding(.horizontal)
+                .padding(.top, 12)
             }
+            .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
             .background(Color("MainBG").ignoresSafeArea())
             .fullScreenCover(isPresented: $isShowingCamera) {
