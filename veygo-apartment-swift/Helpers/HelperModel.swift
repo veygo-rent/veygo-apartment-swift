@@ -48,4 +48,9 @@ nonisolated struct CurrentTrip: Codable {
     let paymentMethod: PublishPaymentMethod
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?
+    let damages: [Damage]
+}
+
+nonisolated struct FilePath: Codable {
+    let filePath: String
 }

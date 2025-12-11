@@ -655,6 +655,9 @@ struct HomeView: View {
 }
 
 struct CurrentTripView: View {
+    @State private var checkIn: Bool = false
+    
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismiss) var dismiss
     @Binding var currentTrip: CurrentTrip?
     @EnvironmentObject var session: UserSession
@@ -755,7 +758,7 @@ struct CurrentTripView: View {
                             .disabled(Date() < currentTrip!.agreement.rsvpPickupTime.addingTimeInterval(-15 * 60))
                         }
                         PrimaryButton(text: "Check In") {
-                            print("Check in")
+                            checkIn = true
                         }
                         .padding(.top, 24)
                         .disabled(currentTrip!.agreement.rsvpPickupTime > Date())
@@ -785,6 +788,10 @@ struct CurrentTripView: View {
                 } message: {
                     Text(alertMessage)
                 }
+                .sheet(isPresented: $checkIn) {
+                    CheckInView()
+                        .presentationDragIndicator(.visible)
+                }
             } else {
                 EmptyView()
                     .toolbar {
@@ -794,6 +801,11 @@ struct CurrentTripView: View {
                             }
                         }
                     }
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                loadRoute()
             }
         }
     }
@@ -904,6 +916,31 @@ struct CurrentTripView: View {
                 showAlert = true
             }
             return .doNothing
+        }
+    }
+}
+
+struct CheckInView: View {
+    @Environment(\.dismiss) var dismiss
+    
+    @State private var leftImage: (String, UIImage)? = nil
+    @State private var rightImage: (String, UIImage)? = nil
+    @State private var frontImage: (String, UIImage)? = nil
+    @State private var backImage: (String, UIImage)? = nil
+    @State private var rearRight: (String, UIImage)? = nil
+    @State private var rearLeft: (String, UIImage)? = nil
+    @State private var frontRight: (String, UIImage)? = nil
+    @State private var frontLeft: (String, UIImage)? = nil
+    var body: some View {
+        NavigationStack {
+            Text("Checking In")
+                .toolbar {
+                    ToolbarItem {
+                        Button("Dismiss", systemImage: "xmark") {
+                            dismiss()
+                        }
+                    }
+                }
         }
     }
 }
