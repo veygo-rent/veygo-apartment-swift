@@ -984,12 +984,16 @@ struct CheckInView: View {
                 SecondaryButton(text: nextCaptureButtonTitle) {
                     isShowingCamera = true
                 }
+                .padding()
                 .disabled(isSubmitting || allImagesCaptured)
                 PrimaryButton(text: "Submit Check-in Images") {
                     
                 }
+                .padding()
                 .disabled(isSubmitting || !allImagesCaptured)
             }
+            .scrollContentBackground(.hidden)
+            .background(Color("MainBG").ignoresSafeArea())
             .fullScreenCover(isPresented: $isShowingCamera) {
                 CameraImagePicker { image in
                     // Convert to Data and upload
