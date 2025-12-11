@@ -789,7 +789,7 @@ struct CurrentTripView: View {
                     Text(alertMessage)
                 }
                 .sheet(isPresented: $checkIn) {
-                    CheckInView()
+                    CheckInView(currentTrip: $currentTrip)
                         .presentationDragIndicator(.visible)
                 }
             } else {
@@ -921,7 +921,20 @@ struct CurrentTripView: View {
 }
 
 struct CheckInView: View {
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
+    @EnvironmentObject var session: UserSession
+    
     @Environment(\.dismiss) var dismiss
+    
+    // Stage 1: Eight corner images
+    @Binding var currentTrip: CurrentTrip?
+    
+    @State private var isSubmitting: Bool = false
+    @State private var isShowingCamera = false
     
     @State private var leftImage: (String, UIImage)? = nil
     @State private var rightImage: (String, UIImage)? = nil
@@ -931,16 +944,247 @@ struct CheckInView: View {
     @State private var rearLeft: (String, UIImage)? = nil
     @State private var frontRight: (String, UIImage)? = nil
     @State private var frontLeft: (String, UIImage)? = nil
+
+    private var nextCaptureButtonTitle: String {
+        if leftImage == nil {
+            return "Capture left image"
+        } else if rightImage == nil {
+            return "Capture right image"
+        } else if frontImage == nil {
+            return "Capture front image"
+        } else if backImage == nil {
+            return "Capture back image"
+        } else if rearRight == nil {
+            return "Capture rear-right image"
+        } else if rearLeft == nil {
+            return "Capture rear-left image"
+        } else if frontRight == nil {
+            return "Capture front-right image"
+        } else if frontLeft == nil {
+            return "Capture front-left image"
+        } else {
+            return "All photos captured"
+        }
+    }
+    
+    private var allImagesCaptured: Bool {
+        leftImage != nil &&
+        rightImage != nil &&
+        frontImage != nil &&
+        backImage != nil &&
+        rearRight != nil &&
+        rearLeft != nil &&
+        frontRight != nil &&
+        frontLeft != nil
+    }
+    
     var body: some View {
         NavigationStack {
-            Text("Checking In")
-                .toolbar {
-                    ToolbarItem {
-                        Button("Dismiss", systemImage: "xmark") {
-                            dismiss()
+            ScrollView {
+                SecondaryButton(text: nextCaptureButtonTitle) {
+                    isShowingCamera = true
+                }
+                .disabled(isSubmitting || allImagesCaptured)
+                PrimaryButton(text: "Submit Check-in Images") {
+                    
+                }
+                .disabled(isSubmitting || !allImagesCaptured)
+            }
+            .fullScreenCover(isPresented: $isShowingCamera) {
+                CameraImagePicker { image in
+                    // Convert to Data and upload
+                    if let data = image.jpegData(compressionQuality: 0.5) {
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await submitFileAsync(
+                                    token,
+                                    userId,
+                                    data,
+                                    "vehicle_inspection_camera.jpg",
+                                    image
+                                )
+                            }
                         }
+                    } else {
+                        // optional: show an error alert here
+                        alertMessage = "Failed to read captured image."
+                        alertTitle = "Camera Error"
+                        showAlert = true
                     }
                 }
+                .ignoresSafeArea(edges: .all)
+            }
+            .toolbar {
+                ToolbarItem {
+                    Button("Dismiss", systemImage: "xmark") {
+                        dismiss()
+                    }
+                }
+            }
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("OK") {
+                    if clearUserTriggered {
+                        session.user = nil
+                    }
+                }
+            } message: {
+                Text(alertMessage)
+            }
+        }
+    }
+    
+    @ApiCallActor func submitFileAsync (_ token: String, _ userId: Int, _ file: Data, _ fileName: String, _ image: UIImage) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                
+                let request = veygoCurlRequest(
+                    url: "/api/v1/vehicle/upload-image",
+                    method: .post,
+                    headers: [
+                        "auth": "\(token)$\(userId)",
+                        "Content-Type": "application/octet-stream",
+                        "file-name": fileName,
+                        "vehicle-vin": await currentTrip?.vehicle.vin ?? ""
+                    ],
+                    body: file
+                )
+                
+                await MainActor.run {
+                    isSubmitting = true
+                }
+                let (data, response) = try await URLSession.shared.data(for: request)
+                await MainActor.run {
+                    isSubmitting = false
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    if let decodedString = String(data: data, encoding: .utf8) {
+                            print("Decoded String: \(decodedString)")
+                        } else {
+                            print("Decoding failed.")
+                        }
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    let token = extractToken(from: response, for: "Submitting driver's license") ?? ""
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FilePath.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .renewSuccessful(token: token)
+                    }
+                    await MainActor.run {
+                        if leftImage == nil {
+                            leftImage = (decodedBody.filePath, image)
+                        } else if rightImage == nil {
+                            rightImage = (decodedBody.filePath, image)
+                        } else if frontImage == nil {
+                            frontImage = (decodedBody.filePath, image)
+                        } else if backImage == nil {
+                            backImage = (decodedBody.filePath, image)
+                        } else if rearRight == nil {
+                            rearRight = (decodedBody.filePath, image)
+                        } else if rearLeft == nil {
+                            rearLeft = (decodedBody.filePath, image)
+                        } else if frontRight == nil {
+                            frontRight = (decodedBody.filePath, image)
+                        } else if frontLeft == nil {
+                            frontLeft = (decodedBody.filePath, image)
+                        }
+                    }
+                    await MainActor.run {
+                        alertTitle = "Uploaded Successfully"
+                        alertMessage = "Uploaded your document successfully."
+                        showAlert = true
+                    }
+                    return .renewSuccessful(token: token)
+                case 400:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
+                        let msg = ErrorResponse.E400
+                        await MainActor.run {
+                            alertTitle = msg.title
+                            alertMessage = msg.message
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
         }
     }
 }
