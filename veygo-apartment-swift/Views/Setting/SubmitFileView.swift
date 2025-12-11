@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SubmitFileView: View {
+    @State private var isSubmitting: Bool = false
+    
     @State private var isShowingCamera = false
     @State private var isShowingCamera2 = false
     @State private var isShowingCamera3 = false
@@ -50,6 +52,8 @@ struct SubmitFileView: View {
                     }
                     .ignoresSafeArea(edges: .all)
                 }
+                .disabled(isSubmitting)
+                
                 if session.user!.requiresSecondaryDriverLic {
                     SecondaryButton(text: "Upload Secondary License") {
                         isShowingCamera2 = true
@@ -78,6 +82,7 @@ struct SubmitFileView: View {
                         }
                         .ignoresSafeArea(edges: .all)
                     }
+                    .disabled(isSubmitting)
                 }
                 
                 SecondaryButton(text: "Upload Lease or Proof of Address") {
@@ -107,6 +112,7 @@ struct SubmitFileView: View {
                     }
                     .ignoresSafeArea(edges: .all)
                 }
+                .disabled(isSubmitting)
                 
                 Text("* Please make sure both your name and your address are clearly visible in the photos. ")
                     .font(.caption.italic())
@@ -155,7 +161,14 @@ struct SubmitFileView: View {
                     ],
                     body: file
                 )
+                
+                await MainActor.run {
+                    isSubmitting = true
+                }
                 let (data, response) = try await URLSession.shared.data(for: request)
+                await MainActor.run {
+                    isSubmitting = false
+                }
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
                     await MainActor.run {
