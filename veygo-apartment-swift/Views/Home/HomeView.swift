@@ -881,7 +881,7 @@ struct CurrentTripView: View {
                     }
                     return .clearUser
                 case 404:
-                    let token = extractToken(from: response, for: "Loading current trip") ?? ""
+                    let token = extractToken(from: response, for: "Honking current vehicle") ?? ""
                     return .renewSuccessful(token: token)
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
