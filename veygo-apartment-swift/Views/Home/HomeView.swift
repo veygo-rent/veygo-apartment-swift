@@ -1003,20 +1003,20 @@ struct CheckInView: View {
     private var nextCaptureButtonTitle: String {
         if leftImage == nil {
             return "Capture Left Image"
-        } else if rightImage == nil {
-            return "Capture Right Image"
-        } else if frontImage == nil {
-            return "Capture Front Image"
-        } else if backImage == nil {
-            return "Capture Back Image"
-        } else if rearRight == nil {
-            return "Capture Rear-right Image"
-        } else if rearLeft == nil {
-            return "Capture Rear-left Image"
-        } else if frontRight == nil {
-            return "Capture Front-right Image"
         } else if frontLeft == nil {
             return "Capture Front-left Image"
+        } else if frontImage == nil {
+            return "Capture Front Image"
+        } else if frontRight == nil {
+            return "Capture Front-right Image"
+        } else if rightImage == nil {
+            return "Capture Right Image"
+        } else if rearRight == nil {
+            return "Capture Rear-right Image"
+        } else if backImage == nil {
+            return "Capture Back Image"
+        } else if rearLeft == nil {
+            return "Capture Rear-left Image"
         } else {
             return "All photos captured"
         }
@@ -1168,20 +1168,20 @@ struct CheckInView: View {
                     await MainActor.run {
                         if leftImage == nil {
                             leftImage = (decodedBody.filePath, image)
-                        } else if rightImage == nil {
-                            rightImage = (decodedBody.filePath, image)
-                        } else if frontImage == nil {
-                            frontImage = (decodedBody.filePath, image)
-                        } else if backImage == nil {
-                            backImage = (decodedBody.filePath, image)
-                        } else if rearRight == nil {
-                            rearRight = (decodedBody.filePath, image)
-                        } else if rearLeft == nil {
-                            rearLeft = (decodedBody.filePath, image)
-                        } else if frontRight == nil {
-                            frontRight = (decodedBody.filePath, image)
                         } else if frontLeft == nil {
                             frontLeft = (decodedBody.filePath, image)
+                        } else if frontImage == nil {
+                            frontImage = (decodedBody.filePath, image)
+                        } else if frontRight == nil {
+                            frontRight = (decodedBody.filePath, image)
+                        } else if rightImage == nil {
+                            rightImage = (decodedBody.filePath, image)
+                        } else if rearRight == nil {
+                            rearRight = (decodedBody.filePath, image)
+                        } else if backImage == nil {
+                            backImage = (decodedBody.filePath, image)
+                        } else if rearLeft == nil {
+                            rearLeft = (decodedBody.filePath, image)
                         }
                     }
                     await MainActor.run {
