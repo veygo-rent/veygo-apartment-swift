@@ -816,6 +816,7 @@ struct CurrentTripView: View {
             let request = MKDirections.Request()
             request.source = MKMapItem(location: userLocation, address: nil)
             request.destination = MKMapItem(location: CLLocation(latitude: carLocation.latitude, longitude: carLocation.longitude), address: nil)
+            request.transportType = .walking
             let directions = MKDirections(request: request)
             Task {
                 let response = try? await directions.calculate()
