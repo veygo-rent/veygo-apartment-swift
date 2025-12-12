@@ -994,7 +994,7 @@ struct CheckInView: View {
                                 Image(systemName: "camera")
                                     .font(.title2)
                                     .foregroundStyle(.textBlackSecondary)
-                                Text("Tap to capture")
+                                Text("Not captured")
                                     .font(.footnote)
                                     .foregroundStyle(.textBlackSecondary)
                             }
@@ -1054,13 +1054,13 @@ struct CheckInView: View {
 
                 LazyVGrid(columns: gridColumns, spacing: 36) {
                     imageTile(label: "Left Image", binding: $leftImage)
-                    imageTile(label: "Right Image", binding: $rightImage)
-                    imageTile(label: "Front Image", binding: $frontImage)
-                    imageTile(label: "Back Image", binding: $backImage)
-                    imageTile(label: "Rear-Right Image", binding: $rearRight)
-                    imageTile(label: "Rear-Left Image", binding: $rearLeft)
-                    imageTile(label: "Front-Right Image", binding: $frontRight)
                     imageTile(label: "Front-Left Image", binding: $frontLeft)
+                    imageTile(label: "Front Image", binding: $frontImage)
+                    imageTile(label: "Front-Right Image", binding: $frontRight)
+                    imageTile(label: "Right Image", binding: $rightImage)
+                    imageTile(label: "Back-Right Image", binding: $rearRight)
+                    imageTile(label: "Back Image", binding: $backImage)
+                    imageTile(label: "Back-Left Image", binding: $rearLeft)
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
@@ -1188,11 +1188,6 @@ struct CheckInView: View {
                         } else if rearLeft == nil {
                             rearLeft = (decodedBody.filePath, image)
                         }
-                    }
-                    await MainActor.run {
-                        alertTitle = "Uploaded Successfully"
-                        alertMessage = "Uploaded your document successfully."
-                        showAlert = true
                     }
                     return .renewSuccessful(token: token)
                 case 400:
