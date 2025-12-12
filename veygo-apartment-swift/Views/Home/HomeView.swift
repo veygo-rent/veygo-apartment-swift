@@ -961,13 +961,18 @@ struct CheckInView: View {
 
             ZStack(alignment: .topTrailing) {
                 if let img = binding.wrappedValue?.1 {
-                    Image(uiImage: img)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 140)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        .cornerRadius(tileCorner)
+                    ZStack {
+                        GeometryReader { geo in
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: geo.size.width, height: geo.size.height)
+                                .clipped()
+                        }
+                    }
+                    .frame(height: 140)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: tileCorner, style: .continuous))
 
                     Button {
                         binding.wrappedValue = nil
@@ -975,7 +980,7 @@ struct CheckInView: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title3)
                             .foregroundStyle(.red)
-                            .symbolRenderingMode(.hierarchical)
+                            .symbolRenderingMode(.multicolor)
                             .padding(8)
                     }
                     .buttonStyle(.plain)
@@ -989,7 +994,7 @@ struct CheckInView: View {
                                 Image(systemName: "camera")
                                     .font(.title2)
                                     .foregroundStyle(.textBlackSecondary)
-                                Text("Not captured")
+                                Text("Tap to capture")
                                     .font(.footnote)
                                     .foregroundStyle(.textBlackSecondary)
                             }
