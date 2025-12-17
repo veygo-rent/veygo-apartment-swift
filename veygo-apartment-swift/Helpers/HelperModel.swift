@@ -54,3 +54,15 @@ nonisolated struct CurrentTrip: Codable {
 nonisolated struct FilePath: Codable {
     let filePath: String
 }
+
+nonisolated struct GenerateSnapshot: Codable {
+    let vehicleVin: String
+    let leftImagePath: String
+    let rightImagePath: String
+    let frontImagePath: String
+    let backImagePath: String
+    let frontRightImagePath: String
+    let frontLeftImagePath: String
+    let backRightImagePath: String
+    let backLeftImagePath: String
+}

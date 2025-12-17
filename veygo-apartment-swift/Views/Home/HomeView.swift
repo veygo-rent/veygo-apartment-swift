@@ -671,7 +671,7 @@ struct CurrentTripView: View {
     @State private var route: MKPolyline? = nil
     var body: some View {
         NavigationStack {
-            if currentTrip!.agreement.actualPickupTime == nil {
+            if let currentTrip = currentTrip, currentTrip.agreement.actualPickupTime == nil {
                 Map {
                     UserAnnotation()
                     if let route = route {
@@ -686,7 +686,7 @@ struct CurrentTripView: View {
                                 )
                             )
                     }
-                    Marker(currentTrip!.vehicle.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: currentTrip!.location.latitude, longitude: currentTrip!.location.longitude))
+                    Marker(currentTrip.vehicle.name, systemImage: "car", coordinate: CLLocationCoordinate2D(latitude: currentTrip.location.latitude, longitude: currentTrip.location.longitude))
                         .tint(.purple)
                 }
                 .mapControls {
@@ -700,11 +700,11 @@ struct CurrentTripView: View {
                     VStack {
                         HStack {
                             VStack (alignment: .leading) {
-                                Text("Pick up: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpPickupTime))")
+                                Text("Pick up: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip.agreement.rsvpPickupTime))")
                                     .font(.footnote)
                                     .fontWeight(.regular)
                                     .foregroundStyle(.textBlackPrimary)
-                                Text("Drop off: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip!.agreement.rsvpDropOffTime))")
+                                Text("Drop off: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip.agreement.rsvpDropOffTime))")
                                     .font(.footnote)
                                     .fontWeight(.regular)
                                     .foregroundStyle(.textBlackPrimary)
@@ -718,13 +718,13 @@ struct CurrentTripView: View {
                         HStack {
                             VStack (alignment: .leading) {
                                 HStack {
-                                    Text("\(currentTrip!.vehicle.make) \(currentTrip!.vehicle.model)")
+                                    Text("\(currentTrip.vehicle.make) \(currentTrip.vehicle.model)")
                                         .foregroundStyle(.textBlackSecondary)
-                                    Text(currentTrip!.vehicle.name)
+                                    Text(currentTrip.vehicle.name)
                                         .foregroundStyle(.textBlackPrimary)
                                         .fontWeight(.light)
                                 }
-                                Text("License Plate: \(currentTrip!.vehicle.licenseState) \(currentTrip!.vehicle.licenseNumber)")
+                                Text("License Plate: \(currentTrip.vehicle.licenseState) \(currentTrip.vehicle.licenseNumber)")
                                     .foregroundStyle(.textBlackPrimary)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -736,9 +736,8 @@ struct CurrentTripView: View {
                         }
                         HStack(alignment: .center, spacing: 16) {
                             Button("Direction", systemImage: "map.fill") {
-                                guard let trip = currentTrip else { return }
-                                let item = MKMapItem(location: CLLocation(latitude: trip.location.latitude, longitude: trip.location.longitude), address: nil)
-                                item.name = "\(trip.vehicle.name)"
+                                let item = MKMapItem(location: CLLocation(latitude: currentTrip.location.latitude, longitude: currentTrip.location.longitude), address: nil)
+                                item.name = "\(currentTrip.vehicle.name)"
                                 let options = [
                                     MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeTransit,
                                 ]
@@ -755,13 +754,13 @@ struct CurrentTripView: View {
                             }
                             .buttonStyle(.glass)
                             .tint(.accent)
-                            .disabled(Date() < currentTrip!.agreement.rsvpPickupTime.addingTimeInterval(-15 * 60))
+                            .disabled(Date() < currentTrip.agreement.rsvpPickupTime.addingTimeInterval(-15 * 60))
                         }
                         PrimaryButton(text: "Check In") {
                             checkIn = true
                         }
                         .padding(.top, 24)
-                        .disabled(currentTrip!.agreement.rsvpPickupTime > Date())
+                        .disabled(currentTrip.agreement.rsvpPickupTime > Date())
                     }
                     .frame(maxWidth: .infinity)
                     .padding(28)
