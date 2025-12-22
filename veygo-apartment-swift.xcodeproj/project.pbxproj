@@ -14,6 +14,7 @@
 		4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */; };
 		4C1745B32DEE4FF400A51DCA /* StripePaymentsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1745B22DEE4FF400A51DCA /* StripePaymentsUI */; };
 		8E2B0BC12E4D729200F5A362 /* Crisp in Frameworks */ = {isa = PBXBuildFile; productRef = 8E2B0BC02E4D729200F5A362 /* Crisp */; };
+		8E46B08F2EF5D78200CAB1F3 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 8E46B08E2EF5D78200CAB1F3 /* CodeScanner */; };
 		8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADBE2DD44DA9007148E6 /* Stripe */; };
 		8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA1ADC02DD44DA9007148E6 /* StripeCardScan */; };
 /* End PBXBuildFile section */
@@ -66,6 +67,7 @@
 			files = (
 				8EA1ADC12DD44DA9007148E6 /* StripeCardScan in Frameworks */,
 				4C1745AD2DEE4B6B00A51DCA /* StripePaymentSheet in Frameworks */,
+				8E46B08F2EF5D78200CAB1F3 /* CodeScanner in Frameworks */,
 				4C1745B12DEE4FEE00A51DCA /* StripePaymentsUI in Frameworks */,
 				8E2B0BC12E4D729200F5A362 /* Crisp in Frameworks */,
 				8EA1ADBF2DD44DA9007148E6 /* Stripe in Frameworks */,
@@ -129,6 +131,7 @@
 				4C1745AC2DEE4B6B00A51DCA /* StripePaymentSheet */,
 				4C1745B02DEE4FEE00A51DCA /* StripePaymentsUI */,
 				8E2B0BC02E4D729200F5A362 /* Crisp */,
+				8E46B08E2EF5D78200CAB1F3 /* CodeScanner */,
 			);
 			productName = "veygo-apartment-swift";
 			productReference = 8EA1ADAF2DD44C53007148E6 /* veygo-apartment-swift.app */;
@@ -192,6 +195,7 @@
 			packageReferences = (
 				8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */,
 				8E2B0BBF2E4D729200F5A362 /* XCRemoteSwiftPackageReference "crisp-sdk-ios" */,
+				8E46B08D2EF5D78200CAB1F3 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8EA1ADB02DD44C53007148E6 /* Products */;
@@ -543,6 +547,14 @@
 				minimumVersion = 2.10.0;
 			};
 		};
+		8E46B08D2EF5D78200CAB1F3 /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/CodeScanner";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.2;
+			};
+		};
 		8EA1ADBD2DD44DA9007148E6 /* XCRemoteSwiftPackageReference "stripe-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stripe/stripe-ios";
@@ -588,6 +600,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8E2B0BBF2E4D729200F5A362 /* XCRemoteSwiftPackageReference "crisp-sdk-ios" */;
 			productName = Crisp;
+		};
+		8E46B08E2EF5D78200CAB1F3 /* CodeScanner */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E46B08D2EF5D78200CAB1F3 /* XCRemoteSwiftPackageReference "CodeScanner" */;
+			productName = CodeScanner;
 		};
 		8EA1ADBE2DD44DA9007148E6 /* Stripe */ = {
 			isa = XCSwiftPackageProductDependency;

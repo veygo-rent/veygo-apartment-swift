@@ -23,6 +23,8 @@ enum SettingDestination: Hashable {
     case memberAgreement
     case rentalAgreement
     case termsOfUse
+    // Admin Support
+    case submitVehicleSnapshot // Accessable to none user
     // Support
     case roadside
 }
@@ -70,6 +72,18 @@ struct SettingView: View {
                     .foregroundStyle(Color("TextBlackSecondary"))
                     .listSectionSeparator(.hidden)
                     
+                    if session.user?.employeeTier != EmployeeTier.user {
+                        Section {
+                            NavigationLink("Upload Vehicle Snapshot", value: SettingDestination.submitVehicleSnapshot)
+                        } header: {
+                            Text("Admin")
+                                .fontWeight(.light)
+                        }
+                        .listRowBackground(Color("CardBG"))
+                        .foregroundStyle(Color("TextBlackSecondary"))
+                        .listSectionSeparator(.hidden)
+                    }
+                    
                     Section {
                         NavigationLink("Privacy Policy", value: SettingDestination.privacyPolicy)
                         NavigationLink("Member Agreement", value: SettingDestination.memberAgreement)
@@ -97,7 +111,6 @@ struct SettingView: View {
                     .listRowBackground(Color("CardBG"))
                     .foregroundStyle(Color("TextBlackSecondary"))
                     .listSectionSeparator(.hidden)
-                    
                     
                     Section {
                         Button(role: .destructive) {

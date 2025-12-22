@@ -55,7 +55,7 @@ nonisolated struct FilePath: Codable {
     let filePath: String
 }
 
-nonisolated struct GenerateSnapshot: Codable {
+nonisolated struct GenerateSnapshotRequest: Codable {
     let vehicleVin: String
     let leftImagePath: String
     let rightImagePath: String
@@ -65,4 +65,10 @@ nonisolated struct GenerateSnapshot: Codable {
     let frontLeftImagePath: String
     let backRightImagePath: String
     let backLeftImagePath: String
+}
+
+nonisolated struct CheckOutRequest: Codable {
+    let agreementId: Agreement.ID
+    let vehicleSnapshotId: VehicleSnapshot.ID
+    let hoursUsingReward: Int
 }
