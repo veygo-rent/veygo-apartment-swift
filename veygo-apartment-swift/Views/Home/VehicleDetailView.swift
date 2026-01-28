@@ -359,10 +359,7 @@ struct VehicleDetailView: View {
             
             switch httpResponse.statusCode {
             case 200:
-                nonisolated struct RequestSuccessBody: Decodable {
-                    let mileagePackages: [MileagePackage]
-                }
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(RequestSuccessBody.self, from: data) else {
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([MileagePackage].self, from: data) else {
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
                         alertTitle = body.title
@@ -372,7 +369,7 @@ struct VehicleDetailView: View {
                     return .doNothing
                 }
                 await MainActor.run {
-                    mileagePackages = decodedBody.mileagePackages
+                    mileagePackages = decodedBody
                 }
                 return .doNothing
             case 405:
