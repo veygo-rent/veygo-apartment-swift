@@ -59,11 +59,26 @@ enum Gender: String, Codable {
     case pnts = "PNTS"
 }
 
+enum TaxType: String, Codable {
+    case percent = "Percent"
+    case daily = "Daily"
+    case fixed = "Fixed"
+}
+
+nonisolated struct UsAddress: Equatable, Codable, Hashable {
+    var streetAddress: String
+    var extendedAddress: String?
+    var city: String
+    var state: String
+    var zipcode: String
+}
+
 nonisolated struct RewardTransaction: Identifiable, Equatable, Codable {
     var id: Int
-    var agreementId: Int
+    var agreementId: Int?
     var duration: Double
     var transactionTime: Date
+    var renterId: Int
 }
 
 nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
@@ -88,13 +103,12 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var leaseAgreementImage: String?
     var apartmentId: Int
     var leaseAgreementExpiration: String?
-    var billingAddress: String?
+    var billingAddress: UsAddress?
     var signatureImage: String?
     var signatureDatetime: Date?
     var planTier: PlanTier
     var planRenewalDay: String
     var planExpireMonthYear: String
-    var planAvailableDuration: Double
     var isPlanAnnual: Bool
     var employeeTier: EmployeeTier
     var subscriptionPaymentMethodId: Int?
@@ -120,7 +134,7 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var timezone: String
     var email: String
     var phone: String
-    var address: String
+    var address: UsAddress
     var acceptedSchoolEmailDomain: String
     var freeTierHours: Double
     var silverTierHours: Double?
@@ -271,6 +285,7 @@ nonisolated struct Claim: Identifiable, Equatable, Codable {
     var agreementId: Int
     var adminFee: Double?
     var towCharge: Double?
+    var citation: Double?
 }
 
 nonisolated struct Damage: Identifiable, Equatable, Codable {
@@ -278,10 +293,10 @@ nonisolated struct Damage: Identifiable, Equatable, Codable {
     var note: String
     var recordDate: Date
     var occurDate: Date
-    var standardCoordinationXPrecentage: Int
-    var standardCoordinationYPrecentage: Int
-    var firstImage: String?
-    var secondImage: String?
+    var standardCoordinationXPercentage: Int
+    var standardCoordinationYPercentage: Int
+    var firstImage: String
+    var secondImage: String
     var thirdImage: String?
     var fourthImage: String?
     var fixedDate: Date?
@@ -302,6 +317,12 @@ nonisolated struct VehicleSnapshot: Identifiable, Equatable, Codable {
     var odometer: Int
     var level: Int
     var vehicleId: Int
+    var rearRight: String
+    var rearLeft: String
+    var frontRight: String
+    var frontLeft: String
+    var dashboard: String?
+    var renterId: Int
 }
 
 nonisolated struct PublishPromo: Identifiable, Equatable, Codable {
@@ -322,7 +343,7 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var userDateOfBirth: String
     var userEmail: String
     var userPhone: String
-    var userBillingAddress: String
+    var userBillingAddress: UsAddress
     var rsvpPickupTime: Date
     var rsvpDropOffTime: Date
     var liabilityProtectionRate: Double?
@@ -358,7 +379,7 @@ nonisolated struct Charge: Identifiable, Equatable, Codable {
     var time: Date
     var amount: Double
     var note: String?
-    var agreementId: Int?
+    var agreementId: Int
     var vehicleId: Int
     var transponderCompanyId: Int?
     var vehicleIdentifier: String?
@@ -373,8 +394,8 @@ nonisolated struct Payment: Identifiable, Equatable, Codable {
     var referenceNumber: String?
     var agreementId: Int?
     var renterId: Int
-    var paymentMethodId: Int
-    var amountAuthorized: Double?
+    var paymentMethodId: Int?
+    var amountAuthorized: Double
     var captureBefore: Date?
     var isDeposit: Bool
 }
@@ -392,7 +413,8 @@ nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var id: Int
     var name: String
     var multiplier: Double
-    var isEffective: Bool
+    var isSalesTax: Bool
+    var taxType: TaxType
 }
 
 nonisolated struct MileagePackage: Identifiable, Equatable, Codable {

@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Crisp
-import _WebKit_SwiftUI
+import WebKit
 
 enum SettingDestination: Hashable {
     // Account
@@ -151,6 +151,8 @@ struct SettingView: View {
                         EmailVerifyView(path: $path)
                     case .submitFile:
                         SubmitFileView(path: $path)
+                    case .submitVehicleSnapshot:
+                        AdminVehicleSubmissionView()
                     default:
                         EmptyView()
                     }

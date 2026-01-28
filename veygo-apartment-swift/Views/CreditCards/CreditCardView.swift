@@ -121,23 +121,18 @@ struct CreditCardView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    nonisolated struct FetchSuccessBody: Decodable {
-                        let paymentMethods: [PublishPaymentMethod]
-                    }
-                    
-                    let token = extractToken(from: response, for: "Loading credit cards") ?? ""
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
-                        self.cards = decodedBody.paymentMethods
+                        self.cards = decodedBody
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -207,19 +202,13 @@ struct CreditCardView: View {
                     return .doNothing
                 }
                 let cardToDelete = cards[index]
-
-                let body = [
-                    "card_id": cardToDelete.id
-                ]
-                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
                 
                 let request = veygoCurlRequest(
-                    url: "/api/v1/payment-method/delete",
-                    method: .post,
+                    url: "/api/v1/payment-method/\(cardToDelete.id)",
+                    method: .delete,
                     headers: [
                         "auth": "\(token)$\(userId)"
-                    ],
-                    body: jsonData
+                    ]
                 )
                 
                 let (data, response) = try await URLSession.shared.data(for: request)
@@ -244,23 +233,18 @@ struct CreditCardView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    nonisolated struct FetchSuccessBody: Decodable {
-                        let paymentMethods: [PublishPaymentMethod]
-                    }
-                    
-                    let token = extractToken(from: response, for: "Deleting credit card") ?? ""
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
-                    await MainActor.run {
-                        self.cards = decodedBody.paymentMethods
+                    let _ = await MainActor.run {
+                        self.cards.remove(at: index)
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {

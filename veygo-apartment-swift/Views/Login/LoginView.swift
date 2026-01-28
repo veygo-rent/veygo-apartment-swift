@@ -162,12 +162,8 @@ struct LoginView: View {
             
             switch httpResponse.statusCode {
             case 200:
-                nonisolated struct LoginSuccessBody: Decodable {
-                    let renter: PublishRenter
-                }
-                
                 let token = extractToken(from: response, for: "Logging in") ?? ""
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data) else {
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
                     await MainActor.run {
                         alertTitle = "Server Error"
                         alertMessage = "Invalid content"
@@ -176,9 +172,9 @@ struct LoginView: View {
                     return .doNothing
                 }
                 await MainActor.run {
-                    self.session.user = decodedBody.renter
+                    self.session.user = decodedBody
                 }
-                return .loginSuccessful(userId: decodedBody.renter.id, token: token)
+                return .loginSuccessful(userId: decodedBody.id, token: token)
             case 401:
                 if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                     await MainActor.run {

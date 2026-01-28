@@ -85,12 +85,8 @@ struct veygo_apartment_swift: App {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    nonisolated struct FetchSuccessBody: Decodable {
-                        let renter: PublishRenter
-                    }
-                    
                     let token = extractToken(from: response, for: "Renewing token") ?? ""
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
@@ -99,9 +95,9 @@ struct veygo_apartment_swift: App {
                         return .doNothing
                     }
                     await MainActor.run {
-                        self.session.user = decodedBody.renter
+                        self.session.user = decodedBody
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {

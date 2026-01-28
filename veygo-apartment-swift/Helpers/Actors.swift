@@ -9,7 +9,6 @@ import Foundation
 
 enum ApiTaskResponse {
     case loginSuccessful(userId: Int, token: String)
-    case renewSuccessful(token: String)
     case clearUser
     case doNothing
 }
@@ -62,9 +61,6 @@ actor ApiCallManager {
                 switch result {
                 case .loginSuccessful(let id, let tok):
                     self.login(token: tok, userId: id)
-                case .renewSuccessful(let tok):
-                    self.token = tok
-                    self.persistToken(tok)
                 case .clearUser:
                     self.clearCredentials()
                 case .doNothing:

@@ -195,14 +195,13 @@ struct SubmitFileView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Submitting driver's license") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
                         alertTitle = "Uploaded Successfully"
@@ -210,7 +209,7 @@ struct SubmitFileView: View {
                         showAlert = true
                         session.user = decodedBody
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 400:
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
                         let msg = ErrorResponse.E400

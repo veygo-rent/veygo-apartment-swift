@@ -283,11 +283,7 @@ struct HomeView: View {
                 }
                 switch httpResponse.statusCode {
                 case 200:
-                    if let token = extractToken(from: response, for: "Updating APNs token") {
-                        return .renewSuccessful(token: token)
-                    } else {
-                        return .doNothing
-                    }
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -371,10 +367,7 @@ struct HomeView: View {
             
             switch httpResponse.statusCode {
             case 200:
-                nonisolated struct RequestSuccessBody: Decodable {
-                    let universities: [Apartment]
-                }
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(RequestSuccessBody.self, from: data) else {
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([Apartment].self, from: data) else {
                     await MainActor.run {
                         alertTitle = "Server Error"
                         alertMessage = "Invalid content"
@@ -383,7 +376,7 @@ struct HomeView: View {
                     return .doNothing
                 }
                 await MainActor.run {
-                    self.universities = decodedBody.universities
+                    self.universities = decodedBody
                     if let rentersUniversity = self.universities.getItemBy(id: session.user?.apartmentId ?? 2),
                        rentersUniversity.uniId == 1 {
                         self.selectedLocation = rentersUniversity.id
@@ -468,8 +461,7 @@ struct HomeView: View {
                         showAlert = true
                         promoCodeActual = promoCodeInput
                     }
-                    let token = extractToken(from: response, for: "Validating promo code") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -496,8 +488,7 @@ struct HomeView: View {
                             showAlert = true
                             promoCodeInput = promoCodeActual
                         }
-                        let token = extractToken(from: response, for: "Validating promo code") ?? ""
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
                         alertTitle = errorResponse.title
@@ -505,8 +496,7 @@ struct HomeView: View {
                         showAlert = true
                         promoCodeInput = promoCodeActual
                     }
-                    let token = extractToken(from: response, for: "Validating promo code") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -577,19 +567,18 @@ struct HomeView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Loading current trip") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(CurrentTrip.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
                         self.currentTrip = decodedBody
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -613,8 +602,7 @@ struct HomeView: View {
                         self.currentTrip = nil
                         self.showCurrentTrip = false
                     }
-                    let token = extractToken(from: response, for: "Loading current trip") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -859,8 +847,7 @@ struct CurrentTripView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Honking current vehicle") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -880,8 +867,7 @@ struct CurrentTripView: View {
                     }
                     return .clearUser
                 case 404:
-                    let token = extractToken(from: response, for: "Honking current vehicle") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -1161,14 +1147,13 @@ struct CheckInView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Submitting driver's license") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FilePath.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
                         if leftImage == nil {
@@ -1189,7 +1174,7 @@ struct CheckInView: View {
                             rearLeft = (decodedBody.filePath, image)
                         }
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 400:
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
                         let msg = ErrorResponse.E400

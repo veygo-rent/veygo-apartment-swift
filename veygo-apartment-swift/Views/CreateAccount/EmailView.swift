@@ -127,10 +127,7 @@ struct EmailView: View {
             }
             switch httpResponse.statusCode {
             case 200:
-                nonisolated struct FetchSuccessBody: Decodable {
-                    let universities: [Apartment]
-                }
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([Apartment].self, from: data) else {
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
                         alertTitle = body.title
@@ -139,7 +136,7 @@ struct EmailView: View {
                     }
                     return .doNothing
                 }
-                let domains = decodedBody.universities.map { uni in
+                let domains = decodedBody.map { uni in
                     uni.acceptedSchoolEmailDomain
                 }
                 await MainActor.run {

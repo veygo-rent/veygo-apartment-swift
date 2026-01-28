@@ -221,17 +221,16 @@ struct FindCarView: View {
                         let vehicles: [LocationWithVehicles]
                     }
                     
-                    let token = extractToken(from: response, for: "Getting availability") ?? ""
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([LocationWithVehicles].self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                             backButtonTriggered = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
-                    if decodedBody.vehicles.isEmpty {
+                    if decodedBody.isEmpty {
                         await MainActor.run {
                             alertTitle = "No cars available"
                             alertMessage = "Uh oh, this university isn't ready. Please try again later."
@@ -240,10 +239,10 @@ struct FindCarView: View {
                         }
                     }
                     await MainActor.run {
-                        self.locations = decodedBody.vehicles
+                        self.locations = decodedBody
                     }
                     Task { await updateWalkingETAs() }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 400:
                     nonisolated struct FetchSuccessBody: Decodable {
                         let error: String
@@ -255,7 +254,7 @@ struct FindCarView: View {
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
                         alertTitle = "Invalid Request"
@@ -283,7 +282,6 @@ struct FindCarView: View {
                     }
                     return .clearUser
                 case 403:
-                    let token = extractToken(from: response, for: "Getting availability") ?? ""
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
                             alertTitle = decodedBody.title
@@ -300,7 +298,7 @@ struct FindCarView: View {
                             backButtonTriggered = true
                         }
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {

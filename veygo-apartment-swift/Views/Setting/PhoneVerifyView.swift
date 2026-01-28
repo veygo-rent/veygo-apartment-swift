@@ -113,7 +113,7 @@ struct PhoneVerifyView: View {
                 switch httpResponse.statusCode {
                 case 200:
                     let token = extractToken(from: response, for: "Requesting OTP code") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -219,24 +219,19 @@ struct PhoneVerifyView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    nonisolated struct FetchSuccessBody: Decodable {
-                        let verifiedRenter: PublishRenter
-                    }
-                    
-                    let token = extractToken(from: response, for: "Verifying OTP code") ?? ""
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FetchSuccessBody.self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
                         }
-                        return .renewSuccessful(token: token)
+                        return .doNothing
                     }
                     await MainActor.run {
                         path.removeLast()
-                        session.user = decodedBody.verifiedRenter
+                        session.user = decodedBody
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -254,13 +249,12 @@ struct PhoneVerifyView: View {
                     }
                     return .doNothing
                 case 406:
-                    let token = extractToken(from: response, for: "Verifying OTP code") ?? ""
                     await MainActor.run {
                         alertTitle = "Warning"
                         alertMessage = "Invalid verification code"
                         showAlert = true
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 default:
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {

@@ -158,14 +158,10 @@ struct FullStripeCardEntryView: View {
                 
                 switch httpResponse.statusCode {
                 case 201:
-                    nonisolated struct ResponseObject: Decodable {
-                        let newPaymentMethod: PublishPaymentMethod
-                    }
-                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
                     let _ = await MainActor.run {
                         path.removeLast()
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -185,7 +181,6 @@ struct FullStripeCardEntryView: View {
                     }
                     return .clearUser
                 case 402:
-                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
                             alertTitle = decodedBody.title
@@ -200,7 +195,7 @@ struct FullStripeCardEntryView: View {
                             showAlert = true
                         }
                     }
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -232,8 +227,7 @@ struct FullStripeCardEntryView: View {
                             showAlert = true
                         }
                     }
-                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 case 500:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
@@ -249,8 +243,7 @@ struct FullStripeCardEntryView: View {
                             showAlert = true
                         }
                     }
-                    let token = extractToken(from: response, for: "Creating payment method") ?? ""
-                    return .renewSuccessful(token: token)
+                    return .doNothing
                 default:
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
