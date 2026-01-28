@@ -85,7 +85,6 @@ struct veygo_apartment_swift: App {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Renewing token") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"

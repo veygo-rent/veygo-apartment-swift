@@ -218,7 +218,6 @@ struct EmailVerifyView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Verifying OTP code") ?? ""
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
@@ -249,7 +248,6 @@ struct EmailVerifyView: View {
                     }
                     return .doNothing
                 case 406:
-                    let token = extractToken(from: response, for: "Verifying OTP code") ?? ""
                     await MainActor.run {
                         alertTitle = "Warning"
                         alertMessage = "Invalid verification code"

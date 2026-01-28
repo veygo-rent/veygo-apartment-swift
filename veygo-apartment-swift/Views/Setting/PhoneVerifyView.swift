@@ -112,7 +112,6 @@ struct PhoneVerifyView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    let token = extractToken(from: response, for: "Requesting OTP code") ?? ""
                     return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {

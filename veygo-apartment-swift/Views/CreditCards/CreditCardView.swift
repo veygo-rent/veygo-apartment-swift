@@ -204,7 +204,7 @@ struct CreditCardView: View {
                 let cardToDelete = cards[index]
                 
                 let request = veygoCurlRequest(
-                    url: "/api/v1/payment-method/\(cardToDelete.id)",
+                    url: "/api/v1/payment-method/delete/\(cardToDelete.id)",
                     method: .delete,
                     headers: [
                         "auth": "\(token)$\(userId)"
@@ -233,14 +233,6 @@ struct CreditCardView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: data) else {
-                        await MainActor.run {
-                            alertTitle = "Server Error"
-                            alertMessage = "Invalid content"
-                            showAlert = true
-                        }
-                        return .doNothing
-                    }
                     let _ = await MainActor.run {
                         self.cards.remove(at: index)
                     }
