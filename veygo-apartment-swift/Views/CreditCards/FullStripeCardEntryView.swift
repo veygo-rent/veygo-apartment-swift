@@ -113,7 +113,7 @@ struct FullStripeCardEntryView: View {
                     isSubmitting = true
                 }
                 
-                let payment = try await STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams, additionalPaymentUserAgentValues: [])
+                let payment = try await STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams)
                 
                 let body = await [
                     "pm_id": payment.stripeId,
@@ -293,7 +293,7 @@ struct CardInputFieldWrapper: UIViewRepresentable {
         Coordinator(parent: self)
     }
 
-    class Coordinator: NSObject, @preconcurrency STPPaymentCardTextFieldDelegate {
+    class Coordinator: NSObject, STPPaymentCardTextFieldDelegate {
         var parent: CardInputFieldWrapper
         init(parent: CardInputFieldWrapper) { self.parent = parent }
 
