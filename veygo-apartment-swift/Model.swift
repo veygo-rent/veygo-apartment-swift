@@ -430,6 +430,14 @@ nonisolated struct NewMileagePackage: Equatable, Codable {
     var isActive: Bool
 }
 
+nonisolated struct RateOffer: Identifiable, Equatable, Codable {
+    var id: Int
+    var renterId: Int
+    var apartmentId: Int
+    var multiplier: Double
+    var exp: Date
+}
+
 nonisolated struct ErrorResponse: Equatable, Codable {
     var title: String
     var message: String

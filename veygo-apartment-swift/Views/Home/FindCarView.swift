@@ -9,6 +9,10 @@ import SwiftUI
 import MapKit
 
 struct FindCarView: View {
+    nonisolated struct Availability: Decodable {
+        var offer: RateOffer
+        var vehicles: [LocationWithVehicles]
+    }
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -28,7 +32,7 @@ struct FindCarView: View {
     
     @State private var selectedLocation: Location.ID? = nil
     @State private var selectedVehicle: PublishRenterVehicle.ID? = nil
-    @State private var locations: [LocationWithVehicles] = []
+    @State private var locations: Availability? = nil
     @State private var cameraPosition: MapCameraPosition = .automatic
     
     @State private var savedPosition: MapCameraPosition? = nil
@@ -39,21 +43,25 @@ struct FindCarView: View {
         return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
     }
     
+    private func coordinate(for l: LocationWithVehicles) -> CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: l.location.latitude, longitude: l.location.longitude)
+    }
+
     var body: some View {
         Map(position: $cameraPosition, selection: $selectedLocation) {
             UserAnnotation()
-            ForEach(locations, id: \.id) { location in
-                Marker(
-                    location.location.name,
-                    systemImage: "car",
-                    coordinate: CLLocationCoordinate2D(
-                        latitude: location.location.latitude,
-                        longitude: location.location.longitude
+
+            if let availability = locations {
+                ForEach(availability.vehicles, id: \.id) { locationWithVehicles in
+                    Marker(
+                        locationWithVehicles.location.name,
+                        systemImage: "car",
+                        coordinate: coordinate(for: locationWithVehicles)
                     )
-                )
-                .tag(location.id)
-                .tint(.purple)
-                .annotationSubtitles(.visible)
+                    .tag(locationWithVehicles.id)
+                    .tint(.purple)
+                    .annotationSubtitles(.visible)
+                }
             }
         }
         .sensoryFeedback(.selection, trigger: selectedLocation)
@@ -66,7 +74,8 @@ struct FindCarView: View {
         }
         .onChange(of: selectedLocation) { _, newValue in
             if let sel = newValue {
-                guard let loc = locations.getItemBy(id: sel) else { return }
+                guard let locations else { return }
+                guard let loc = locations.vehicles.first(where: { $0.id == sel }) else { return }
                 let coord = CLLocationCoordinate2D(latitude: loc.location.latitude, longitude: loc.location.longitude)
                 withAnimation(.smooth) {
                     cameraPosition = .camera(MapCamera(centerCoordinate: coord, distance: 3_600, heading: 0, pitch: 0))
@@ -88,7 +97,7 @@ struct FindCarView: View {
                 path: $path,
                 selectedLocation: $selectedLocation,
                 selectedVehicle: $selectedVehicle,
-                locations: locations,
+                locations: locations?.vehicles ?? [],
                 apartment: apartment,
                 startDate: startDate,
                 endDate: endDate
@@ -143,11 +152,12 @@ struct FindCarView: View {
     
     // Compute a region that fits all locations with a little extra padding.
     @MainActor private func fitAllLocationsRegion(paddingPercent: Double) -> MKCoordinateRegion? {
-        guard !locations.isEmpty else { return nil }
+        guard let locations else { return nil }
+        guard !locations.vehicles.isEmpty else { return nil }
 
         var minLat =  90.0, maxLat = -90.0
         var minLon = 180.0, maxLon = -180.0
-        for l in locations {
+        for l in locations.vehicles {
             let lat = l.location.latitude
             let lon = l.location.longitude
             minLat = min(minLat, lat); maxLat = max(maxLat, lat)
@@ -217,11 +227,7 @@ struct FindCarView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    nonisolated struct FetchSuccessBody: Decodable {
-                        let vehicles: [LocationWithVehicles]
-                    }
-                    
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([LocationWithVehicles].self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(Availability.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
@@ -230,7 +236,7 @@ struct FindCarView: View {
                         }
                         return .doNothing
                     }
-                    if decodedBody.isEmpty {
+                    if decodedBody.vehicles.isEmpty {
                         await MainActor.run {
                             alertTitle = "No cars available"
                             alertMessage = "Uh oh, this university isn't ready. Please try again later."
@@ -339,22 +345,26 @@ struct FindCarView: View {
     // Recompute walking ETAs for all loaded locations
     @MainActor private func updateWalkingETAs() async {
         // Require location permission and a known user coordinate
+        
+        guard var locations else { return }
         guard [.authorizedWhenInUse, .authorizedAlways].contains(locationManager.authorizationStatus),
               let userCoord = locationManager.location?.coordinate else { return }
 
         // Compute ETAs and store in hours for display
-        for i in locations.indices {
+        for i in locations.vehicles.indices {
             let dest = CLLocationCoordinate2D(
-                latitude: locations[i].location.latitude,
-                longitude: locations[i].location.longitude
+                latitude: locations.vehicles[i].location.latitude,
+                longitude: locations.vehicles[i].location.longitude
             )
             do {
                 let seconds = try await walkingETASeconds(from: userCoord, to: dest)
-                locations[i].duration = seconds / 60.0
+                locations.vehicles[i].duration = seconds / 60.0
             } catch {
                 print(error.localizedDescription)
             }
         }
+        
+        self.locations = locations
         
         if let re = fitAllLocationsRegion(paddingPercent: 0.75) {
             withAnimation(.easeInOut(duration: 3)) {
@@ -559,10 +569,37 @@ struct VehicleCardView: View {
     }
 }
 
+
+private struct LocationVehicleCard: View {
+    let loc: LocationWithVehicles
+    let vehicle: VehicleWithBlockedDurations
+    let apartment: Apartment
+    let startDate: Date
+    let endDate: Date
+    let onSelect: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(loc.location.name)
+                    .font(.title3)
+                Spacer()
+                if let duration = loc.duration {
+                    Image(systemName: "figure.walk")
+                    Text("\(String(format: "%.0f", duration)) minutes")
+                }
+            }
+            .padding(.horizontal)
+
+            VehicleCardView(vehicle: vehicle, apartment: apartment, startDate: startDate, endDate: endDate)
+                .frame(width: 340)
+                .onTapGesture(perform: onSelect)
+        }
+    }
+}
+
 private struct LocationStripView: View {
-    
     @Binding var path: [HomeDestination]
-    
     @Binding var selectedLocation: Location.ID?
     @Binding var selectedVehicle: PublishRenterVehicle.ID?
     let locations: [LocationWithVehicles]
@@ -572,36 +609,30 @@ private struct LocationStripView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 0) {
-                    ForEach(Array(locations.enumerated()), id: \.element.id) { index, loc in
+                    ForEach(locations.indices, id: \.self) { index in
+                        let loc = locations[index]
+
                         HStack(spacing: 16) {
                             ForEach(loc.vehicles, id: \.id) { v in
-                                VStack (alignment: .leading) {
-                                    HStack {
-                                        Text(loc.location.name)
-                                            .font(.title3)
-                                        Spacer()
-                                        if let duration = loc.duration {
-                                            Image(systemName: "figure.walk")
-                                            Text("\(String(format: "%.0f", duration)) minutes")
-                                        }
+                                LocationVehicleCard(
+                                    loc: loc,
+                                    vehicle: v,
+                                    apartment: apartment,
+                                    startDate: startDate,
+                                    endDate: endDate,
+                                    onSelect: {
+                                        selectedLocation = nil
+                                        path.append(.vehicleDetails(
+                                            vehicle: v,
+                                            location: loc.location,
+                                            apartment: apartment,
+                                            startDate: startDate,
+                                            endDate: endDate
+                                        ))
                                     }
-                                    .padding(.horizontal)
-                                    VehicleCardView(vehicle: v, apartment: apartment, startDate: startDate, endDate: endDate)
-                                        .frame(width: 340)
-                                        .onTapGesture {
-                                            selectedLocation = nil
-                                            path.append(.vehicleDetails(
-                                                vehicle: v,
-                                                location: loc.location,
-                                                apartment: apartment,
-                                                startDate: startDate,
-                                                endDate: endDate
-                                            ))
-                                        }
-                                }
+                                )
                             }
                         }
                         .padding(.leading, 16)
@@ -612,7 +643,7 @@ private struct LocationStripView: View {
             }
             .scrollPosition(id: $selectedLocation)
             .scrollIndicators(.hidden)
-            
+
             Text("* Veygo requires full coverage at all times.")
                 .font(.caption.italic())
                 .padding(.leading, 32)
