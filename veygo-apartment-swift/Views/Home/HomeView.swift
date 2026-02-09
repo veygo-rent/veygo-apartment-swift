@@ -1,5 +1,5 @@
 import SwiftUI
-import _MapKit_SwiftUI
+import MapKit
 import UserNotifications
 import Crisp
 
