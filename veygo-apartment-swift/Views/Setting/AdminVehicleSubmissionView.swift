@@ -18,6 +18,7 @@ struct AdminVehicleSubmissionView: View {
                     TextInputField(placeholder: "VIN Number", text: $vinInput)
                         .disabled(true)
                     SecondaryButton(text: "Scan") {
+                        vinInput = ""
                         isScanningVin = true
                     }
                     .frame(width: 86)
@@ -75,6 +76,8 @@ private struct CheckInView: View {
     @State private var rearLeft: (String, UIImage)? = nil
     @State private var frontRight: (String, UIImage)? = nil
     @State private var frontLeft: (String, UIImage)? = nil
+    
+    @State private var clearScreen: Bool = false
 
     private let gridColumns: [GridItem] = [
         GridItem(.flexible(), spacing: 12),
@@ -176,8 +179,15 @@ private struct CheckInView: View {
             }
             .padding(.top)
             .disabled(isSubmitting || allImagesCaptured)
-            PrimaryButton(text: "Submit Check-in Images") {
-                
+            PrimaryButton(text: "Submit Vehicle Images") {
+                Task {
+                    await ApiCallActor.shared.appendApi { token, userId in
+                        await generateSnapshotAsync(
+                            token,
+                            userId
+                        )
+                    }
+                }
             }
             .padding(.top)
             .disabled(isSubmitting || !allImagesCaptured)
@@ -223,6 +233,9 @@ private struct CheckInView: View {
         }
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
+                if clearScreen {
+                    vin = ""
+                }
                 if clearUserTriggered {
                     session.user = nil
                 }
@@ -318,6 +331,153 @@ private struct CheckInView: View {
                         } else if rearLeft == nil {
                             rearLeft = (decodedBody.filePath, image)
                         }
+                    }
+                    return .doNothing
+                case 400:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
+                        let msg = ErrorResponse.E400
+                        await MainActor.run {
+                            alertTitle = msg.title
+                            alertMessage = msg.message
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        alertTitle = decodedBody.title
+                        alertMessage = decodedBody.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
+    
+    @ApiCallActor func generateSnapshotAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                
+                let body = [
+                    "vehicle_vin": await vin,
+                    "left_image_path": await leftImage!.0,
+                    "right_image_path": await rightImage!.0,
+                    "front_image_path": await frontImage!.0,
+                    "back_image_path": await backImage!.0,
+                    "front_right_image_path": await frontRight!.0,
+                    "front_left_image_path": await frontLeft!.0,
+                    "back_right_image_path": await rearRight!.0,
+                    "back_left_image_path": await rearLeft!.0
+                ]
+                
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+                
+                let request = veygoCurlRequest(
+                    url: "/api/v1/vehicle/generate-snapshot",
+                    method: .post,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ],
+                    body: jsonData
+                )
+                
+                await MainActor.run {
+                    isSubmitting = true
+                }
+                let (data, response) = try await URLSession.shared.data(for: request)
+                await MainActor.run {
+                    isSubmitting = false
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    if let decodedString = String(data: data, encoding: .utf8) {
+                            print("Decoded String: \(decodedString)")
+                        } else {
+                            print("Decoding failed.")
+                        }
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 201:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(VehicleSnapshot.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        alertTitle = "Success"
+                        alertMessage = "Snapshot generated successfully. ID: \(decodedBody.id)"
+                        clearScreen = true
+                        showAlert = true
                     }
                     return .doNothing
                 case 400:
