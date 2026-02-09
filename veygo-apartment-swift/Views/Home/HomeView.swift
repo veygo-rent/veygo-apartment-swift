@@ -1146,7 +1146,7 @@ private struct CheckInView: View {
                 }
                 
                 switch httpResponse.statusCode {
-                case 200:
+                case 201:
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FilePath.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
