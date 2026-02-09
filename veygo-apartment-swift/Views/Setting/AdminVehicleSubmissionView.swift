@@ -230,6 +230,16 @@ private struct CheckInView: View {
         } message: {
             Text(alertMessage)
         }
+        .onChange(of: vin) { _, _ in
+            leftImage = nil
+            rightImage = nil
+            frontLeft = nil
+            frontRight = nil
+            rearLeft = nil
+            rearRight = nil
+            frontImage = nil
+            backImage = nil
+        }
     }
     
     @ApiCallActor func submitFileAsync (_ token: String, _ userId: Int, _ file: Data, _ fileName: String, _ image: UIImage) async -> ApiTaskResponse {
