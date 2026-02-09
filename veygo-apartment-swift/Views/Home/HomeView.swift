@@ -906,7 +906,7 @@ struct CurrentTripView: View {
     }
 }
 
-struct CheckInView: View {
+private struct CheckInView: View {
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
