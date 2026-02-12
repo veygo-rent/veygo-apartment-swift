@@ -7,6 +7,13 @@
 import SwiftUI
 
 struct ResetView: View {
+    private enum Field: Hashable {
+        case email
+        case code
+        case newPassword
+    }
+    @FocusState private var focusedField: Field?
+    
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -21,11 +28,13 @@ struct ResetView: View {
     var body: some View {
         VStack (spacing: 20) {
             TextInputField(placeholder: "Email", text: $email)
+                .focused($focusedField, equals: .email)
                 .onAppear {
                     email = currentEmail
                 }
             HStack (spacing: 16) {
                 TextInputField(placeholder: "OTP Code", text: $code)
+                    .focused($focusedField, equals: .code)
                 SecondaryButton(text: "Send") {
                     Task {
                         await ApiCallActor.shared.appendApi { token, userId in
@@ -36,6 +45,7 @@ struct ResetView: View {
                 .frame(width: 92)
             }
             TextInputField(placeholder: "Password", text: $newPassword, isSecure: true)
+                .focused($focusedField, equals: .newPassword)
             PrimaryButton(text: "Reset") {
                 Task {
                     await ApiCallActor.shared.appendApi { token, userId in
@@ -46,7 +56,9 @@ struct ResetView: View {
         }
         .padding(22)
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(Color("MainBG").ignoresSafeArea())
+        .background(Color("MainBG").ignoresSafeArea().onTapGesture {
+            focusedField = nil
+        })
         .navigationTitle("Reset Password")
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
