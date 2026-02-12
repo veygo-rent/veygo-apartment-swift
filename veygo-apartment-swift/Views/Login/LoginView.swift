@@ -126,7 +126,7 @@ struct LoginView: View {
                 }
             }
             .navigationDestination(isPresented: $goToResetView) {
-                ResetView()
+                ResetView(currentEmail: email)
             }
         }
     }
