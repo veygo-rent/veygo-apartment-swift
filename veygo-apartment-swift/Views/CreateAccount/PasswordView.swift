@@ -147,12 +147,8 @@ struct PasswordView: View {
             
             switch httpResponse.statusCode {
             case 201:
-                nonisolated struct LoginSuccessBody: Decodable {
-                    let renter: PublishRenter
-                }
-                
                 let token = extractToken(from: response, for: "Registering user") ?? ""
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(LoginSuccessBody.self, from: data),
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(PublishRenter.self, from: data),
                       !token.isEmpty else {
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
@@ -163,9 +159,9 @@ struct PasswordView: View {
                     return .doNothing
                 }
                 await MainActor.run {
-                    self.session.user = decodedBody.renter
+                    self.session.user = decodedBody
                 }
-                return .loginSuccessful(userId: decodedBody.renter.id, token: token)
+                return .loginSuccessful(userId: decodedBody.id, token: token)
             case 400:
                 // BAD_REQUEST
                 if let decodedErrMsg = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
