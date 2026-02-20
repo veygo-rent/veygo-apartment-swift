@@ -11,6 +11,27 @@ import CodeScanner
 struct AdminVehicleSubmissionView: View {
     @State private var vinInput: String = ""
     @State private var isScanningVin: Bool = false
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
+    @EnvironmentObject var session: UserSession
+    
+    @State private var isSubmitting: Bool = false
+    @State private var isShowingCamera = false
+    
+    @State private var leftImage: (String, UIImage)? = nil
+    @State private var rightImage: (String, UIImage)? = nil
+    @State private var frontImage: (String, UIImage)? = nil
+    @State private var backImage: (String, UIImage)? = nil
+    @State private var rearRight: (String, UIImage)? = nil
+    @State private var rearLeft: (String, UIImage)? = nil
+    @State private var frontRight: (String, UIImage)? = nil
+    @State private var frontLeft: (String, UIImage)? = nil
+    
+    @State private var clearScreen: Bool = false
     var body: some View {
         ScrollView(.vertical) {
             LazyVStack {
@@ -43,7 +64,35 @@ struct AdminVehicleSubmissionView: View {
                     .sensoryFeedback(.selection, trigger: vinInput)
                 }
                 if !vinInput.isEmpty {
-                    CheckInView(vin: $vinInput)
+                    SecondaryButton(text: nextCaptureButtonTitle) {
+                        isShowingCamera = true
+                    }
+                    .padding(.top)
+                    .disabled(isSubmitting || allImagesCaptured)
+                    PrimaryButton(text: "Submit Vehicle Images") {
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await generateSnapshotAsync(
+                                    token,
+                                    userId
+                                )
+                            }
+                        }
+                    }
+                    .padding(.top)
+                    .disabled(isSubmitting || !allImagesCaptured)
+
+                    LazyVGrid(columns: gridColumns, spacing: 36) {
+                        imageTile(label: "Left Image", binding: $leftImage)
+                        imageTile(label: "Front-Left Image", binding: $frontLeft)
+                        imageTile(label: "Front Image", binding: $frontImage)
+                        imageTile(label: "Front-Right Image", binding: $frontRight)
+                        imageTile(label: "Right Image", binding: $rightImage)
+                        imageTile(label: "Back-Right Image", binding: $rearRight)
+                        imageTile(label: "Back Image", binding: $backImage)
+                        imageTile(label: "Back-Left Image", binding: $rearLeft)
+                    }
+                    .padding(.top, 12)
                 }
             }
             .padding()
@@ -51,34 +100,54 @@ struct AdminVehicleSubmissionView: View {
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
         .background(Color("MainBG").ignoresSafeArea(.all))
+        .fullScreenCover(isPresented: $isShowingCamera) {
+            CameraImagePicker { image in
+                // Convert to Data and upload
+                if let data = image.jpegData(compressionQuality: 0.5) {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await submitFileAsync(
+                                token,
+                                userId,
+                                data,
+                                "vehicle_inspection_camera.jpg",
+                                image
+                            )
+                        }
+                    }
+                } else {
+                    // optional: show an error alert here
+                    alertMessage = "Failed to read captured image."
+                    alertTitle = "Camera Error"
+                    showAlert = true
+                }
+            }
+            .ignoresSafeArea(edges: .all)
+        }
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK") {
+                if clearScreen {
+                    vinInput = ""
+                }
+                if clearUserTriggered {
+                    session.user = nil
+                }
+            }
+        } message: {
+            Text(alertMessage)
+        }
+        .onChange(of: vinInput) { _, _ in
+            leftImage = nil
+            rightImage = nil
+            frontLeft = nil
+            frontRight = nil
+            rearLeft = nil
+            rearRight = nil
+            frontImage = nil
+            backImage = nil
+        }
     }
-}
-
-private struct CheckInView: View {
-    @State private var showAlert: Bool = false
-    @State private var alertMessage: String = ""
-    @State private var alertTitle: String = ""
-    @State private var clearUserTriggered: Bool = false
     
-    @EnvironmentObject var session: UserSession
-    
-    // Stage 1: Eight corner images
-    @Binding var vin: String
-    
-    @State private var isSubmitting: Bool = false
-    @State private var isShowingCamera = false
-    
-    @State private var leftImage: (String, UIImage)? = nil
-    @State private var rightImage: (String, UIImage)? = nil
-    @State private var frontImage: (String, UIImage)? = nil
-    @State private var backImage: (String, UIImage)? = nil
-    @State private var rearRight: (String, UIImage)? = nil
-    @State private var rearLeft: (String, UIImage)? = nil
-    @State private var frontRight: (String, UIImage)? = nil
-    @State private var frontLeft: (String, UIImage)? = nil
-    
-    @State private var clearScreen: Bool = false
-
     private let gridColumns: [GridItem] = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
@@ -138,7 +207,7 @@ private struct CheckInView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private var nextCaptureButtonTitle: String {
         if leftImage == nil {
             return "Capture Left Image"
@@ -172,89 +241,6 @@ private struct CheckInView: View {
         frontLeft != nil
     }
     
-    var body: some View {
-        ScrollView {
-            SecondaryButton(text: nextCaptureButtonTitle) {
-                isShowingCamera = true
-            }
-            .padding(.top)
-            .disabled(isSubmitting || allImagesCaptured)
-            PrimaryButton(text: "Submit Vehicle Images") {
-                Task {
-                    await ApiCallActor.shared.appendApi { token, userId in
-                        await generateSnapshotAsync(
-                            token,
-                            userId
-                        )
-                    }
-                }
-            }
-            .padding(.top)
-            .disabled(isSubmitting || !allImagesCaptured)
-
-            LazyVGrid(columns: gridColumns, spacing: 36) {
-                imageTile(label: "Left Image", binding: $leftImage)
-                imageTile(label: "Front-Left Image", binding: $frontLeft)
-                imageTile(label: "Front Image", binding: $frontImage)
-                imageTile(label: "Front-Right Image", binding: $frontRight)
-                imageTile(label: "Right Image", binding: $rightImage)
-                imageTile(label: "Back-Right Image", binding: $rearRight)
-                imageTile(label: "Back Image", binding: $backImage)
-                imageTile(label: "Back-Left Image", binding: $rearLeft)
-            }
-            .padding(.top, 12)
-        }
-        .scrollIndicators(.hidden)
-        .scrollContentBackground(.hidden)
-        .background(Color("MainBG").ignoresSafeArea())
-        .fullScreenCover(isPresented: $isShowingCamera) {
-            CameraImagePicker { image in
-                // Convert to Data and upload
-                if let data = image.jpegData(compressionQuality: 0.5) {
-                    Task {
-                        await ApiCallActor.shared.appendApi { token, userId in
-                            await submitFileAsync(
-                                token,
-                                userId,
-                                data,
-                                "vehicle_inspection_camera.jpg",
-                                image
-                            )
-                        }
-                    }
-                } else {
-                    // optional: show an error alert here
-                    alertMessage = "Failed to read captured image."
-                    alertTitle = "Camera Error"
-                    showAlert = true
-                }
-            }
-            .ignoresSafeArea(edges: .all)
-        }
-        .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK") {
-                if clearScreen {
-                    vin = ""
-                }
-                if clearUserTriggered {
-                    session.user = nil
-                }
-            }
-        } message: {
-            Text(alertMessage)
-        }
-        .onChange(of: vin) { _, _ in
-            leftImage = nil
-            rightImage = nil
-            frontLeft = nil
-            frontRight = nil
-            rearLeft = nil
-            rearRight = nil
-            frontImage = nil
-            backImage = nil
-        }
-    }
-    
     @ApiCallActor func submitFileAsync (_ token: String, _ userId: Int, _ file: Data, _ fileName: String, _ image: UIImage) async -> ApiTaskResponse {
         do {
             let user = await MainActor.run { self.session.user }
@@ -267,7 +253,7 @@ private struct CheckInView: View {
                         "auth": "\(token)$\(userId)",
                         "Content-Type": "application/octet-stream",
                         "file-name": fileName,
-                        "vehicle-vin": await vin
+                        "vehicle-vin": await vinInput
                     ],
                     body: file
                 )
@@ -410,7 +396,7 @@ private struct CheckInView: View {
             if !token.isEmpty && userId > 0, user != nil {
                 
                 let body = [
-                    "vehicle_vin": await vin,
+                    "vehicle_vin": await vinInput,
                     "left_image_path": await leftImage!.0,
                     "right_image_path": await rightImage!.0,
                     "front_image_path": await frontImage!.0,
@@ -551,4 +537,3 @@ private struct CheckInView: View {
         }
     }
 }
-
