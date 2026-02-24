@@ -98,23 +98,7 @@ struct veygo_apartment_swift: App {
                     }
                     return .doNothing
                 case 401:
-                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
-                        await MainActor.run {
-                            alertTitle = decodedBody.title
-                            alertMessage = decodedBody.message
-                            showAlert = true
-                            clearUserTriggered = true
-                        }
-                    } else {
-                        let decodedBody = ErrorResponse.E401
-                        await MainActor.run {
-                            alertTitle = decodedBody.title
-                            alertMessage = decodedBody.message
-                            showAlert = true
-                            clearUserTriggered = true
-                        }
-                    }
-                    return .clearUser
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
