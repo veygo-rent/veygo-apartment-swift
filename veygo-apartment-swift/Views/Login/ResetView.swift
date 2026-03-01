@@ -29,6 +29,8 @@ struct ResetView: View {
         VStack (spacing: 20) {
             TextInputField(placeholder: "Email", text: $email)
                 .focused($focusedField, equals: .email)
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.none)
                 .onAppear {
                     email = currentEmail
                 }

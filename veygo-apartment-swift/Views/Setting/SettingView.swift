@@ -136,11 +136,13 @@ struct SettingView: View {
                 .navigationDestination(for: SettingDestination.self) { destination in
                     switch destination {
                     case .memberAgreement:
-                        WebView(url: URL(string: "https://dev.veygo.rent/membership"))
+                        TermsView(term: .membershipAgreement)
                     case .rentalAgreement:
-                        WebView(url: URL(string: "https://dev.veygo.rent/rental-agreement"))
+                        TermsView(term: .rentalAgreement)
                     case .privacyPolicy:
-                        WebView(url: URL(string: "https://dev.veygo.rent/privacy"))
+                        TermsView(term: .privacyPolicy)
+                    case .termsOfUse:
+                        TermsView(term: .termsOfUse)
                     case .wallet:
                         CreditCardView(cards: $cards, path: $path)
                     case .addCard:

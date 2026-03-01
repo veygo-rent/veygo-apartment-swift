@@ -60,6 +60,7 @@ struct LoginView: View {
                         email = newValue.lowercased()
                     }
                     .autocorrectionDisabled(true)
+                    .textInputAutocapitalization(.none)
                     .focused($focusedField, equals: .email)
                 Spacer().frame(height: 15)
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
