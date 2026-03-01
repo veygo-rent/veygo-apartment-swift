@@ -49,6 +49,13 @@ struct VeygoDatetimeStandard {
         df.dateFormat = "MMM d, h:mm a"
         return df
     }
+    
+    func mediumLengthDateString(from date: Date) -> String {
+        let df = DateFormatter()
+        df.dateStyle = .medium
+        df.timeStyle = .none
+        return df.string(from: date)
+    }
 }
 
 struct VeygoJsonStandard {

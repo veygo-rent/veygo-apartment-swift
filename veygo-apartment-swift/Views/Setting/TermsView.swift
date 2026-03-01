@@ -17,6 +17,7 @@ struct TermsView: View {
     
     @Environment(\.dismiss) var dismiss
     @State private var termWording: AttributedString? = nil
+    @State private var effectiveDate: Date? = nil
     
     @State private var showAlert: Bool = false
     @State private var toDismiss: Bool = false
@@ -26,14 +27,25 @@ struct TermsView: View {
     let term: TermType
     var body: some View {
         List {
-            if let termWording = termWording {
+            if let termWording = termWording, let effectiveDate = effectiveDate {
+                HStack {
+                    Text("Effective Date:")
+                        .foregroundColor(Color.textBlackPrimary)
+                        .font(.body.bold())
+                    Text("\(VeygoDatetimeStandard.shared.mediumLengthDateString(from: effectiveDate))")
+                        .foregroundColor(Color.textBlackPrimary)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.mainBG)
                 Text(termWording)
+                    .foregroundColor(Color.textBlackPrimary)
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color("MainBG"))
+                    .listRowBackground(Color.mainBG)
             } else {
                 Text("Loading \(term.rawValue)")
+                    .foregroundColor(Color.textBlackPrimary)
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color("MainBG"))
+                    .listRowBackground(Color.mainBG)
             }
         }
         .frame(maxWidth: .infinity)
@@ -112,6 +124,7 @@ struct TermsView: View {
                     return .doNothing
                 }
                 await MainActor.run {
+                    effectiveDate = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: decodedBody.policyEffectiveDate)!
                     termWording = try! AttributedString(markdown: decodedBody.content, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace))
                 }
                 return .doNothing
