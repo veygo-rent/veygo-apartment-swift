@@ -9,7 +9,7 @@ import SwiftUI
 struct TripView: View {
     @EnvironmentObject var session: UserSession
     
-    @State private var upcomingReservations: [Agreement] = []
+    @State private var upcomingReservations: [TripInfo] = []
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -36,7 +36,7 @@ struct TripView: View {
                         }
                         .padding()
                         .background(Color.cardBG)
-                        .cornerRadius(10)
+                        .cornerRadius(12)
                     }
                     .navigationLinkIndicatorVisibility(.hidden)
                     .listRowSeparator(.hidden)
@@ -57,17 +57,59 @@ struct TripView: View {
                         .padding(.vertical, 22)
                         .overlay(content: {
                             if isLoading {
-                                LoadingView().cornerRadius(10)
+                                LoadingView().cornerRadius(12)
                             } else {
-                                RoundedRectangle(cornerRadius: 10)
+                                RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.footNote.opacity(0.5), lineWidth: 1)
                             }
                         })
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.mainBG)
                     } else {
-                        ForEach(upcomingReservations) { reservation in
-                            Text(reservation.confirmation)
+                        Text("Your Upcoming \(upcomingReservations.count == 1 ? "Trip" : "Trips")")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
+                        ForEach(upcomingReservations) { rsvp in
+                            GlassEffectContainer {
+                                NavigationLink {
+                                    UpcomingReservationDetailedView(rsvp: rsvp.agreement)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            HStack {
+                                                Text("RSVP")
+                                                    .fontWeight(.bold)
+                                                    .foregroundStyle(Color.textBlackPrimary)
+                                                Text("#\(rsvp.agreement.confirmation)")
+                                                    .fontWeight(.semibold)
+                                                    .foregroundStyle(Color.textLink)
+                                            }
+                                            Text("\(rsvp.localizedStartDate())")
+                                                .font(.callout)
+                                                .fontWeight(.semibold)
+                                                .foregroundStyle(Color.textBlackSecondary)
+                                            Text("Location: \(rsvp.locationName)")
+                                                .font(.callout)
+                                                .foregroundStyle(Color.textBlackSecondary)
+                                            Text("Vehicle: \(rsvp.vehicleName)")
+                                                .font(.callout)
+                                                .foregroundStyle(Color.textBlackSecondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        Image(systemName: "chevron.right")
+                                            .foregroundStyle(Color.accentColor)
+                                    }
+                                    .padding()
+                                    .background(Color.cardBG, ignoresSafeAreaEdges: .all)
+                                    .cornerRadius(12)
+                                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
+                                }
+                                .navigationLinkIndicatorVisibility(.hidden)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
                         }
                     }
                 }
@@ -130,7 +172,7 @@ struct TripView: View {
             
             switch httpResponse.statusCode {
             case 200:
-                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([Agreement].self, from: data) else {
+                guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([TripInfo].self, from: data) else {
                     await MainActor.run {
                         alertTitle = "Server Error"
                         alertMessage = "Invalid content"
@@ -194,5 +236,12 @@ struct TripView: View {
             }
             return .doNothing
         }
+    }
+}
+
+private struct UpcomingReservationDetailedView: View {
+    let rsvp: Agreement
+    var body: some View {
+        Text("\(rsvp.confirmation)")
     }
 }

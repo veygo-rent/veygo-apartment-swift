@@ -55,7 +55,7 @@ struct HomeView: View {
     
     @State private var appliedPromoCode: PublishPromo? = nil
     
-    @State private var currentTrip: CurrentTrip? = nil
+    @State private var currentTrip: TripDetailedInfo? = nil
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -567,7 +567,7 @@ struct HomeView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
-                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(CurrentTrip.self, from: data) else {
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(TripDetailedInfo.self, from: data) else {
                         await MainActor.run {
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
@@ -647,7 +647,7 @@ struct CurrentTripView: View {
     
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismiss) var dismiss
-    @Binding var currentTrip: CurrentTrip?
+    @Binding var currentTrip: TripDetailedInfo?
     @EnvironmentObject var session: UserSession
     
     @State private var showAlert: Bool = false
@@ -917,7 +917,7 @@ private struct CheckInView: View {
     @Environment(\.dismiss) var dismiss
     
     // Stage 1: Eight corner images
-    @Binding var currentTrip: CurrentTrip?
+    @Binding var currentTrip: TripDetailedInfo?
     
     @State private var isSubmitting: Bool = false
     @State private var isShowingCamera = false

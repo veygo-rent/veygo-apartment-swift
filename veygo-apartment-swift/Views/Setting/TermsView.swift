@@ -43,9 +43,14 @@ struct TermsView: View {
                     .listRowBackground(Color.mainBG)
             } else {
                 Text("Loading \(term.rawValue)")
+                    .padding()
+                    .frame(maxWidth: .infinity)
                     .foregroundColor(Color.textBlackPrimary)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
+                    .overlay {
+                        LoadingView().cornerRadius(12)
+                    }
             }
         }
         .frame(maxWidth: .infinity)

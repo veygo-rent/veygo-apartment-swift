@@ -39,7 +39,15 @@ nonisolated struct LocationWithVehicles: Decodable, Identifiable {
     var duration: TimeInterval? = nil
 }
 
-nonisolated struct CurrentTrip: Codable {
+nonisolated struct TripInfo: Codable, Identifiable {
+    var id: Agreement.ID { agreement.id }
+    let agreement: Agreement
+    let apartmentTimezone: String
+    let locationName: String
+    let vehicleName: String
+}
+
+nonisolated struct TripDetailedInfo: Codable {
     let agreement: Agreement
     let vehicle: PublishRenterVehicle
     let apartment: Apartment
