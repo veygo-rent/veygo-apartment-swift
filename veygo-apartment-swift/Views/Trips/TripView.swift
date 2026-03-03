@@ -6,18 +6,37 @@
 //
 import SwiftUI
 
-public struct TripView: View {
+struct TripView: View {
     @State private var upcomingReservations: [Agreement] = []
     @Binding var selectedTab: RootDestination
     public var body: some View {
         NavigationStack {
             List {
+                NavigationLink {
+                    HistoryView()
+                } label: {
+                    HStack {
+                        Text("History and Receipts")
+                            .foregroundStyle(Color.accentColor)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    .padding()
+                    .background(Color.cardBG)
+                    .cornerRadius(10)
+                }
+                .navigationLinkIndicatorVisibility(.hidden)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.mainBG)
+                
                 if upcomingReservations.isEmpty {
                     VStack (alignment: .center, spacing: 16) {
                         Text("Want to start a new reservation?")
-                            .foregroundStyle(Color.textBlackSecondary)
+                            .foregroundStyle(Color.textBlackPrimary)
                             .font(.title2)
-                            .fontWeight(.semibold)
+                            .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                         PrimaryButton(text: "Make a reservation") {
                             selectedTab = .home
