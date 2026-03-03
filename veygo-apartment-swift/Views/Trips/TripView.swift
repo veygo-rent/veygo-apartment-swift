@@ -7,24 +7,37 @@
 import SwiftUI
 
 public struct TripView: View {
+    @State private var upcomingReservations: [Agreement] = []
+    @Binding var selectedTab: RootDestination
     public var body: some View {
-        VStack (alignment: .leading, spacing: 16) {
-            
-            // Upcoming Trip
-            Title(text: "Upcoming Trip", fontSize: 20, color: Color("TextBlackPrimary"))
-            PanelView(
-                reservationNumber: "PU28367359",
-                dateTime: "Jun 17 at 12:00 PM",
-                location: "Purdue University Main Campus",
-                locationNote: "(Exact location will be provided 30 minutes\nbefore rental starts)",
-                modifyAction: { print("Modify tapped") },
-                cancelAction: { print("Cancel tapped") }
-            )
-            
-            Spacer()
-            
+        NavigationStack {
+            List {
+                if upcomingReservations.isEmpty {
+                    VStack (alignment: .center, spacing: 16) {
+                        Text("Want to start a new reservation?")
+                            .foregroundStyle(Color.textBlackSecondary)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                        PrimaryButton(text: "Make a reservation") {
+                            selectedTab = .home
+                        }
+                    }
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 22)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.footNote.opacity(0.5), lineWidth: 1)
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .listStyle(.plain)
+            .scrollIndicators(.hidden)
+            .background(Color.mainBG, ignoresSafeAreaEdges: .all)
+            .navigationTitle(Text("Trips"))
         }
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

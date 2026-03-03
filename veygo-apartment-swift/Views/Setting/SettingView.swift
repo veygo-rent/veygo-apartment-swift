@@ -11,6 +11,7 @@ import WebKit
 
 enum SettingDestination: Hashable {
     // Account
+    case profile
     case membership
     case wallet
     case addCard
@@ -49,6 +50,7 @@ struct SettingView: View {
             NavigationStack (path: $path) {
                 List {
                     Section {
+                        NavigationLink("Profile", value: SettingDestination.profile)
                         NavigationLink("Membership", value: SettingDestination.membership)
                         NavigationLink("Wallet", value: SettingDestination.wallet)
                         if !session.user!.phoneIsVerified {

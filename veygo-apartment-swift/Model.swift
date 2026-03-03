@@ -377,6 +377,8 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var mileageConversion: Double
     var utilizationFactor: Double
     var dateOfCreation: Date
+    
+    var cancellationRate: Double
 }
 
 nonisolated struct Charge: Identifiable, Equatable, Codable {

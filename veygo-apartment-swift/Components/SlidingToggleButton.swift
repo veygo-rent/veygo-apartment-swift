@@ -60,10 +60,3 @@ struct SlidingToggleButton: View {
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 19))
     }
 }
-
-#Preview {
-    StatefulPreviewWrapper(RentalOption.university) { selected in
-        SlidingToggleButton(selectedOption: selected)
-    }
-}
-
