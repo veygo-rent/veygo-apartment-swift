@@ -319,10 +319,10 @@ private struct CreditCardRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.nickname ?? card.maskedCardNumber)
                         .font(.headline)
-                        .foregroundStyle(Color("TextBlackPrimary"))
+                        .foregroundStyle(Color.textBlackPrimary)
                     Text("Exp: \(card.expiration)")
                         .font(.subheadline)
-                        .foregroundStyle(Color("FootNote"))
+                        .foregroundStyle(Color.footNote)
                 }
                 Spacer()
             }
@@ -336,15 +336,15 @@ private struct CreditCardRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Card Number: \(card.maskedCardNumber)")
                         .font(.subheadline)
-                        .foregroundStyle(Color("TextBlackSecondary"))
+                        .foregroundStyle(Color.textBlackSecondary)
                     Text("Last Used: \(convertDateToString(card.lastUsedDateTime))")
                         .font(.subheadline)
-                        .foregroundStyle(Color("TextBlackSecondary"))
+                        .foregroundStyle(Color.textBlackSecondary)
                 }
             }
         }
         .padding()
-        .background(Color("CardBG"), ignoresSafeAreaEdges: .all)
+        .background(Color.cardBG, ignoresSafeAreaEdges: .all)
         .cornerRadius(12)
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
     }

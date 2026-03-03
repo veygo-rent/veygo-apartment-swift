@@ -59,7 +59,7 @@ struct TermsView: View {
             if term != .termsOfUse {
                 Task {
                     await ApiCallActor.shared.appendApi { _, _ in
-                        await fetchPilicyAsync()
+                        await fetchPolicyAsync()
                     }
                 }
             }
@@ -75,7 +75,7 @@ struct TermsView: View {
         }
     }
     
-    @ApiCallActor func fetchPilicyAsync() async -> ApiTaskResponse {
+    @ApiCallActor func fetchPolicyAsync() async -> ApiTaskResponse {
         let policyType: String
         switch term {
         case .privacyPolicy:

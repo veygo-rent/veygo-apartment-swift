@@ -78,8 +78,8 @@ struct EmailView: View {
         .ignoresSafeArea()
         .onAppear() {
             Task {
-                await ApiCallActor.shared.appendApi { token, userId in
-                    await fetchAcceptedDomainsAsync(token, userId)
+                await ApiCallActor.shared.appendApi { _, _ in
+                    await fetchAcceptedDomainsAsync()
                 }
             }
             if let email = signup.student_email {
@@ -99,7 +99,7 @@ struct EmailView: View {
         EmailValidator(email: email, acceptedDomains: acceptedDomains).isValidEmail && (isAcceptedDomain ?? false)
     }
     
-    @ApiCallActor func fetchAcceptedDomainsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+    @ApiCallActor func fetchAcceptedDomainsAsync () async -> ApiTaskResponse {
         do {
             let request = veygoCurlRequest(
                 url: "/api/v1/apartment/get-universities",

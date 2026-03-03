@@ -29,8 +29,8 @@ actor ApiCallManager {
     }
     
     private func clearAppStorage() {
-        UserDefaults.standard.set(0, forKey: "token")
-        UserDefaults.standard.set("", forKey: "user_id")
+        UserDefaults.standard.set("", forKey: "token")
+        UserDefaults.standard.set(0, forKey: "user_id")
     }
     
     private func enqueue(_ operation: @escaping () async -> Void) {
