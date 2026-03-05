@@ -52,11 +52,12 @@ nonisolated struct TripDetailedInfo: Codable {
     let vehicle: PublishRenterVehicle
     let apartment: Apartment
     let location: Location
-    let vehicleSnapsahotBefore: VehicleSnapshot?
+    let vehicleSnapshotBefore: VehicleSnapshot?
     let paymentMethod: PublishPaymentMethod
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?
     let damages: [Damage]
+    let taxes: [Tax]
 }
 
 nonisolated struct FilePath: Codable {
