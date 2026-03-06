@@ -47,7 +47,8 @@ nonisolated struct TripInfo: Codable, Identifiable {
     let vehicleName: String
 }
 
-nonisolated struct TripDetailedInfo: Codable {
+nonisolated struct TripDetailedInfo: Codable, Identifiable {
+    var id: Agreement.ID { agreement.id }
     let agreement: Agreement
     let vehicle: PublishRenterVehicle
     let apartment: Apartment
