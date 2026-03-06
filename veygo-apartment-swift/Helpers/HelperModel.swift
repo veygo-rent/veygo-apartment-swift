@@ -58,6 +58,7 @@ nonisolated struct TripDetailedInfo: Codable {
     let mileagePackage: MileagePackage?
     let damages: [Damage]
     let taxes: [Tax]
+    let vehicleSnapshotAfter: VehicleSnapshot?
 }
 
 nonisolated struct FilePath: Codable {

@@ -332,7 +332,7 @@ struct VehicleDetailView: View {
     @ApiCallActor
     func loadMilagePackageAsync () async -> ApiTaskResponse {
         let request = veygoCurlRequest(
-            url: "/api/v1/vehicle/get-mileage-packages",
+            url: "/api/v1/vehicle/mileage-packages",
             method: .get
         )
         do {
