@@ -356,6 +356,27 @@ private struct UpcomingReservationDetailedView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
+                    VStack (spacing: 12) {
+                        HStack {
+                            Text ("Total est.")
+                                .fontWeight(.bold)
+                            Spacer()
+                            Text("$52.39")
+                                .fontWeight(.bold)
+                        }
+                        .padding()
+                        .background(Color.cardBG)
+                        .cornerRadius(16)
+                        ShortTextLink(text: "Price Details") {
+                            // TODO:
+                        }
+                        Text ("Estimated total does not include any fuel charges, tolls, or any other fees that may occur during your trip (taxes and fees may apply).")
+                            .foregroundStyle(Color.footNote)
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
                 }
             }
             .frame(maxWidth: .infinity)
