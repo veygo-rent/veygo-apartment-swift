@@ -318,7 +318,7 @@ private struct UpcomingReservationDetailedView: View {
                                         latitude: details.location.latitude,
                                         longitude: details.location.longitude
                                     ),
-                                    span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+                                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
                                 )
                             ),
                             interactionModes: []
@@ -329,7 +329,7 @@ private struct UpcomingReservationDetailedView: View {
                                     latitude: details.location.latitude,
                                     longitude: details.location.longitude
                                 )
-                            )
+                            ).tint(.purple)
                         }
                         .frame(height: 160)
                         .cornerRadius(16)
