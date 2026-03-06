@@ -57,7 +57,6 @@ nonisolated struct TripDetailedInfo: Codable, Identifiable {
     let paymentMethod: PublishPaymentMethod
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?
-    let damages: [Damage]
     let taxes: [Tax]
     let vehicleSnapshotAfter: VehicleSnapshot?
 }
