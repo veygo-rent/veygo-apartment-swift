@@ -336,6 +336,26 @@ private struct UpcomingReservationDetailedView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
+                    
+                    VStack (alignment: .leading, spacing: 16) {
+                        Text("Payment Info")
+                            .foregroundStyle(Color.textBlackSecondary)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        HStack (spacing: 16) {
+                            cardBrandImage(for: details.paymentMethod.network)
+                                .frame(width: 64, height: 64)
+                                .cornerRadius(4)
+                            VStack (alignment: .leading, spacing: 4) {
+                                Text(details.paymentMethod.nickname ?? details.paymentMethod.maskedCardNumber)
+                                    .foregroundStyle(Color.textBlackPrimary)
+                                Text("Expires: \(details.paymentMethod.expiration)")
+                                    .foregroundStyle(Color.textBlackSecondary)
+                            }
+                        }
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
                 }
             }
             .frame(maxWidth: .infinity)
