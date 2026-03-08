@@ -377,6 +377,195 @@ private struct UpcomingReservationDetailedView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
+                    HStack {
+                        Image(systemName: "xmark")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.dangerButtonText)
+                        Text("Cancel Reservation")
+                            .foregroundStyle(Color.dangerButtonText)
+                            .underline()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                } else {
+                    HStack {
+                        Text("Confirmation #:")
+                            .foregroundStyle(Color.textBlackSecondary)
+                            .font(.subheadline)
+                        Text("ABDC-1234")
+                            .foregroundStyle(Color.clear)
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .overlay(content: {
+                                LoadingView()
+                                    .cornerRadius(16)
+                            })
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                    Image(.tempVehicle)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 300, height: 130)
+                        .clipped()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.mainBG)
+                    VStack (alignment: .leading, spacing: 16) {
+                        Text("Tesla Model 3")
+                            .foregroundStyle(Color.clear)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .overlay(content: {
+                                LoadingView()
+                                    .cornerRadius(16)
+                            })
+                        Text("IN ABC123 The Veygo Car")
+                            .foregroundStyle(Color.clear)
+                            .font(.subheadline)
+                            .overlay(content: {
+                                LoadingView()
+                                    .cornerRadius(16)
+                            })
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                    VStack (alignment: .leading, spacing: 16) {
+                        Text("Itinerary")
+                            .foregroundStyle(Color.textBlackSecondary)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        HStack {
+                            Image(systemName: "location.fill")
+                                .foregroundStyle(Color.clear)
+                            Text("Veygo HQ - Main Campus")
+                                .foregroundStyle(Color.clear)
+                        }
+                        .font(.subheadline)
+                        .overlay(content: {
+                            LoadingView()
+                                .cornerRadius(16)
+                        })
+                        HStack {
+                            Image(systemName: "clock.badge.fill")
+                                .foregroundStyle(Color.clear)
+                            Text("Dec 22, 2022 at 10:30PM")
+                                .foregroundStyle(Color.clear)
+                        }
+                        .font(.subheadline)
+                        .overlay(content: {
+                            LoadingView()
+                                .cornerRadius(16)
+                        })
+                        HStack {
+                            Image(systemName: "clock.fill")
+                                .foregroundStyle(Color.clear)
+                            Text("Dec 22, 2077 at 10:30PM")
+                                .foregroundStyle(Color.clear)
+                        }
+                        .font(.subheadline)
+                        .overlay(content: {
+                            LoadingView()
+                                .cornerRadius(16)
+                        })
+                        Map(
+                            interactionModes: []
+                        ) {
+                        }
+                        .frame(height: 160)
+                        .cornerRadius(16)
+                        .overlay(content: {
+                            LoadingView()
+                                .cornerRadius(16)
+                        })
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                    
+                    VStack (alignment: .leading, spacing: 16) {
+                        Text("Payment Info")
+                            .foregroundStyle(Color.textBlackSecondary)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        HStack (spacing: 16) {
+                            cardBrandImage(for: "amex")
+                                .frame(width: 64, height: 64)
+                                .cornerRadius(4)
+                                .overlay(content: {
+                                    LoadingView()
+                                        .cornerRadius(4)
+                                })
+                            VStack (alignment: .leading, spacing: 4) {
+                                Text("Veygo Billing")
+                                    .foregroundStyle(Color.clear)
+                                    .overlay(content: {
+                                        LoadingView()
+                                            .cornerRadius(16)
+                                    })
+                                Text("Expires: 12/2077")
+                                    .foregroundStyle(Color.clear)
+                                    .overlay(content: {
+                                        LoadingView()
+                                            .cornerRadius(16)
+                                    })
+                            }
+                        }
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                    VStack (spacing: 12) {
+                        HStack {
+                            Text ("Total est.")
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.clear)
+                            Spacer()
+                            Text("$52.39")
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.clear)
+                        }
+                        .padding()
+                        .background(Color.cardBG)
+                        .cornerRadius(16)
+                        .overlay(content: {
+                            LoadingView()
+                                .cornerRadius(16)
+                        })
+                        Text("Price Details")
+                            .font(.system(size: 15, weight: .regular, design: .default))
+                            .foregroundStyle(Color.clear)
+                            .underline()                            .overlay(content: {
+                                LoadingView()
+                                    .cornerRadius(16)
+                            })
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text ("Estimated total does not include any fuel charges, tolls, or any other fees that may occur during your trip (taxes and fees may apply).")
+                            .foregroundStyle(Color.clear)
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .overlay(content: {
+                                LoadingView()
+                                    .cornerRadius(16)
+                            })
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                    HStack {
+                        Image(systemName: "xmark")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.dangerButtonText)
+                        Text("Cancel Reservation")
+                            .foregroundStyle(Color.dangerButtonText)
+                            .underline()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .overlay(content: {
+                        LoadingView()
+                            .cornerRadius(16)
+                    })
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.mainBG)
+                
                 }
             }
             .frame(maxWidth: .infinity)
