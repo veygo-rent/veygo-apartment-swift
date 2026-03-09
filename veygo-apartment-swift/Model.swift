@@ -82,7 +82,7 @@ nonisolated struct UsAddress: Equatable, Codable, Hashable {
 nonisolated struct RewardTransaction: Identifiable, Equatable, Codable {
     var id: Int
     var agreementId: Int?
-    var duration: Double
+    var duration: Decimal
     var transactionTime: Date
     var renterId: Int
 }
@@ -142,25 +142,25 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var phone: String
     var address: UsAddress
     var acceptedSchoolEmailDomain: String
-    var freeTierHours: Double
-    var silverTierHours: Double?
-    var silverTierRate: Double?
-    var goldTierHours: Double?
-    var goldTierRate: Double?
-    var platinumTierHours: Double?
-    var platinumTierRate: Double?
-    var durationRate: Double
-    var liabilityProtectionRate: Double?
-    var pcdwProtectionRate: Double?
-    var pcdwExtProtectionRate: Double?
-    var rsaProtectionRate: Double?
-    var paiProtectionRate: Double?
+    var freeTierHours: Decimal
+    var silverTierHours: Decimal?
+    var silverTierRate: Decimal?
+    var goldTierHours: Decimal?
+    var goldTierRate: Decimal?
+    var platinumTierHours: Decimal?
+    var platinumTierRate: Decimal?
+    var durationRate: Decimal
+    var liabilityProtectionRate: Decimal?
+    var pcdwProtectionRate: Decimal?
+    var pcdwExtProtectionRate: Decimal?
+    var rsaProtectionRate: Decimal?
+    var paiProtectionRate: Decimal?
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var mileageRateOverwrite: Double?
-    var mileagePackageOverwrite: Double?
-    var mileageConversion: Double
+    var mileageRateOverwrite: Decimal?
+    var mileagePackageOverwrite: Decimal?
+    var mileageConversion: Decimal
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {
@@ -170,25 +170,25 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var phone: String
     var address: String
     var acceptedSchoolEmailDomain: String
-    var freeTierHours: Double
-    var silverTierHours: Double?
-    var silverTierRate: Double?
-    var goldTierHours: Double?
-    var goldTierRate: Double?
-    var platinumTierHours: Double?
-    var platinumTierRate: Double?
-    var durationRate: Double
-    var liabilityProtectionRate: Double?
-    var pcdwProtectionRate: Double?
-    var pcdwExtProtectionRate: Double?
-    var rsaProtectionRate: Double?
-    var paiProtectionRate: Double?
+    var freeTierHours: Decimal
+    var silverTierHours: Decimal?
+    var silverTierRate: Decimal?
+    var goldTierHours: Decimal?
+    var goldTierRate: Decimal?
+    var platinumTierHours: Decimal?
+    var platinumTierRate: Decimal?
+    var durationRate: Decimal
+    var liabilityProtectionRate: Decimal?
+    var pcdwProtectionRate: Decimal?
+    var pcdwExtProtectionRate: Decimal?
+    var rsaProtectionRate: Decimal?
+    var paiProtectionRate: Decimal?
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var mileage_rate_overwrite: Double?
-    var mileage_package_overwrite: Double?
-    var mileageConversion: Double
+    var mileage_rate_overwrite: Decimal?
+    var mileage_package_overwrite: Decimal?
+    var mileageConversion: Decimal
 }
 
 nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
@@ -228,10 +228,10 @@ nonisolated struct PublishRenterVehicle: Identifiable, Equatable, Codable, Hasha
     var year: String
     var make: String
     var model: String
-    var msrpFactor: Double
+    var msrpFactor: Decimal
     var imageLink: String?
     var odometer: Int
-    var tankSize: Double
+    var tankSize: Decimal
     var tankLevelPercentage: Int
     var locationId: Int
     var remoteMgmt: RemoteMgmtType
@@ -254,10 +254,10 @@ nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
     var year: String
     var make: String
     var model: String
-    var msrpFactor: Double
+    var msrpFactor: Decimal
     var imageLink: String?
     var odometer: Int
-    var tankSize: Double
+    var tankSize: Decimal
     var tankLevelPercentage: Int
     var firstTransponderNumber: String?
     var firstTransponderCompanyId: Int?
@@ -289,9 +289,9 @@ nonisolated struct Claim: Identifiable, Equatable, Codable {
     var note: String?
     var time: Date
     var agreementId: Int
-    var adminFee: Double?
-    var towCharge: Double?
-    var citation: Double?
+    var adminFee: Decimal?
+    var towCharge: Decimal?
+    var citation: Decimal?
 }
 
 nonisolated struct Damage: Identifiable, Equatable, Codable {
@@ -306,9 +306,9 @@ nonisolated struct Damage: Identifiable, Equatable, Codable {
     var thirdImage: String?
     var fourthImage: String?
     var fixedDate: Date?
-    var fixedAmount: Double?
-    var depreciation: Double?
-    var lostOfUse: Double?
+    var fixedAmount: Decimal?
+    var depreciation: Decimal?
+    var lostOfUse: Decimal?
     var claimId: Int
     var vehicleId: Int
 }
@@ -335,7 +335,7 @@ nonisolated struct PublishPromo: Identifiable, Equatable, Codable {
     var id: String { code }
     var code: String
     var name: String
-    var amount: Double
+    var amount: Decimal
     var isEnabled: Bool
     var isOneTime: Bool
     var exp: Date
@@ -352,17 +352,17 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var userBillingAddress: UsAddress
     var rsvpPickupTime: Date
     var rsvpDropOffTime: Date
-    var liabilityProtectionRate: Double?
-    var pcdwProtectionRate: Double?
-    var pcdwExtProtectionRate: Double?
-    var rsaProtectionRate: Double?
-    var paiProtectionRate: Double?
+    var liabilityProtectionRate: Decimal?
+    var pcdwProtectionRate: Decimal?
+    var pcdwExtProtectionRate: Decimal?
+    var rsaProtectionRate: Decimal?
+    var paiProtectionRate: Decimal?
 
     var actualPickupTime: Date?
     var actualDropOffTime: Date?
 
-    var msrpFactor: Double
-    var durationRate: Double
+    var msrpFactor: Decimal
+    var durationRate: Decimal
     var vehicleId: Int
     var vehicleSnapshotBefore: Int?
     var vehicleSnapshotAfter: Int?
@@ -371,21 +371,21 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var paymentMethodId: Int
     var promoId: String?
     var locationId: Int
-    var manualDiscount: Double?
+    var manualDiscount: Decimal?
     var mileagePackageId: Int?
-    var mileageRate: Double?
-    var mileageConversion: Double
-    var utilizationFactor: Double
+    var mileageRate: Decimal?
+    var mileageConversion: Decimal
+    var utilizationFactor: Decimal
     var dateOfCreation: Date
     
-    var cancellationRate: Double
+    var cancellationRate: Decimal
 }
 
 nonisolated struct Charge: Identifiable, Equatable, Codable {
     var id: Int
     var name: String
     var time: Date
-    var amount: Double
+    var amount: Decimal
     var note: String?
     var agreementId: Int
     var vehicleId: Int
@@ -397,13 +397,13 @@ nonisolated struct Payment: Identifiable, Equatable, Codable {
     var id: Int
     var paymentType: PaymentType
     var time: Date
-    var amount: Double
+    var amount: Decimal
     var note: String?
     var referenceNumber: String?
     var agreementId: Int?
     var renterId: Int
     var paymentMethodId: Int?
-    var amountAuthorized: Double
+    var amountAuthorized: Decimal
     var captureBefore: Date?
     var isDeposit: Bool
 }
@@ -420,7 +420,7 @@ nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {
 nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var id: Int
     var name: String
-    var multiplier: Double
+    var multiplier: Decimal
     var isSalesTax: Bool
     var taxType: TaxType
     var isDepositTax: Bool
@@ -443,7 +443,7 @@ nonisolated struct RateOffer: Identifiable, Equatable, Codable {
     var id: Int
     var renterId: Int
     var apartmentId: Int
-    var multiplier: Double
+    var multiplier: Decimal
     var exp: Date
 }
 

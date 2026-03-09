@@ -84,4 +84,15 @@ struct VeygoCurrencyStandard {
         f.locale = Locale(identifier: "en_US_POSIX")
         return f
     }()
+    nonisolated let centFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.minimumFractionDigits = 0
+        f.maximumFractionDigits = 0
+        f.multiplier = 100
+        f.positiveSuffix = "¢"
+        f.negativeSuffix = "¢"
+        return f
+    }()
 }

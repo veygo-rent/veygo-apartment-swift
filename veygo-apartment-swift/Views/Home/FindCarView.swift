@@ -540,7 +540,7 @@ struct VehicleCardView: View {
                         Text(vehicle.vehicle.name)
                             .fontWeight(.light)
                     }
-                    Text("$\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate))/hr • $\(String(format: "%.2f", vehicle.vehicle.msrpFactor * apartment.durationRate * 7))/day")
+                    Text("\(VeygoCurrencyStandard.shared.dollarFormatter.string(from: (vehicle.vehicle.msrpFactor * apartment.durationRate) as NSDecimalNumber)!)/hr")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(Color("SecondaryButtonText"))

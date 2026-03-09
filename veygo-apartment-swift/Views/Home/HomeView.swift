@@ -688,11 +688,11 @@ struct CurrentTripView: View {
                     VStack {
                         HStack {
                             VStack (alignment: .leading) {
-                                Text("Pick up: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip.agreement.rsvpPickupTime))")
+                                Text("From: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip.agreement.rsvpPickupTime))")
                                     .font(.footnote)
                                     .fontWeight(.regular)
                                     .foregroundStyle(.textBlackPrimary)
-                                Text("Drop off: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip.agreement.rsvpDropOffTime))")
+                                Text("To: \(VeygoDatetimeStandard.shared.formattedDateTime(currentTrip.agreement.rsvpDropOffTime))")
                                     .font(.footnote)
                                     .fontWeight(.regular)
                                     .foregroundStyle(.textBlackPrimary)

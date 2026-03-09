@@ -206,15 +206,11 @@ struct VehicleDetailView: View {
         .padding(.top, 6)
     }
 
-    private func formatRate(_ rate: Double) -> String {
-        let number = NSNumber(value: rate)
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter.string(from: number) ?? "$\(String(format: "%.2f", rate))"
+    private func formatRate(_ rate: Decimal) -> String {
+        VeygoCurrencyStandard.shared.dollarFormatter.string(from: rate as NSDecimalNumber)!
     }
     
-    private func standardMileageRate() -> Double {
+    private func standardMileageRate() -> Decimal {
         if let overwrite = apartment.mileageRateOverwrite {
             return overwrite
         } else {
@@ -224,19 +220,19 @@ struct VehicleDetailView: View {
     }
 
     private func perMileSubtitle() -> String {
-        let cents = Int((standardMileageRate() * 100).rounded())
-        return "\(cents)\u{00a2} per mile afterwards"
+        let cents = VeygoCurrencyStandard.shared.centFormatter.string(from: standardMileageRate() as NSDecimalNumber)!
+        return "\(cents) per mile afterwards"
     }
 
-    private func mileagePackagePrice(for pkg: MileagePackage, at apt: Apartment) -> Double {
-        let baseRate: Double
+    private func mileagePackagePrice(for pkg: MileagePackage, at apt: Apartment) -> Decimal {
+        let baseRate: Decimal
         if let overwrite = apartment.mileagePackageOverwrite {
             baseRate = overwrite
         } else {
             let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
             baseRate = vehicle.msrpFactor * apartment.durationRate * apt.mileageConversion
         }
-        return baseRate * Double(pkg.miles) * (Double(pkg.discountedRate) / 100.0)
+        return baseRate * Decimal(pkg.miles) * (Decimal(pkg.discountedRate) / 100.0)
     }
     
     
