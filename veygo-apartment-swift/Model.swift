@@ -423,6 +423,7 @@ nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var multiplier: Double
     var isSalesTax: Bool
     var taxType: TaxType
+    var isDepositTax: Bool
 }
 
 nonisolated struct MileagePackage: Identifiable, Equatable, Codable {

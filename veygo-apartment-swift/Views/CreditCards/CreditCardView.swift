@@ -17,6 +17,8 @@ struct CreditCardView: View {
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
     
+    @State private var isLoading: Bool = false
+    
     @EnvironmentObject var session: UserSession
     @Binding var cards: [PublishPaymentMethod]
     @State private var expandedCardID: PublishPaymentMethod.ID? = nil
@@ -27,26 +29,35 @@ struct CreditCardView: View {
         VStack(alignment: .leading, spacing: 16) {
             GlassEffectContainer {
                 List {
-                    ForEach(cards) { card in
-                        CreditCardRow(
-                            card: card,
-                            isExpanded: expandedCardID == card.id,
-                            onTap: {
-                                sensoryFeedbackTrigger.toggle()
-                                withAnimation(.easeInOut) {
-                                    expandedCardID = (expandedCardID == card.id) ? nil : card.id
+                    if !isLoading {
+                        ForEach(cards) { card in
+                            CreditCardRow(
+                                card: card,
+                                isExpanded: expandedCardID == card.id,
+                                onTap: {
+                                    sensoryFeedbackTrigger.toggle()
+                                    withAnimation(.easeInOut) {
+                                        expandedCardID = (expandedCardID == card.id) ? nil : card.id
+                                    }
+                                }
+                            )
+                            .listRowSeparator(.hidden, edges: .all)
+                            .listRowBackground(Color("MainBG"))
+                        }
+                        .onDelete { indexSet in
+                            Task {
+                                await ApiCallActor.shared.appendApi { token, userId in
+                                    await deleteCardAsync(token, userId, at: indexSet)
                                 }
                             }
-                        )
-                        .listRowSeparator(.hidden, edges: .all)
-                        .listRowBackground(Color("MainBG"))
-                    }
-                    .onDelete { indexSet in
-                        Task {
-                            await ApiCallActor.shared.appendApi { token, userId in
-                                await deleteCardAsync(token, userId, at: indexSet)
-                            }
                         }
+                    } else {
+                        LoadingView()
+                            .frame(height: 100)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(12)
+                            .listRowSeparator(.hidden, edges: .all)
+                            .listRowBackground(Color("MainBG"))
                     }
                 }
                 .listStyle(.plain)
@@ -99,6 +110,9 @@ struct CreditCardView: View {
                         "auth": "\(token)$\(userId)"
                     ]
                 )
+                await MainActor.run {
+                    isLoading = true
+                }
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -131,6 +145,7 @@ struct CreditCardView: View {
                     }
                     await MainActor.run {
                         self.cards = decodedBody
+                        isLoading = false
                     }
                     return .doNothing
                 case 401:
