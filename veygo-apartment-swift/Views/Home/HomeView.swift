@@ -457,7 +457,7 @@ struct HomeView: View {
                     await MainActor.run {
                         appliedPromoCode = promo
                         alertTitle = "Coupon Applied"
-                        alertMessage = "Enjoy your \(VeygoCurrencyStandard.shared.dollarFormatter.string(from: promo.amount as NSNumber)!) off!"
+                        alertMessage = "Enjoy your \(VeygoCurrencyStandard.shared.dollarFormatter.string(from: promo.amount.value as NSDecimalNumber)!) off!"
                         showAlert = true
                         promoCodeActual = promoCodeInput
                     }

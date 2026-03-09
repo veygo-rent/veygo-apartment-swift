@@ -212,10 +212,10 @@ struct VehicleDetailView: View {
     
     private func standardMileageRate() -> Decimal {
         if let overwrite = apartment.mileageRateOverwrite {
-            return overwrite
+            return overwrite.value
         } else {
             let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-            return vehicle.msrpFactor * apartment.durationRate * apartment.mileageConversion
+            return vehicle.msrpFactor.value * apartment.durationRate.value * apartment.mileageConversion.value
         }
     }
 
@@ -227,10 +227,10 @@ struct VehicleDetailView: View {
     private func mileagePackagePrice(for pkg: MileagePackage, at apt: Apartment) -> Decimal {
         let baseRate: Decimal
         if let overwrite = apartment.mileagePackageOverwrite {
-            baseRate = overwrite
+            baseRate = overwrite.value
         } else {
             let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-            baseRate = vehicle.msrpFactor * apartment.durationRate * apt.mileageConversion
+            baseRate = vehicle.msrpFactor.value * apartment.durationRate.value * apt.mileageConversion.value
         }
         return baseRate * Decimal(pkg.miles) * (Decimal(pkg.discountedRate) / 100.0)
     }

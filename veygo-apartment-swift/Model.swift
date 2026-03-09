@@ -82,7 +82,7 @@ nonisolated struct UsAddress: Equatable, Codable, Hashable {
 nonisolated struct RewardTransaction: Identifiable, Equatable, Codable {
     var id: Int
     var agreementId: Int?
-    var duration: Decimal
+    var duration: FlexDecimal
     var transactionTime: Date
     var renterId: Int
 }
@@ -142,25 +142,25 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var phone: String
     var address: UsAddress
     var acceptedSchoolEmailDomain: String
-    var freeTierHours: Decimal
-    var silverTierHours: Decimal?
-    var silverTierRate: Decimal?
-    var goldTierHours: Decimal?
-    var goldTierRate: Decimal?
-    var platinumTierHours: Decimal?
-    var platinumTierRate: Decimal?
-    var durationRate: Decimal
-    var liabilityProtectionRate: Decimal?
-    var pcdwProtectionRate: Decimal?
-    var pcdwExtProtectionRate: Decimal?
-    var rsaProtectionRate: Decimal?
-    var paiProtectionRate: Decimal?
+    var freeTierHours: FlexDecimal
+    var silverTierHours: FlexDecimal?
+    var silverTierRate: FlexDecimal?
+    var goldTierHours: FlexDecimal?
+    var goldTierRate: FlexDecimal?
+    var platinumTierHours: FlexDecimal?
+    var platinumTierRate: FlexDecimal?
+    var durationRate: FlexDecimal
+    var liabilityProtectionRate: FlexDecimal?
+    var pcdwProtectionRate: FlexDecimal?
+    var pcdwExtProtectionRate: FlexDecimal?
+    var rsaProtectionRate: FlexDecimal?
+    var paiProtectionRate: FlexDecimal?
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var mileageRateOverwrite: Decimal?
-    var mileagePackageOverwrite: Decimal?
-    var mileageConversion: Decimal
+    var mileageRateOverwrite: FlexDecimal?
+    var mileagePackageOverwrite: FlexDecimal?
+    var mileageConversion: FlexDecimal
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {
@@ -170,25 +170,25 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var phone: String
     var address: String
     var acceptedSchoolEmailDomain: String
-    var freeTierHours: Decimal
-    var silverTierHours: Decimal?
-    var silverTierRate: Decimal?
-    var goldTierHours: Decimal?
-    var goldTierRate: Decimal?
-    var platinumTierHours: Decimal?
-    var platinumTierRate: Decimal?
-    var durationRate: Decimal
-    var liabilityProtectionRate: Decimal?
-    var pcdwProtectionRate: Decimal?
-    var pcdwExtProtectionRate: Decimal?
-    var rsaProtectionRate: Decimal?
-    var paiProtectionRate: Decimal?
+    var freeTierHours: FlexDecimal
+    var silverTierHours: FlexDecimal?
+    var silverTierRate: FlexDecimal?
+    var goldTierHours: FlexDecimal?
+    var goldTierRate: FlexDecimal?
+    var platinumTierHours: FlexDecimal?
+    var platinumTierRate: FlexDecimal?
+    var durationRate: FlexDecimal
+    var liabilityProtectionRate: FlexDecimal?
+    var pcdwProtectionRate: FlexDecimal?
+    var pcdwExtProtectionRate: FlexDecimal?
+    var rsaProtectionRate: FlexDecimal?
+    var paiProtectionRate: FlexDecimal?
     var isOperating: Bool
     var isPublic: Bool
     var uniId: Int
-    var mileage_rate_overwrite: Decimal?
-    var mileage_package_overwrite: Decimal?
-    var mileageConversion: Decimal
+    var mileageRateOverwrite: FlexDecimal?
+    var mileagePackageOverwrite: FlexDecimal?
+    var mileageConversion: FlexDecimal
 }
 
 nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
@@ -228,10 +228,10 @@ nonisolated struct PublishRenterVehicle: Identifiable, Equatable, Codable, Hasha
     var year: String
     var make: String
     var model: String
-    var msrpFactor: Decimal
+    var msrpFactor: FlexDecimal
     var imageLink: String?
     var odometer: Int
-    var tankSize: Decimal
+    var tankSize: FlexDecimal
     var tankLevelPercentage: Int
     var locationId: Int
     var remoteMgmt: RemoteMgmtType
@@ -254,10 +254,10 @@ nonisolated struct PublishAdminVehicle: Identifiable, Equatable, Codable {
     var year: String
     var make: String
     var model: String
-    var msrpFactor: Decimal
+    var msrpFactor: FlexDecimal
     var imageLink: String?
     var odometer: Int
-    var tankSize: Decimal
+    var tankSize: FlexDecimal
     var tankLevelPercentage: Int
     var firstTransponderNumber: String?
     var firstTransponderCompanyId: Int?
@@ -289,9 +289,9 @@ nonisolated struct Claim: Identifiable, Equatable, Codable {
     var note: String?
     var time: Date
     var agreementId: Int
-    var adminFee: Decimal?
-    var towCharge: Decimal?
-    var citation: Decimal?
+    var adminFee: FlexDecimal?
+    var towCharge: FlexDecimal?
+    var citation: FlexDecimal?
 }
 
 nonisolated struct Damage: Identifiable, Equatable, Codable {
@@ -306,9 +306,9 @@ nonisolated struct Damage: Identifiable, Equatable, Codable {
     var thirdImage: String?
     var fourthImage: String?
     var fixedDate: Date?
-    var fixedAmount: Decimal?
-    var depreciation: Decimal?
-    var lostOfUse: Decimal?
+    var fixedAmount: FlexDecimal?
+    var depreciation: FlexDecimal?
+    var lostOfUse: FlexDecimal?
     var claimId: Int
     var vehicleId: Int
 }
@@ -335,7 +335,7 @@ nonisolated struct PublishPromo: Identifiable, Equatable, Codable {
     var id: String { code }
     var code: String
     var name: String
-    var amount: Decimal
+    var amount: FlexDecimal
     var isEnabled: Bool
     var isOneTime: Bool
     var exp: Date
@@ -352,17 +352,17 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var userBillingAddress: UsAddress
     var rsvpPickupTime: Date
     var rsvpDropOffTime: Date
-    var liabilityProtectionRate: Decimal?
-    var pcdwProtectionRate: Decimal?
-    var pcdwExtProtectionRate: Decimal?
-    var rsaProtectionRate: Decimal?
-    var paiProtectionRate: Decimal?
+    var liabilityProtectionRate: FlexDecimal?
+    var pcdwProtectionRate: FlexDecimal?
+    var pcdwExtProtectionRate: FlexDecimal?
+    var rsaProtectionRate: FlexDecimal?
+    var paiProtectionRate: FlexDecimal?
 
     var actualPickupTime: Date?
     var actualDropOffTime: Date?
 
-    var msrpFactor: Decimal
-    var durationRate: Decimal
+    var msrpFactor: FlexDecimal
+    var durationRate: FlexDecimal
     var vehicleId: Int
     var vehicleSnapshotBefore: Int?
     var vehicleSnapshotAfter: Int?
@@ -371,21 +371,21 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var paymentMethodId: Int
     var promoId: String?
     var locationId: Int
-    var manualDiscount: Decimal?
+    var manualDiscount: FlexDecimal?
     var mileagePackageId: Int?
-    var mileageRate: Decimal?
-    var mileageConversion: Decimal
-    var utilizationFactor: Decimal
+    var mileageRate: FlexDecimal?
+    var mileageConversion: FlexDecimal
+    var utilizationFactor: FlexDecimal
     var dateOfCreation: Date
     
-    var cancellationRate: Decimal
+    var cancellationRate: FlexDecimal
 }
 
 nonisolated struct Charge: Identifiable, Equatable, Codable {
     var id: Int
     var name: String
     var time: Date
-    var amount: Decimal
+    var amount: FlexDecimal
     var note: String?
     var agreementId: Int
     var vehicleId: Int
@@ -397,13 +397,13 @@ nonisolated struct Payment: Identifiable, Equatable, Codable {
     var id: Int
     var paymentType: PaymentType
     var time: Date
-    var amount: Decimal
+    var amount: FlexDecimal
     var note: String?
     var referenceNumber: String?
     var agreementId: Int?
     var renterId: Int
     var paymentMethodId: Int?
-    var amountAuthorized: Decimal
+    var amountAuthorized: FlexDecimal
     var captureBefore: Date?
     var isDeposit: Bool
 }
@@ -420,7 +420,7 @@ nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {
 nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var id: Int
     var name: String
-    var multiplier: Decimal
+    var multiplier: FlexDecimal
     var isSalesTax: Bool
     var taxType: TaxType
     var isDepositTax: Bool
@@ -443,7 +443,7 @@ nonisolated struct RateOffer: Identifiable, Equatable, Codable {
     var id: Int
     var renterId: Int
     var apartmentId: Int
-    var multiplier: Decimal
+    var multiplier: FlexDecimal
     var exp: Date
 }
 
