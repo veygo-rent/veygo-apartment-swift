@@ -130,3 +130,20 @@ struct SignupSession {
     var student_email: Optional<String> = nil
     var password: Optional<String> = nil
 }
+
+extension Date {
+    /// Returns the next quarter-hour date after the current date.
+    var nextQuarterHour: Date? {
+        let calendar = Calendar.current
+        
+        // Calculate the next date that matches a minute interval of 15.
+        // using the .nextTime matching policy ensures it finds a future time.
+        return calendar.nextDate(
+            after: self,
+            matching: DateComponents(minute: 15),
+            matchingPolicy: .nextTime,
+            // The direction should be .forward to get the *next* quarter hour.
+            direction: .forward
+        )
+    }
+}
