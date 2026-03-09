@@ -21,7 +21,7 @@ struct DatePanel: View {
     }
 
     private var minimumEndDate: Date {
-        max(Date().nextQuarterHour!.addingTimeInterval(30 * 60), Date().addingTimeInterval(45 * 60))
+        max(startDate.addingTimeInterval(30 * 60), Date().nextQuarterHour!.addingTimeInterval(45 * 60))
     }
     var body: some View {
         ZStack {
