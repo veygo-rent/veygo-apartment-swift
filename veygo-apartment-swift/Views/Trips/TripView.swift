@@ -409,6 +409,10 @@ private struct UpcomingReservationDetailedView: View {
                         .scaledToFill()
                         .frame(width: 300, height: 130)
                         .clipped()
+                        .overlay(content: {
+                            LoadingView()
+                                .cornerRadius(16)
+                        })
                         .frame(maxWidth: .infinity, alignment: .center)
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.mainBG)
