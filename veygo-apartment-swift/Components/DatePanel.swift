@@ -14,6 +14,8 @@ struct DatePanel: View {
     @State private var showStartPicker = false
     @State private var showEndPicker = false
     
+    @Environment(\.scenePhase) private var scenePhase
+    
     var isEditMode: Bool
     var schoolTimezoneIdentifier: String? = nil
     
@@ -71,6 +73,12 @@ struct DatePanel: View {
                 .onAppear {
                     startDate = minimumStartDate
                     endDate = minimumEndDate
+                }
+                .onChange(of: scenePhase) { oldPhase, newPhase in
+                    if newPhase == .active {
+                        startDate = minimumStartDate
+                        endDate = minimumEndDate
+                    }
                 }
                 .onChange(of: startDate) { _, newValue in
                     if endDate < minimumEndDate {
