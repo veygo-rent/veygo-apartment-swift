@@ -87,8 +87,9 @@ struct DatePanel: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .onChange(of: context.date) { _, _ in
-                                startDate = minimumStartDate
-                                endDate = minimumEndDate
+                                if startDate < minimumStartDate {
+                                    startDate = minimumStartDate
+                                }
                             }
                     }
                     
