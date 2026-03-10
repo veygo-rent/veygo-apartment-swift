@@ -138,56 +138,50 @@ struct VehicleDetailView: View {
     @ViewBuilder
     private func AvailableVehicle() -> some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Mileage package section
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Mileage package")
-                    .font(.headline)
-                    .foregroundStyle(Color("TextBlackPrimary"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            Text("Mileage package")
+                .font(.headline)
+                .foregroundStyle(Color("TextBlackPrimary"))
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                VStack(spacing: 0) {
-                    // Determine if there are any additional mileage packages
-                    let hasPackages = !mileagePackages.isEmpty
+            VStack(spacing: 0) {
+                // Determine if there are any additional mileage packages
+                let hasPackages = !mileagePackages.isEmpty
 
-                    // First option: no mileage package
+                // First option: no mileage package
+                MileagePackageRow(
+                    title: "10 Miles Free",
+                    subtitle: perMileSubtitle(),
+                    trailingText: "Included",
+                    isSelected: mileagePackage == nil,
+                    position: hasPackages ? .first : .single,
+                    action: {
+                        mileagePackage = nil
+                    }
+                )
+
+                // API-provided mileage packages
+                ForEach(Array(mileagePackages.enumerated()), id: \.element.id) { index, pkg in
+                    let isLast = index == mileagePackages.count - 1
+                    let position: MileageRowPosition = isLast ? .last : .middle
+
                     MileagePackageRow(
-                        title: "10 Miles Free",
+                        title: "\(10 + pkg.miles) Miles",
                         subtitle: perMileSubtitle(),
-                        trailingText: "Included",
-                        isSelected: mileagePackage == nil,
-                        position: hasPackages ? .first : .single,
+                        trailingText: formatRate(mileagePackagePrice(for: pkg, at: apartment)),
+                        isSelected: mileagePackage == pkg,
+                        position: position,
                         action: {
-                            mileagePackage = nil
+                            mileagePackage = pkg
                         }
                     )
-
-                    // API-provided mileage packages
-                    ForEach(Array(mileagePackages.enumerated()), id: \.element.id) { index, pkg in
-                        let isLast = index == mileagePackages.count - 1
-                        let position: MileageRowPosition = isLast ? .last : .middle
-
-                        MileagePackageRow(
-                            title: "\(10 + pkg.miles) Miles",
-                            subtitle: perMileSubtitle(),
-                            trailingText: formatRate(mileagePackagePrice(for: pkg, at: apartment)),
-                            isSelected: mileagePackage == pkg,
-                            position: position,
-                            action: {
-                                mileagePackage = pkg
-                            }
-                        )
-                    }
                 }
-                PrimaryButtonLg(text: "Continue") {
-                    path.append(.summary(vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle, location: vehicleWithBlocksAndLocationInfo.1, apartment: apartment))
-                }
-                .padding(.top, 6)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 6)
+            PrimaryButton(text: "Continue") {
+                path.append(.summary(vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle, location: vehicleWithBlocksAndLocationInfo.1, apartment: apartment))
+            }
+            .padding(.top, 6)
         }
-        .padding(.top, 6)
+        .padding()
     }
 
     private func formatRate(_ rate: Decimal) -> String {
