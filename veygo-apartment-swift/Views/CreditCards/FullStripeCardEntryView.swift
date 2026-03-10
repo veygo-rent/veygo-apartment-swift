@@ -13,6 +13,8 @@ import StripeCardScan
 
 struct FullStripeCardEntryView: View {
     
+    @Environment(\.dismiss) private var dismiss
+    
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -24,8 +26,6 @@ struct FullStripeCardEntryView: View {
     @State private var showCardScan = false
     
     @EnvironmentObject var session: UserSession
-    
-    @Binding var path: [SettingDestination]
     
     @FocusState private var focusedField: Field?
     
@@ -159,7 +159,7 @@ struct FullStripeCardEntryView: View {
                 switch httpResponse.statusCode {
                 case 201:
                     let _ = await MainActor.run {
-                        path.removeLast()
+                        dismiss()
                     }
                     return .doNothing
                 case 401:

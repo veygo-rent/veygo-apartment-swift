@@ -115,7 +115,45 @@ struct SummaryView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                         
-                        // TODO: Display Selected card
+                        NavigationLink {
+                            SelectPaymentCardView(
+                                paymentMethods: $paymentMethods,
+                                selectedPaymentMethod: $selectedPaymentMethod
+                            )
+                        } label: {
+                            HStack(spacing: 16) {
+                                cardBrandImage(for: selectedPaymentMethod?.network ?? "")
+                                    .frame(width: 48, height: 48)
+                                    .cornerRadius(4)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(selectedPaymentMethod?.nickname ?? selectedPaymentMethod?.maskedCardNumber ?? "Select payment card")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                        .font(.subheadline)
+                                    
+                                    if let selectedPaymentMethod {
+                                        Text("Expires: \(selectedPaymentMethod.expiration)")
+                                            .foregroundStyle(Color.textBlackSecondary)
+                                            .font(.footnote)
+                                    } else {
+                                        Text(isLoadingPM ? "Loading cards..." : "Tap to choose a card")
+                                            .foregroundStyle(Color.footNote)
+                                            .font(.footnote)
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.footNote)
+                            }
+                            .padding()
+                            .background(Color.cardBG)
+                            .cornerRadius(12)
+                            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
+                        .navigationLinkIndicatorVisibility(.hidden)
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
@@ -125,6 +163,7 @@ struct SummaryView: View {
                 PrimaryButton(text: "Book Trip") {
                     
                 }
+                .disabled(selectedPaymentMethod == nil)
                 .padding()
                 .alert(alertTitle, isPresented: $showAlert) {
                     Button("OK") {
@@ -196,6 +235,12 @@ struct SummaryView: View {
                     }
                     await MainActor.run {
                         self.paymentMethods = decodedBody
+                        if let selectedPaymentMethod,
+                           !decodedBody.contains(where: { $0.id == selectedPaymentMethod.id }) {
+                            self.selectedPaymentMethod = decodedBody.first
+                        } else if self.selectedPaymentMethod == nil {
+                            self.selectedPaymentMethod = decodedBody.first
+                        }
                         isLoadingPM = false
                     }
                     return .doNothing
@@ -257,10 +302,190 @@ struct SummaryView: View {
 
 private struct SelectPaymentCardView: View {
     
+    @EnvironmentObject var session: UserSession
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var alertTitle: String = ""
+    @State private var clearUserTriggered: Bool = false
+    
     @Binding var paymentMethods: [PublishPaymentMethod]
     @Binding var selectedPaymentMethod: PublishPaymentMethod?
     
+    @State private var isAddingNewCard: Bool = false
+    
     var body: some View {
-        Text("Select Payment Card")
+        VStack {
+            List {
+                if paymentMethods.isEmpty {
+                    Text("No payment cards available.")
+                        .foregroundStyle(Color.footNote)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.mainBG)
+                } else {
+                    ForEach(paymentMethods) { card in
+                        Button {
+                            selectedPaymentMethod = card
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 16) {
+                                cardBrandImage(for: card.network)
+                                    .frame(width: 48, height: 48)
+                                    .cornerRadius(4)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(card.nickname ?? card.maskedCardNumber)
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                        .font(.headline)
+                                    Text("Exp: \(card.expiration)")
+                                        .foregroundStyle(Color.footNote)
+                                        .font(.subheadline)
+                                }
+                                
+                                Spacer()
+                                
+                                if selectedPaymentMethod?.id == card.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(Color.primaryButtonBg)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.mainBG)
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .onChange(of: isAddingNewCard, { oldValue, newValue in
+                if !newValue {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await loadCardsAsync(token, userId)
+                        }
+                    }
+                }
+            })
+            PrimaryButton(text: "Add a New Card") {
+                isAddingNewCard = true
+            }
+            .padding()
+            .sheet(isPresented: $isAddingNewCard) {
+                FullStripeCardEntryView()
+            }
+
+        }
+        .navigationTitle("Select Payment Card")
+        .navigationBarTitleDisplayMode(.large)
+        .background(Color.mainBG, ignoresSafeAreaEdges: .all)
+    }
+    
+    @ApiCallActor func loadCardsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                let request = veygoCurlRequest(
+                    url: "/api/v1/payment-method/get",
+                    method: .get,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ]
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode([PublishPaymentMethod].self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        self.paymentMethods = decodedBody
+                        if let selectedPaymentMethod,
+                           !decodedBody.contains(where: { $0.id == selectedPaymentMethod.id }) {
+                            self.selectedPaymentMethod = decodedBody.first
+                        } else if self.selectedPaymentMethod == nil {
+                            self.selectedPaymentMethod = decodedBody.first
+                        }
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
     }
 }

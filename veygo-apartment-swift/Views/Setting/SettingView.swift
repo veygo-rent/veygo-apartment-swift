@@ -148,7 +148,7 @@ struct SettingView: View {
                     case .wallet:
                         CreditCardView(cards: $cards, path: $path)
                     case .addCard:
-                        FullStripeCardEntryView(path: $path)
+                        FullStripeCardEntryView()
                     case .phone:
                         PhoneVerifyView(path: $path)
                     case .email:
