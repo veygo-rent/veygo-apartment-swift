@@ -22,7 +22,7 @@ struct VehicleDetailView: View {
     
     var startTime: Date
     var endTime: Date
-    var apartment: Apartment
+    let apartment: Apartment
     var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)
     
     // Protection option selections
@@ -193,7 +193,7 @@ struct VehicleDetailView: View {
                     }
                 }
                 PrimaryButtonLg(text: "Continue") {
-                    
+                    path.append(.summary(vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle, location: vehicleWithBlocksAndLocationInfo.1, apartment: apartment))
                 }
                 .padding(.top, 6)
             }

@@ -7,6 +7,7 @@ enum HomeDestination: Hashable {
     case university(apartment: Apartment)
     case apartment
     case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment)
+    case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment)
 }
 
 struct HomeView: View {
@@ -46,6 +47,20 @@ struct HomeView: View {
         guard let selectedLocation = selectedLocation else { return nil }
         let uni: Apartment? = universities.getItemBy(id: selectedLocation)
         return uni
+    }
+
+    @ViewBuilder
+    private func destinationView(for dest: HomeDestination) -> some View {
+        switch dest {
+        case .apartment:
+            ListCarView()
+        case let .university(apt):
+            FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
+        case let .vehicleDetails(vehicle, location, apartment):
+            VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), mileagePackage: $appliedMileagePackage)
+        case let .summary(vehicle, location, apartment):
+            SummaryView(path: $path, startDate: startDate, endDate: endDate, vehicle: vehicle, apartment: apartment, location: location, promo: appliedPromoCode, mileagePackage: appliedMileagePackage)
+        }
     }
     
     var body: some View {
@@ -176,14 +191,7 @@ struct HomeView: View {
                     }
                     .ignoresSafeArea(.container)
                     .navigationDestination(for: HomeDestination.self) { dest in
-                        switch dest {
-                        case .apartment:
-                            ListCarView()
-                        case let .university(apt):
-                            FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
-                        case let .vehicleDetails(vehicle, location, apartment):
-                            VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), mileagePackage: $appliedMileagePackage)
-                        }
+                        destinationView(for: dest)
                     }
                     .onAppear {
                         let center = UNUserNotificationCenter.current()
