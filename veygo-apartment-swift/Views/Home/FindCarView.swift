@@ -14,6 +14,8 @@ struct FindCarView: View {
         var vehicles: [LocationWithVehicles]
     }
     
+    @Environment(\.dismiss) private var dismiss
+    
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -132,7 +134,7 @@ struct FindCarView: View {
                     withAnimation(.easeInOut(duration: 0.5)) {
                         selectedLocation = nil
                     }
-                    path.removeLast()
+                    dismiss()
                 }) {
                     Image(systemName: "chevron.left")
                 }

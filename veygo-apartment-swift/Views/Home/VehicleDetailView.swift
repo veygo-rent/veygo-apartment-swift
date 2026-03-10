@@ -114,23 +114,9 @@ struct VehicleDetailView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .swipeBackGesture {
-            path.removeLast()
-        }
         .scrollIndicators(.hidden)
         .background(Color("MainBG"))
-        .toolbar(content: {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(action: {
-                    path.removeLast()
-                }) {
-                    Image(systemName: "chevron.left")
-                }
-            }
-        })
-        .navigationBarBackButtonHidden(true)
-        .ignoresSafeArea(.container)
-        .toolbar(.hidden, for: .tabBar)
+        .ignoresSafeArea(.container, edges: .top)
         .onAppear {
             Task {
                 await ApiCallActor.shared.appendApi { token, userId in
@@ -200,8 +186,6 @@ struct VehicleDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 18)
             .padding(.vertical, 6)
-
-            Spacer(minLength: 24)
         }
         .padding(.top, 6)
     }
