@@ -6,7 +6,7 @@ import Crisp
 enum HomeDestination: Hashable {
     case university(apartment: Apartment)
     case apartment
-    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, startDate: Date, endDate: Date)
+    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment)
 }
 
 struct HomeView: View {
@@ -38,12 +38,14 @@ struct HomeView: View {
     @State private var path: [HomeDestination] = []
     
     @State private var appliedPromoCode: PublishPromo? = nil
+    @State private var appliedMileagePackage: MileagePackage? = nil
     
     @State private var currentTrip: TripDetailedInfo? = nil
     
     private var selectedUniversity: Apartment? {
-        guard let selectedLocation else { return nil }
-        return universities.getItemBy(id: selectedLocation)
+        guard let selectedLocation = selectedLocation else { return nil }
+        let uni: Apartment? = universities.getItemBy(id: selectedLocation)
+        return uni
     }
     
     var body: some View {
@@ -179,8 +181,8 @@ struct HomeView: View {
                             ListCarView()
                         case let .university(apt):
                             FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
-                        case let .vehicleDetails(vehicle, location, apartment, startDate, endDate):
-                            VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location))
+                        case let .vehicleDetails(vehicle, location, apartment):
+                            VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), mileagePackage: $appliedMileagePackage)
                         }
                     }
                     .onAppear {

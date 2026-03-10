@@ -32,7 +32,7 @@ struct VehicleDetailView: View {
     @State private var includeRSA = false
     @State private var includePAI = false
     
-    @State private var mileagePackageId: MileagePackage.ID? = nil
+    @Binding var mileagePackage: MileagePackage?
     @State private var mileagePackages: [MileagePackage] = []
     
     private enum MileageRowPosition {
@@ -168,10 +168,10 @@ struct VehicleDetailView: View {
                         title: "10 Miles Free",
                         subtitle: perMileSubtitle(),
                         trailingText: "Included",
-                        isSelected: mileagePackageId == nil,
+                        isSelected: mileagePackage == nil,
                         position: hasPackages ? .first : .single,
                         action: {
-                            mileagePackageId = nil
+                            mileagePackage = nil
                         }
                     )
 
@@ -184,16 +184,16 @@ struct VehicleDetailView: View {
                             title: "\(10 + pkg.miles) Miles",
                             subtitle: perMileSubtitle(),
                             trailingText: formatRate(mileagePackagePrice(for: pkg, at: apartment)),
-                            isSelected: mileagePackageId == pkg.id,
+                            isSelected: mileagePackage == pkg,
                             position: position,
                             action: {
-                                mileagePackageId = pkg.id
+                                mileagePackage = pkg
                             }
                         )
                     }
                 }
                 PrimaryButtonLg(text: "Continue") {
-                    // TODO
+                    
                 }
                 .padding(.top, 6)
             }
