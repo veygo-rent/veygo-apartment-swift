@@ -41,6 +41,11 @@ struct HomeView: View {
     
     @State private var currentTrip: TripDetailedInfo? = nil
     
+    private var selectedUniversity: Apartment? {
+        guard let selectedLocation else { return nil }
+        return universities.getItemBy(id: selectedLocation)
+    }
+    
     var body: some View {
         NavigationStack(path: $path) {
             if let user = session.user {
@@ -62,7 +67,13 @@ struct HomeView: View {
                                         universityOptions: $universities
                                     )
                                     .padding(.horizontal, 24)
-                                    DatePanel(startDate: $startDate, endDate: $endDate, isEditMode: true)
+                                    DatePanel(
+                                        startDate: $startDate,
+                                        endDate: $endDate,
+                                        isEditMode: true,
+                                        schoolTimezoneIdentifier: selectedUniversity?.timezone,
+                                        schoolName: selectedUniversity?.name
+                                    )
                                         .padding(.horizontal, 24)
                                     
                                     // Promo code + Apply

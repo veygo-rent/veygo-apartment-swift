@@ -15,6 +15,8 @@ struct DatePanel: View {
     @State private var showEndPicker = false
     
     var isEditMode: Bool
+    var schoolTimezoneIdentifier: String? = nil
+    var schoolName: String? = nil
     
     private var minimumStartDate: Date {
         Date().nextQuarterHour().addingTimeInterval(15 * 60)
@@ -23,6 +25,48 @@ struct DatePanel: View {
     private var minimumEndDate: Date {
         max(startDate.addingTimeInterval(30 * 60), Date().nextQuarterHour().addingTimeInterval(45 * 60))
     }
+    
+    private var displayTimeZone: TimeZone {
+        guard let schoolTimezoneIdentifier,
+              let schoolTimeZone = TimeZone(identifier: schoolTimezoneIdentifier) else {
+            return .current
+        }
+        return schoolTimeZone
+    }
+    
+    private var shouldShowSchoolTime: Bool {
+        guard let schoolTimezoneIdentifier else { return false }
+        return TimeZone(identifier: schoolTimezoneIdentifier) != nil
+    }
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = displayTimeZone
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+    
+    private func formattedTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = displayTimeZone
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+    
+    private func formattedSchoolNow(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = displayTimeZone
+        formatter.dateFormat = "EEEE, h:mm a zzz"
+        
+        if let schoolName, !schoolName.isEmpty {
+            return "\(schoolName) time: \(formatter.string(from: date))"
+        } else {
+            return "School time: \(formatter.string(from: date))"
+        }
+    }
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16)
@@ -37,44 +81,60 @@ struct DatePanel: View {
                         endDate = minimumEndDate
                     }
                 }
-            HStack(spacing: 0) {
-                // 左
-                VStack(alignment: .center, spacing: 4) {
-                    Text(startDate.formatted(date: .long, time: .omitted))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Color("FootNote"))
+            VStack(spacing: 0) {
+                if shouldShowSchoolTime {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        Text(formattedSchoolNow(context.date))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Color("FootNote"))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                    }
                     
-                    Text(startDate.formatted(date: .omitted, time: .shortened))
-                        .font(.system(size: 19, weight: .semibold))
-                        .foregroundColor(Color("TextFieldWordColor"))
+                    Divider()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .onTapGesture { showStartPicker.toggle() }
                 
-                // 中
-                Divider()
-                    .frame(width: 1, height: 71)
-                
-                // 右
-                VStack(alignment: .center, spacing: 4) {
-                    Text(endDate.formatted(date: .long, time: .omitted))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Color("FootNote"))
+                HStack(spacing: 0) {
+                    // 左
+                    VStack(alignment: .center, spacing: 4) {
+                        Text(formattedDate(startDate))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Color("FootNote"))
+                        
+                        Text(formattedTime(startDate))
+                            .font(.system(size: 19, weight: .semibold))
+                            .foregroundColor(Color("TextFieldWordColor"))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .onTapGesture { showStartPicker.toggle() }
                     
-                    Text(endDate.formatted(date: .omitted, time: .shortened))
-                        .font(.system(size: 19, weight: .semibold))
-                        .foregroundColor(Color("TextFieldWordColor"))
+                    // 中
+                    Divider()
+                        .frame(width: 1, height: 71)
+                    
+                    // 右
+                    VStack(alignment: .center, spacing: 4) {
+                        Text(formattedDate(endDate))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Color("FootNote"))
+                        
+                        Text(formattedTime(endDate))
+                            .font(.system(size: 19, weight: .semibold))
+                            .foregroundColor(Color("TextFieldWordColor"))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .onTapGesture { showEndPicker.toggle() }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .onTapGesture { showEndPicker.toggle() }
+                .frame(height: 71)
             }
-            .frame(height: 71)
             // 起始日期选择器
             .modifier(optionalDateSheet(showPicker: $showStartPicker, pickerView: {
                 AnyView(
                     VStack {
                         DatePicker("Select Start Date & Time", selection: $startDate, in: minimumStartDate..., displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
+                            .environment(\.timeZone, displayTimeZone)
                             .onAppear {
                                 UIDatePicker.appearance().minuteInterval = 15
                             }
@@ -90,6 +150,7 @@ struct DatePanel: View {
                     VStack {
                         DatePicker("Select End Date & Time", selection: $endDate, in: minimumEndDate..., displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
+                            .environment(\.timeZone, displayTimeZone)
                             .onAppear {
                                 UIDatePicker.appearance().minuteInterval = 15
                             }
