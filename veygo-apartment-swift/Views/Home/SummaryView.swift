@@ -36,148 +36,153 @@ struct SummaryView: View {
     var body: some View {
         VStack {
             if let _ = session.user {
-                List {
-                    Image(.tempVehicle)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 300, height: 130)
-                        .clipped()
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.mainBG)
-                    VStack (alignment: .leading, spacing: 16) {
-                        Text("\(vehicle.make) \(vehicle.model)")
-                            .foregroundStyle(Color.textBlackSecondary)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                        Text("\(vehicle.licenseState) \(vehicle.licenseNumber) \(vehicle.name)")
-                            .foregroundStyle(Color.textBlackPrimary)
-                            .font(.subheadline)
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.mainBG)
-                    
-                    VStack (alignment: .leading, spacing: 16) {
-                        Text("Itinerary")
-                            .foregroundStyle(Color.textBlackSecondary)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        HStack {
-                            Image(systemName: "location.fill")
-                                .foregroundStyle(Color.accent)
-                            Text("\(apartment.name) - \(location.name)")
-                                .foregroundStyle(Color.textBlackPrimary)
-                        }
-                        .font(.subheadline)
-                        HStack {
-                            Image(systemName: "clock.badge.fill")
-                                .foregroundStyle(Color.textLink)
-                            Text("\(apartment.localizedDate(for: startDate))")
-                                .foregroundStyle(Color.textBlackPrimary)
-                        }
-                        .font(.subheadline)
-                        HStack {
-                            Image(systemName: "clock.fill")
-                                .foregroundStyle(Color.textLink)
-                            Text("\(apartment.localizedDate(for: endDate))")
-                                .foregroundStyle(Color.textBlackPrimary)
-                        }
-                        .font(.subheadline)
-                        Map(
-                            initialPosition: .region(
-                                MKCoordinateRegion(
-                                    center: CLLocationCoordinate2D(
-                                        latitude: location.latitude,
-                                        longitude: location.longitude
-                                    ),
-                                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-                                )
-                            ),
-                            interactionModes: []
-                        ) {
-                            Marker(
-                                "Pickup Location",
-                                coordinate: CLLocationCoordinate2D(
-                                    latitude: location.latitude,
-                                    longitude: location.longitude
-                                )
-                            ).tint(.purple)
-                        }
-                        .frame(height: 160)
-                        .cornerRadius(16)
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.mainBG)
-                    
-                    VStack (alignment: .leading, spacing: 16) {
-                        Text("Payment Info")
-                            .foregroundStyle(Color.textBlackSecondary)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        NavigationLink {
-                            SelectPaymentCardView(
-                                paymentMethods: $paymentMethods,
-                                selectedPaymentMethod: $selectedPaymentMethod
-                            )
-                        } label: {
-                            HStack(spacing: 16) {
-                                cardBrandImage(for: selectedPaymentMethod?.network ?? "")
-                                    .frame(width: 48, height: 48)
-                                    .cornerRadius(4)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(selectedPaymentMethod?.nickname ?? selectedPaymentMethod?.maskedCardNumber ?? "Select payment card")
-                                        .foregroundStyle(Color.textBlackPrimary)
-                                        .font(.subheadline)
-                                    
-                                    if let selectedPaymentMethod {
-                                        Text("Expires: \(selectedPaymentMethod.expiration)")
-                                            .foregroundStyle(Color.textBlackSecondary)
-                                            .font(.footnote)
-                                    } else {
-                                        Text(isLoadingPM ? "Loading cards..." : "Tap to choose a card")
-                                            .foregroundStyle(Color.footNote)
-                                            .font(.footnote)
-                                    }
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(Color.footNote)
+                GlassEffectContainer {
+                    ZStack (alignment: .bottom) {
+                        List {
+                            Image(.tempVehicle)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 300, height: 130)
+                                .clipped()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.mainBG)
+                            VStack (alignment: .leading, spacing: 16) {
+                                Text("\(vehicle.make) \(vehicle.model)")
+                                    .foregroundStyle(Color.textBlackSecondary)
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                Text("\(vehicle.licenseState) \(vehicle.licenseNumber) \(vehicle.name)")
+                                    .foregroundStyle(Color.textBlackPrimary)
+                                    .font(.subheadline)
                             }
-                            .padding()
-                            .background(Color.cardBG)
-                            .cornerRadius(12)
-                            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
+                            
+                            VStack (alignment: .leading, spacing: 16) {
+                                Text("Itinerary")
+                                    .foregroundStyle(Color.textBlackSecondary)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                HStack {
+                                    Image(systemName: "location.fill")
+                                        .foregroundStyle(Color.accent)
+                                    Text("\(apartment.name) - \(location.name)")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
+                                HStack {
+                                    Image(systemName: "clock.badge.fill")
+                                        .foregroundStyle(Color.textLink)
+                                    Text("\(apartment.localizedDate(for: startDate))")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
+                                HStack {
+                                    Image(systemName: "clock.fill")
+                                        .foregroundStyle(Color.textLink)
+                                    Text("\(apartment.localizedDate(for: endDate))")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
+                                Map(
+                                    initialPosition: .region(
+                                        MKCoordinateRegion(
+                                            center: CLLocationCoordinate2D(
+                                                latitude: location.latitude,
+                                                longitude: location.longitude
+                                            ),
+                                            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                                        )
+                                    ),
+                                    interactionModes: []
+                                ) {
+                                    Marker(
+                                        "Pickup Location",
+                                        coordinate: CLLocationCoordinate2D(
+                                            latitude: location.latitude,
+                                            longitude: location.longitude
+                                        )
+                                    ).tint(.purple)
+                                }
+                                .frame(height: 160)
+                                .cornerRadius(16)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
+                            
+                            VStack (alignment: .leading, spacing: 16) {
+                                Text("Payment Info")
+                                    .foregroundStyle(Color.textBlackSecondary)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                
+                                NavigationLink {
+                                    SelectPaymentCardView(
+                                        paymentMethods: $paymentMethods,
+                                        selectedPaymentMethod: $selectedPaymentMethod
+                                    )
+                                } label: {
+                                    HStack(spacing: 16) {
+                                        cardBrandImage(for: selectedPaymentMethod?.network ?? "")
+                                            .frame(width: 48, height: 48)
+                                            .cornerRadius(4)
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(selectedPaymentMethod?.nickname ?? selectedPaymentMethod?.maskedCardNumber ?? "Select payment card")
+                                                .foregroundStyle(Color.textBlackPrimary)
+                                                .font(.subheadline)
+                                            
+                                            if let selectedPaymentMethod {
+                                                Text("Expires: \(selectedPaymentMethod.expiration)")
+                                                    .foregroundStyle(Color.textBlackSecondary)
+                                                    .font(.footnote)
+                                            } else {
+                                                Text(isLoadingPM ? "Loading cards..." : "Tap to choose a card")
+                                                    .foregroundStyle(Color.footNote)
+                                                    .font(.footnote)
+                                            }
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .foregroundStyle(Color.footNote)
+                                    }
+                                    .padding()
+                                    .background(Color.cardBG)
+                                    .cornerRadius(12)
+                                    .glassEffect(.identity, in: .rect(cornerRadius: 12))
+                                }
+                                .buttonStyle(.plain)
+                                .navigationLinkIndicatorVisibility(.hidden)
+                            }
+                            .padding(.bottom, 80)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
                         }
-                        .buttonStyle(.plain)
-                        .navigationLinkIndicatorVisibility(.hidden)
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.mainBG)
-                }
-                .scrollIndicators(.hidden)
-                .listStyle(.plain)
-                PrimaryButton(text: "Book Trip") {
-                    
-                }
-                .disabled(selectedPaymentMethod == nil)
-                .padding()
-                .alert(alertTitle, isPresented: $showAlert) {
-                    Button("OK") {
-                        if clearUserTriggered {
-                            session.user = nil
+                        .scrollIndicators(.hidden)
+                        .listStyle(.plain)
+                        PrimaryButton(text: "Book Trip") {
+                            
                         }
-                    }
-                } message: {
-                    Text(alertMessage)
-                }
-                .onAppear {
-                    Task {
-                        await ApiCallActor.shared.appendApi { token, userId in
-                            await loadCardsAsync(token, userId)
+                        .disabled(selectedPaymentMethod == nil)
+                        .padding()
+                        .alert(alertTitle, isPresented: $showAlert) {
+                            Button("OK") {
+                                if clearUserTriggered {
+                                    session.user = nil
+                                }
+                            }
+                        } message: {
+                            Text(alertMessage)
+                        }
+                        .onAppear {
+                            Task {
+                                await ApiCallActor.shared.appendApi { token, userId in
+                                    await loadCardsAsync(token, userId)
+                                }
+                            }
                         }
                     }
                 }

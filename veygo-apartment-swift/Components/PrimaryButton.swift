@@ -15,13 +15,7 @@ struct PrimaryButton: View {
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.roundedRectangle(radius: 16))
-        .tint(Color("PrimaryButtonBg"))
+        .tint(Color.primaryButtonBg)
         .frame(height: 45)
-    }
-}
-
-#Preview {
-    PrimaryButton(text: "Login") {
-        print("Log In Button Pressed")
     }
 }
