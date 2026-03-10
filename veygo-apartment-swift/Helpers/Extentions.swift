@@ -54,6 +54,29 @@ class UserSession: ObservableObject {
     @Published var user: PublishRenter? = nil
 }
 
+extension Apartment {
+    func localizedDate(for date: Date) -> String {
+        let currentTimeZone = TimeZone.current
+        let apartmentTimeZone = TimeZone(identifier: self.timezone) ?? currentTimeZone
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = apartmentTimeZone
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+
+        let formattedDate = dateFormatter.string(from: date)
+
+        let currentAbbreviation = currentTimeZone.abbreviation(for: date)
+        let apartmentAbbreviation = apartmentTimeZone.abbreviation(for: date)
+
+        if apartmentAbbreviation != nil && apartmentAbbreviation != currentAbbreviation {
+            return "\(formattedDate) \(apartmentAbbreviation!)"
+        } else {
+            return formattedDate
+        }
+    }
+}
+
 extension TripDetailedInfo {
     func localizedStartDate() -> String {
         let currentTimeZone = TimeZone.current

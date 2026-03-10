@@ -126,6 +126,13 @@ struct TripView: View {
                         }
                     }
                 }
+                .refreshable {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await loadCurrentTripAsync(token, userId)
+                        }
+                    }
+                }
             }
             .alert(alertTitle, isPresented: $showAlert) {
                 Button("OK") {
@@ -285,6 +292,7 @@ private struct UpcomingReservationDetailedView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
+                    
                     VStack (alignment: .leading, spacing: 16) {
                         Text("Itinerary")
                             .foregroundStyle(Color.textBlackSecondary)
