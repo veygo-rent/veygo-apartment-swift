@@ -14,8 +14,6 @@ struct DatePanel: View {
     @State private var showStartPicker = false
     @State private var showEndPicker = false
     
-    @Environment(\.scenePhase) private var scenePhase
-    
     var isEditMode: Bool
     var schoolTimezoneIdentifier: String? = nil
     
@@ -74,12 +72,6 @@ struct DatePanel: View {
                     startDate = minimumStartDate
                     endDate = minimumEndDate
                 }
-                .onChange(of: scenePhase) { oldPhase, newPhase in
-                    if newPhase == .active {
-                        startDate = minimumStartDate
-                        endDate = minimumEndDate
-                    }
-                }
                 .onChange(of: startDate) { _, newValue in
                     if endDate < minimumEndDate {
                         endDate = minimumEndDate
@@ -87,13 +79,17 @@ struct DatePanel: View {
                 }
             VStack(spacing: 0) {
                 if shouldShowSchoolTime {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                    TimelineView(.periodic(from: .now, by: 5)) { context in
                         Text(formattedSchoolNow(context.date))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(Color("FootNote"))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
+                            .onChange(of: context.date) { _, _ in
+                                startDate = minimumStartDate
+                                endDate = minimumEndDate
+                            }
                     }
                     
                     Divider()
