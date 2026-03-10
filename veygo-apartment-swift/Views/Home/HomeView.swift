@@ -71,8 +71,7 @@ struct HomeView: View {
                                         startDate: $startDate,
                                         endDate: $endDate,
                                         isEditMode: true,
-                                        schoolTimezoneIdentifier: selectedUniversity?.timezone,
-                                        schoolName: selectedUniversity?.name
+                                        schoolTimezoneIdentifier: selectedUniversity?.timezone
                                     )
                                         .padding(.horizontal, 24)
                                     

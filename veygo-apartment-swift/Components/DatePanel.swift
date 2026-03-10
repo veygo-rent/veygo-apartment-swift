@@ -16,7 +16,6 @@ struct DatePanel: View {
     
     var isEditMode: Bool
     var schoolTimezoneIdentifier: String? = nil
-    var schoolName: String? = nil
     
     private var minimumStartDate: Date {
         Date().nextQuarterHour().addingTimeInterval(15 * 60)
@@ -58,13 +57,10 @@ struct DatePanel: View {
     private func formattedSchoolNow(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.timeZone = displayTimeZone
-        formatter.dateFormat = "EEEE, h:mm a zzz"
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
         
-        if let schoolName, !schoolName.isEmpty {
-            return "\(schoolName) time: \(formatter.string(from: date))"
-        } else {
-            return "School time: \(formatter.string(from: date))"
-        }
+        return "Local time: \(formatter.string(from: date))"
     }
     
     var body: some View {
