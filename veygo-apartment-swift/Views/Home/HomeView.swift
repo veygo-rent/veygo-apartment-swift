@@ -9,16 +9,6 @@ enum HomeDestination: Hashable {
     case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, startDate: Date, endDate: Date)
 }
 
-private func roundUpToNextQuarter(from date: Date) -> Date {
-    let calendar = Calendar.current
-    let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-    guard let hour = components.hour, let minute = components.minute else { return date }
-    let quarter = ((minute / 15) + 1) * 15
-    let newHour = hour + (quarter / 60)
-    let newMinute = quarter % 60
-    return calendar.date(from: DateComponents(year: components.year, month: components.month, day: components.day, hour: newHour, minute: newMinute)) ?? date
-}
-
 struct HomeView: View {
     
     @FocusState private var couponIsFocused: Bool
@@ -38,14 +28,8 @@ struct HomeView: View {
     
     @State private var showCurrentTrip: Bool = false
     
-    @State private var startDate: Date = {
-        let start = Date().addingTimeInterval(15 * 60)
-        return roundUpToNextQuarter(from: start)
-    }()
-    @State private var endDate: Date = {
-        let end = Date().addingTimeInterval(45 * 60)
-        return roundUpToNextQuarter(from: end)
-    }()
+    @State private var startDate: Date = Date()
+    @State private var endDate: Date = Date()
     
     @State private var promoCodeInput: String = ""
     @State private var promoCodeActual: String = ""
