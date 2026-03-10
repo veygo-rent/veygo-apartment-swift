@@ -17,11 +17,11 @@ struct DatePanel: View {
     var isEditMode: Bool
     
     private var minimumStartDate: Date {
-        Date().nextQuarterHour!.addingTimeInterval(15 * 60)
+        Date().nextQuarterHour().addingTimeInterval(15 * 60)
     }
 
     private var minimumEndDate: Date {
-        max(startDate.addingTimeInterval(30 * 60), Date().nextQuarterHour!.addingTimeInterval(45 * 60))
+        max(startDate.addingTimeInterval(30 * 60), Date().nextQuarterHour().addingTimeInterval(45 * 60))
     }
     var body: some View {
         ZStack {

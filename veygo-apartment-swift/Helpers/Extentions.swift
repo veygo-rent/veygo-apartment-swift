@@ -133,17 +133,19 @@ struct SignupSession {
 
 extension Date {
     /// Returns the next quarter-hour date after the current date.
-    var nextQuarterHour: Date? {
+    func nextQuarterHour() -> Date {
         let calendar = Calendar.current
-        
-        // Calculate the next date that matches a minute interval of 15.
-        // using the .nextTime matching policy ensures it finds a future time.
-        return calendar.nextDate(
-            after: self,
-            matching: DateComponents(minute: 15),
-            matchingPolicy: .nextTime,
-            // The direction should be .forward to get the *next* quarter hour.
-            direction: .forward
-        )
+        let minute = calendar.component(.minute, from: self)
+        let remainder = minute % 15
+        let minutesToAdd = remainder == 0 ? 15 : 15 - remainder
+
+        let dateWithoutSeconds = calendar.date(
+            bySettingHour: calendar.component(.hour, from: self),
+            minute: minute,
+            second: 0,
+            of: self
+        )!
+
+        return calendar.date(byAdding: .minute, value: minutesToAdd, to: dateWithoutSeconds)!
     }
 }
