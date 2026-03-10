@@ -33,6 +33,8 @@ struct SummaryView: View {
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?
     
+    var pricingStandard: VeygoPricingStandard { VeygoPricingStandard(apartment: apartment, vehicle: vehicle) }
+    
     var body: some View {
         VStack {
             if let _ = session.user {
@@ -107,6 +109,29 @@ struct SummaryView: View {
                                 }
                                 .frame(height: 160)
                                 .cornerRadius(16)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
+                            
+                            VStack (alignment: .leading, spacing: 16) {
+                                Text("Mileage Option")
+                                    .foregroundStyle(Color.textBlackSecondary)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                HStack {
+                                    Image(systemName: "map.fill")
+                                        .foregroundStyle(Color.accent)
+                                    Text("^[Included distance: \(10 + (mileagePackage?.miles ?? 0)) mile](inflect: true)")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
+                                HStack {
+                                    Image(systemName: "dollarsign.circle.fill")
+                                        .foregroundStyle(Color.textLink)
+                                    Text("\(pricingStandard.perMileSubtitle())")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
                             }
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)

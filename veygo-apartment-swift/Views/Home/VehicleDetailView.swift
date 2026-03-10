@@ -23,7 +23,9 @@ struct VehicleDetailView: View {
     var startTime: Date
     var endTime: Date
     let apartment: Apartment
-    var vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)
+    let vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)
+    
+    var pricingStandard: VeygoPricingStandard { VeygoPricingStandard(apartment: self.apartment, vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle) }
     
     // Protection option selections
     @State private var includeLiability = false
@@ -150,7 +152,7 @@ struct VehicleDetailView: View {
                 // First option: no mileage package
                 MileagePackageRow(
                     title: "10 Miles Free",
-                    subtitle: perMileSubtitle(),
+                    subtitle: pricingStandard.perMileSubtitle(),
                     trailingText: "Included",
                     isSelected: mileagePackage == nil,
                     position: hasPackages ? .first : .single,
@@ -166,8 +168,8 @@ struct VehicleDetailView: View {
 
                     MileagePackageRow(
                         title: "\(10 + pkg.miles) Miles",
-                        subtitle: perMileSubtitle(),
-                        trailingText: formatRate(mileagePackagePrice(for: pkg, at: apartment)),
+                        subtitle: pricingStandard.perMileSubtitle(),
+                        trailingText: formatRate(pricingStandard.mileagePackagePrice(for: pkg)),
                         isSelected: mileagePackage == pkg,
                         position: position,
                         action: {
@@ -187,32 +189,6 @@ struct VehicleDetailView: View {
     private func formatRate(_ rate: Decimal) -> String {
         VeygoCurrencyStandard.shared.dollarFormatter.string(from: rate as NSDecimalNumber)!
     }
-    
-    private func standardMileageRate() -> Decimal {
-        if let overwrite = apartment.mileageRateOverwrite {
-            return overwrite.value
-        } else {
-            let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-            return vehicle.msrpFactor.value * apartment.durationRate.value * apartment.mileageConversion.value
-        }
-    }
-
-    private func perMileSubtitle() -> String {
-        let cents = VeygoCurrencyStandard.shared.centFormatter.string(from: standardMileageRate() as NSDecimalNumber)!
-        return "\(cents) per mile afterwards"
-    }
-
-    private func mileagePackagePrice(for pkg: MileagePackage, at apt: Apartment) -> Decimal {
-        let baseRate: Decimal
-        if let overwrite = apartment.mileagePackageOverwrite {
-            baseRate = overwrite.value
-        } else {
-            let vehicle = vehicleWithBlocksAndLocationInfo.0.vehicle
-            baseRate = vehicle.msrpFactor.value * apartment.durationRate.value * apt.mileageConversion.value
-        }
-        return baseRate * Decimal(pkg.miles) * (Decimal(pkg.discountedRate) / 100.0)
-    }
-    
     
     private struct RoundedCornerShape: Shape {
         var radius: CGFloat

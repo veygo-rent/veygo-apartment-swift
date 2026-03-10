@@ -96,3 +96,31 @@ struct VeygoCurrencyStandard {
         return f
     }()
 }
+
+struct VeygoPricingStandard {
+    let apartment: Apartment
+    let vehicle: PublishRenterVehicle
+    
+    func standardMileageRate() -> Decimal {
+        if let overwrite = apartment.mileageRateOverwrite {
+            return overwrite.value
+        } else {
+            return vehicle.msrpFactor.value * apartment.durationRate.value * apartment.mileageConversion.value
+        }
+    }
+
+    func perMileSubtitle() -> String {
+        let cents = VeygoCurrencyStandard.shared.centFormatter.string(from: standardMileageRate() as NSDecimalNumber)!
+        return "\(cents) per mile afterwards"
+    }
+
+    func mileagePackagePrice(for pkg: MileagePackage) -> Decimal {
+        let baseRate: Decimal
+        if let overwrite = apartment.mileagePackageOverwrite {
+            baseRate = overwrite.value
+        } else {
+            baseRate = vehicle.msrpFactor.value * apartment.durationRate.value * apartment.mileageConversion.value
+        }
+        return baseRate * Decimal(pkg.miles) * (Decimal(pkg.discountedRate) / 100.0)
+    }
+}
