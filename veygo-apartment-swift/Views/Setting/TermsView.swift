@@ -61,11 +61,9 @@ struct TermsView: View {
         .navigationTitle(term.rawValue)
         .navigationBarTitleDisplayMode(.automatic)
         .onAppear {
-            if term != .termsOfUse {
-                Task {
-                    await ApiCallActor.shared.appendApi { _, _ in
-                        await fetchPolicyAsync()
-                    }
+            Task {
+                await ApiCallActor.shared.appendApi { _, _ in
+                    await fetchPolicyAsync()
                 }
             }
         }
@@ -90,7 +88,7 @@ struct TermsView: View {
         case .rentalAgreement:
             policyType = "rental"
         case .termsOfUse:
-            policyType = "terms_of_use"
+            policyType = "usage"
         }
         
         let request = veygoCurlRequest(
