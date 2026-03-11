@@ -27,7 +27,7 @@ struct PasswordView: View {
             VStack(alignment: .leading, spacing: 20) {
                 Spacer()
                 
-                LargeTitleText(text: "Keep Your\nAccount Safe")
+                LargeTitleText(text: "Last Step\nYour Password")
                     .padding(.bottom, 90)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
@@ -57,7 +57,7 @@ struct PasswordView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 30)
                 
-                TextWithLink(fullText: "By joining, you agree to Veygo’s Membership Agreement and our Privacy Policy", highlightedTexts: [
+                TextWithLink(fullText: "By joining, you agree to Veygo’s Membership Agreement and Privacy Policy.", highlightedTexts: [
                     ("Membership Agreement", { path.append(SignupRoute.membership) }),
                     ("Privacy Policy", { path.append(SignupRoute.privacy) })
                 ])

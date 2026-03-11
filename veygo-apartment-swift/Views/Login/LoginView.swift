@@ -16,6 +16,7 @@ enum SignupRoute: Hashable {
     
     case membership
     case privacy
+    case tou
 }
 
 struct LoginView: View {
@@ -69,7 +70,7 @@ struct LoginView: View {
                 TextInputField(placeholder: "Password", text: $password, isSecure: true)
                     .focused($focusedField, equals: .password)
                 Spacer().frame(height: 20)
-                PrimaryButton(text: "Login") {
+                PrimaryButton(text: "Sign In") {
                     if email.isEmpty {
                         focusedField = .email
                     } else if password.isEmpty {
@@ -105,7 +106,10 @@ struct LoginView: View {
                 .padding(.top, 50)
                 .padding(.bottom, 10)
 
-                TextWithLink(fullText: "By signing in, you agree to Veygo’s Membership Agreement and our Privacy Policy", highlightedTexts: [
+                TextWithLink(fullText: "By using this App, you agree to its Terms of Use.", highlightedTexts: [
+                    ("Terms of Use", { path.append(SignupRoute.tou) })
+                ])
+                TextWithLink(fullText: "By signing in, you agree to Veygo’s Membership Agreement and Privacy Policy.", highlightedTexts: [
                     ("Membership Agreement", { path.append(SignupRoute.membership) }),
                     ("Privacy Policy", { path.append(SignupRoute.privacy) })
                 ])
@@ -131,6 +135,8 @@ struct LoginView: View {
                     TermsView(term: .membershipAgreement)
                 case .privacy:
                     TermsView(term: .privacyPolicy)
+                case .tou:
+                    TermsView(term: .termsOfUse)
                 }
             }
             .navigationDestination(isPresented: $goToResetView) {
