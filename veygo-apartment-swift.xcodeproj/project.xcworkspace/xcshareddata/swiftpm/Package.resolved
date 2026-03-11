@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/crisp-im/crisp-sdk-ios.git",
       "state" : {
-        "revision" : "b619eb17895cf283a2bf1297feab69b9d37ef1a4",
-        "version" : "2.12.0"
+        "revision" : "61e11393f22812e3b3fc6ab98a2d22a4eaef0102",
+        "version" : "2.13.0"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stripe/stripe-ios",
       "state" : {
-        "revision" : "9937dc7b89c62e7400e602fd61677f6ebb481c17",
-        "version" : "25.6.0"
+        "revision" : "23ca55ffdc2a64702ba0cc406e1bb8d8652413c6",
+        "version" : "25.7.1"
       }
     }
   ],
