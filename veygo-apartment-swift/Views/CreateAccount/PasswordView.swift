@@ -62,7 +62,7 @@ struct PasswordView: View {
                     ("Privacy Policy", { path.append(SignupRoute.privacy) })
                 ])
                 .padding(.horizontal, 32)
-                .offset(y: -25)
+                .padding(.bottom, 40)
             }
             .onChange(of: password) { _, newValue in
                 descriptions[0].1 = false
