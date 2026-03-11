@@ -13,6 +13,9 @@ enum SignupRoute: Hashable {
     case phone
     case email
     case password
+    
+    case membership
+    case privacy
 }
 
 struct LoginView: View {
@@ -103,8 +106,8 @@ struct LoginView: View {
                 .padding(.bottom, 10)
 
                 TextWithLink(fullText: "By signing in, you agree to Veygo’s Membership Agreement and our Privacy Policy", highlightedTexts: [
-                    ("Membership Agreement", "https://dev.veygo.rent/membership"),
-                    ("Privacy Policy", "https://dev.veygo.rent/privacy")
+                    ("Membership Agreement", { path.append(SignupRoute.membership) }),
+                    ("Privacy Policy", { path.append(SignupRoute.privacy) })
                 ])
                 Spacer().frame(height: 15)
             }
@@ -124,6 +127,10 @@ struct LoginView: View {
                     EmailView(signup: $signup, path: $path)
                 case .password:
                     PasswordView(signup: $signup, path: $path)
+                case .membership:
+                    TermsView(term: .membershipAgreement)
+                case .privacy:
+                    TermsView(term: .privacyPolicy)
                 }
             }
             .navigationDestination(isPresented: $goToResetView) {
