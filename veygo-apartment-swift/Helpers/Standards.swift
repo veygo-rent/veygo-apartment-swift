@@ -168,8 +168,9 @@ struct VeygoPricingStandard {
     }
     
     func billableDaysCount(rawDuration: TimeInterval) -> Int {
-        let billHours = Decimal(Int64((rawDuration / 60.0).rounded(.down))) / Decimal(60)
-        return NSDecimalNumber(decimal: billHours / Decimal(24)).rounding(accordingToBehavior: NSDecimalNumberHandler(
+        // Billable days are based on the actual trip duration, not the discounted billable hours.
+        let actualHours = Decimal(Int64((rawDuration / 60.0).rounded(.down))) / Decimal(60)
+        return NSDecimalNumber(decimal: actualHours / Decimal(24)).rounding(accordingToBehavior: NSDecimalNumberHandler(
             roundingMode: .up,
             scale: 0,
             raiseOnExactness: false,
