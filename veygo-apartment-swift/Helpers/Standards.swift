@@ -123,4 +123,71 @@ struct VeygoPricingStandard {
         }
         return baseRate * Decimal(pkg.miles) * (Decimal(pkg.discountedRate) / 100.0)
     }
+    
+    func calculateBillableDurationHours(rawDuration: TimeInterval) -> Decimal {
+        // Tiered billing:
+        // - First 8 hours are billed 1:1
+        // - Hours after 8 up to the end of the first week (168 hours total) are billed at 0.25 per hour
+        // - Hours after 168 are billed at 0.15 per hour
+        let billableDurationHours = Decimal(rawDuration) / Decimal(3600)
+
+        if billableDurationHours <= Decimal(0) {
+            return Decimal(0)
+        }
+
+        // Tier 1: first 8 hours at 1x
+        let tier1Hours = min(billableDurationHours, Decimal(8))
+
+        // Tier 2: from hour 9 up to hour 168 (next 160 hours) at 0.25x
+        let tier2Raw = billableDurationHours - Decimal(8)
+        let tier2Hours = max(Decimal(0), min(tier2Raw, Decimal(160)))
+
+        // Tier 3: beyond 168 hours at 0.15x
+        let tier3Hours = max(Decimal(0), billableDurationHours - Decimal(168))
+
+        return tier1Hours
+            + (tier2Hours * Decimal(string: "0.25")!)
+            + (tier3Hours * Decimal(string: "0.15")!)
+    }
+    
+    func calculateDurationAfterReward(rawDuration: TimeInterval, rewardHours: Decimal) -> TimeInterval {
+        if rewardHours <= Decimal(0) {
+            return rawDuration
+        }
+
+        // Subtract reward time safely (prevent negative billable duration due to rounding)
+        let totalMinutes = max(Int64((rawDuration / 60.0).rounded(.down)), 0)
+        let rewardMinutesDecimal = rewardHours * Decimal(60)
+        var rewardMinutes = NSDecimalNumber(decimal: rewardMinutesDecimal).rounding(accordingToBehavior: nil).int64Value
+
+        if rewardMinutes > totalMinutes {
+            rewardMinutes = totalMinutes
+        }
+
+        return TimeInterval(totalMinutes - rewardMinutes) * 60.0
+    }
+    
+    func billableDaysCount(rawDuration: TimeInterval) -> Int {
+        let billHours = Decimal(Int64((rawDuration / 60.0).rounded(.down))) / Decimal(60)
+        return NSDecimalNumber(decimal: billHours / Decimal(24)).rounding(accordingToBehavior: NSDecimalNumberHandler(
+            roundingMode: .up,
+            scale: 0,
+            raiseOnExactness: false,
+            raiseOnOverflow: true,
+            raiseOnUnderflow: true,
+            raiseOnDivideByZero: true
+        )).intValue
+    }
+
+    func calculateLateHours(supposed: Date, actual: Date) -> Decimal {
+        if supposed >= actual {
+            return Decimal(0)
+        } else {
+            // Calculate the difference in hours
+            let diffSeconds = actual.timeIntervalSince(supposed)
+            let lateMinutes = Int64((diffSeconds / 60.0).rounded(.down))
+            let lateHours = Decimal(lateMinutes) / Decimal(60)
+            return lateHours
+        }
+    }
 }
