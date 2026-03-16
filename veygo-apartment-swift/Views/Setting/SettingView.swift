@@ -181,7 +181,7 @@ struct SettingView: View {
         do {
             let user = await MainActor.run { self.session.user }
             if !token.isEmpty && userId > 0, user != nil {
-                let request = veygoCurlRequest(url: "/api/v1/user/remove-token", method: .delete, headers: ["auth": "\(token)$\(userId)"])
+                let request = veygoCurlRequest(url: "/api/v1/user/token", method: .delete, headers: ["auth": "\(token)$\(userId)"])
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
