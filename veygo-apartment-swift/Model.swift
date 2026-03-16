@@ -119,6 +119,7 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var employeeTier: EmployeeTier
     var subscriptionPaymentMethodId: Int?
     var requiresSecondaryDriverLic: Bool
+    var planTotalAvailability: FlexDecimal
 }
 
 nonisolated struct PublishPaymentMethod: Identifiable, Equatable, Codable {
