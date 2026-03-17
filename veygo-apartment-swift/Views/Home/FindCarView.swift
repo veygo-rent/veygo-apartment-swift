@@ -124,10 +124,6 @@ struct FindCarView: View {
             Text(alertMessage)
         }
         .navigationTitle(formattedDateRange)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(
-            .ultraThinMaterial,
-            for: .navigationBar)
         .toolbar(content: {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: {

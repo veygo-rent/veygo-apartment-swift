@@ -155,8 +155,6 @@ struct MembershipView: View {
             .frame(maxWidth: .infinity)
             .background(Color.mainBG)
             .scrollIndicators(.hidden)
-            .scrollContentBackground(.hidden)
-            .navigationBarTitleDisplayMode(.large)
             .navigationTitle(Text("Membership Detail"))
             .alert(alertTitle, isPresented: $showAlert) {
                 Button("OK") {
@@ -173,7 +171,7 @@ struct MembershipView: View {
             .onAppear {
                 Task {
                     await ApiCallActor.shared.appendApi { token, userId in
-                        await checkPromoAsync(token, userId)
+                        await getRewardHourAsync(token, userId)
                     }
                 }
             }
@@ -199,7 +197,7 @@ struct MembershipView: View {
         )
     }
     
-    @ApiCallActor func checkPromoAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+    @ApiCallActor func getRewardHourAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
             let user = await MainActor.run { self.session.user }
             
