@@ -137,6 +137,8 @@ struct SettingView: View {
                 .navigationTitle(Text("Setting"))
                 .navigationDestination(for: SettingDestination.self) { destination in
                     switch destination {
+                    case .membership:
+                        MembershipView()
                     case .memberAgreement:
                         TermsView(term: .membershipAgreement)
                     case .rentalAgreement:

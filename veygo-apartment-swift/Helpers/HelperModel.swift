@@ -83,6 +83,11 @@ nonisolated struct CheckOutRequest: Codable {
     let hoursUsingReward: Int
 }
 
+nonisolated struct RewardHoursSummaryResponse: Decodable {
+    let total: FlexDecimal
+    let used: FlexDecimal
+}
+
 nonisolated struct FlexDecimal: Codable, Equatable, Hashable, Sendable {
     let value: Decimal
 
