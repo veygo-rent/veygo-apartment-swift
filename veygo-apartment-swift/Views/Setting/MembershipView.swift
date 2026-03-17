@@ -142,7 +142,7 @@ struct MembershipView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(Color.white.opacity(0.04))
+                            .fill(Color.cardBG)
                     )
                     .overlay(
                         LoadingView()
@@ -188,11 +188,15 @@ struct MembershipView: View {
                 .foregroundStyle(.secondary)
             Text(value)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.textBlackPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.textBlackSecondary.opacity(0.05))
+        )
     }
     
     @ApiCallActor func checkPromoAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
