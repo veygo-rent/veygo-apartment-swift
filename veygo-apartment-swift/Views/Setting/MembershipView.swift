@@ -19,7 +19,7 @@ struct CircularProgressRing: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.08), lineWidth: 10)
+                .stroke(Color.footNote.opacity(0.15), lineWidth: 10)
             
             Circle()
                 .trim(from: 0, to: progress)
@@ -32,6 +32,7 @@ struct CircularProgressRing: View {
             VStack(spacing: 2) {
                 Text("\(Int(progress * 100))%")
                     .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.textBlackPrimary)
                 Text("used")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -99,11 +100,7 @@ struct MembershipView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(Color.white.opacity(0.04))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                            .fill(Color.cardBG)
                     )
                     .padding(.horizontal)
                     .padding(.top, 8)
