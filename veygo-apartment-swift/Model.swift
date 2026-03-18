@@ -379,7 +379,8 @@ nonisolated struct Agreement: Identifiable, Equatable, Codable {
     var utilizationFactor: FlexDecimal
     var dateOfCreation: Date
     
-    var cancellationRate: FlexDecimal
+    var minimumEarningRate: FlexDecimal
+    var depositPmtId: Int?
 }
 
 nonisolated struct Charge: Identifiable, Equatable, Codable {
@@ -406,7 +407,6 @@ nonisolated struct Payment: Identifiable, Equatable, Codable {
     var paymentMethodId: Int?
     var amountAuthorized: FlexDecimal
     var captureBefore: Date?
-    var isDeposit: Bool
 }
 
 nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {
