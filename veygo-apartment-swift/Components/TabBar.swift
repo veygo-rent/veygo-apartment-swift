@@ -1,5 +1,5 @@
 enum RootDestination: String, Identifiable, Hashable {
-    case home, trips, reward, setting
+    case home, trips, journey, account, setting
 
     var id: String { self.rawValue }
 }
@@ -12,7 +12,8 @@ struct TabBar: View {
     
     private let homeImg = "sparkle.text.clipboard"
     private let tripsImg = "map"
-    private let rewardImg = "trophy"
+    private let journeyImg = "sailboat"
+    private let accountImg = "person"
     private let settingImg = "gearshape"
     
     @State private var universities: [Apartment] = []
@@ -37,12 +38,22 @@ struct TabBar: View {
                     .environment(\.symbolVariants, selected == .trips ? .fill : .none)
             }
             
-            Tab(value: .reward) {
+            #if DEBUG
+            Tab(value: .journey) {
                 RewardView()
                     .background(Color("MainBG").ignoresSafeArea())
             } label: {
-                Label("Reward", systemImage: rewardImg)
-                    .environment(\.symbolVariants, selected == .reward ? .fill : .none)
+                Label("Journey", systemImage: journeyImg)
+                    .environment(\.symbolVariants, selected == .journey ? .fill : .none)
+            }
+            #endif
+            
+            Tab(value: .account) {
+                RewardView()
+                    .background(Color("MainBG").ignoresSafeArea())
+            } label: {
+                Label("Account", systemImage: accountImg)
+                    .environment(\.symbolVariants, selected == .account ? .fill : .none)
             }
             
             Tab(value: .setting) {
