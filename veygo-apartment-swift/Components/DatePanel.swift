@@ -76,6 +76,9 @@ struct DatePanel: View {
                     if endDate < minimumEndDate {
                         endDate = minimumEndDate
                     }
+                    if endDate > minimumEndDate.addingTimeInterval(4*7*24*3600) {
+                        endDate = minimumEndDate.addingTimeInterval(4*7*24*3600)
+                    }
                 }
             VStack(spacing: 0) {
                 if shouldShowSchoolTime {
@@ -89,6 +92,9 @@ struct DatePanel: View {
                             .onChange(of: context.date) { _, _ in
                                 if startDate < minimumStartDate {
                                     startDate = minimumStartDate
+                                }
+                                if startDate > minimumStartDate.addingTimeInterval(6*7*24*3600) {
+                                    startDate = minimumStartDate.addingTimeInterval(6*7*24*3600)
                                 }
                             }
                     }
@@ -133,7 +139,7 @@ struct DatePanel: View {
             .modifier(optionalDateSheet(showPicker: $showStartPicker, pickerView: {
                 AnyView(
                     VStack {
-                        DatePicker("Select Start Date & Time", selection: $startDate, in: minimumStartDate..., displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("Select Start Date & Time", selection: $startDate, in: minimumStartDate...minimumStartDate.addingTimeInterval(6*7*24*3600), displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
                             .environment(\.timeZone, displayTimeZone)
                             .onAppear {
@@ -149,7 +155,7 @@ struct DatePanel: View {
             .modifier(optionalDateSheet(showPicker: $showEndPicker, pickerView: {
                 AnyView(
                     VStack {
-                        DatePicker("Select End Date & Time", selection: $endDate, in: minimumEndDate..., displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("Select End Date & Time", selection: $endDate, in: minimumEndDate...minimumEndDate.addingTimeInterval(4*7*24*3600), displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.graphical)
                             .environment(\.timeZone, displayTimeZone)
                             .onAppear {
