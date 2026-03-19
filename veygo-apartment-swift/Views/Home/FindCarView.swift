@@ -95,17 +95,20 @@ struct FindCarView: View {
                 set: { if !$0 { selectedLocation = nil } }
             )
         ) {
-            LocationStripView(
-                path: $path,
-                selectedLocation: $selectedLocation,
-                selectedVehicle: $selectedVehicle,
-                locations: locations?.vehicles ?? [],
-                apartment: apartment,
-                startDate: startDate,
-                endDate: endDate
-            )
-            .presentationDetents([.height(300)])
-            .presentationBackgroundInteraction(.enabled)
+            if let locations {
+                LocationStripView(
+                    path: $path,
+                    selectedLocation: $selectedLocation,
+                    selectedVehicle: $selectedVehicle,
+                    locations: locations.vehicles,
+                    apartment: apartment,
+                    startDate: startDate,
+                    endDate: endDate,
+                    rateOffer: locations.offer
+                )
+                .presentationDetents([.height(300)])
+                .presentationBackgroundInteraction(.enabled)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .bottom)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -397,6 +400,7 @@ func walkingETASeconds(from: CLLocationCoordinate2D,
 struct VehicleCardView: View {
     let vehicle: VehicleWithBlockedDurations
     let apartment: Apartment
+    let rateOffer: RateOffer
     let startDate: Date
     let endDate: Date
     
@@ -538,7 +542,7 @@ struct VehicleCardView: View {
                         Text(vehicle.vehicle.name)
                             .fontWeight(.light)
                     }
-                    Text("\(VeygoCurrencyStandard.shared.dollarFormatter.string(from: (vehicle.vehicle.msrpFactor.value * apartment.durationRate.value) as NSDecimalNumber)!)/hr")
+                    Text("\(VeygoCurrencyStandard.shared.dollarFormatter.string(from: (vehicle.vehicle.msrpFactor.value * apartment.durationRate.value * rateOffer.multiplier.value) as NSDecimalNumber)!)/hr")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(Color("SecondaryButtonText"))
@@ -572,6 +576,7 @@ private struct LocationVehicleCard: View {
     let loc: LocationWithVehicles
     let vehicle: VehicleWithBlockedDurations
     let apartment: Apartment
+    let rateOffer: RateOffer
     let startDate: Date
     let endDate: Date
     let onSelect: () -> Void
@@ -589,7 +594,7 @@ private struct LocationVehicleCard: View {
             }
             .padding(.horizontal)
 
-            VehicleCardView(vehicle: vehicle, apartment: apartment, startDate: startDate, endDate: endDate)
+            VehicleCardView(vehicle: vehicle, apartment: apartment, rateOffer: rateOffer, startDate: startDate, endDate: endDate)
                 .frame(width: 340)
                 .onTapGesture(perform: onSelect)
         }
@@ -604,6 +609,7 @@ private struct LocationStripView: View {
     let apartment: Apartment
     let startDate: Date
     let endDate: Date
+    let rateOffer: RateOffer
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -618,6 +624,7 @@ private struct LocationStripView: View {
                                     loc: loc,
                                     vehicle: v,
                                     apartment: apartment,
+                                    rateOffer: rateOffer,
                                     startDate: startDate,
                                     endDate: endDate,
                                     onSelect: {

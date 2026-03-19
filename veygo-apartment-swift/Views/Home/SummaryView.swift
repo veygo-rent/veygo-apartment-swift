@@ -187,7 +187,6 @@ struct SummaryView: View {
                                 .buttonStyle(.plain)
                                 .navigationLinkIndicatorVisibility(.hidden)
                             }
-                            .padding(.bottom, 80)
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
                             
@@ -214,6 +213,7 @@ struct SummaryView: View {
                             }
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
+                            .padding(.bottom, 80)
                         }
                         .scrollIndicators(.hidden)
                         .listStyle(.plain)
