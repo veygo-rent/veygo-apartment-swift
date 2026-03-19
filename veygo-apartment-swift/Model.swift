@@ -144,12 +144,12 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var address: UsAddress
     var acceptedSchoolEmailDomain: String
     var freeTierHours: FlexDecimal
-    var silverTierHours: FlexDecimal?
-    var silverTierRate: FlexDecimal?
-    var goldTierHours: FlexDecimal?
-    var goldTierRate: FlexDecimal?
-    var platinumTierHours: FlexDecimal?
-    var platinumTierRate: FlexDecimal?
+    var silverTierHours: FlexDecimal
+    var silverTierRate: FlexDecimal
+    var goldTierHours: FlexDecimal
+    var goldTierRate: FlexDecimal
+    var platinumTierHours: FlexDecimal
+    var platinumTierRate: FlexDecimal
     var durationRate: FlexDecimal
     var liabilityProtectionRate: FlexDecimal?
     var pcdwProtectionRate: FlexDecimal?
@@ -172,12 +172,12 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var address: String
     var acceptedSchoolEmailDomain: String
     var freeTierHours: FlexDecimal
-    var silverTierHours: FlexDecimal?
-    var silverTierRate: FlexDecimal?
-    var goldTierHours: FlexDecimal?
-    var goldTierRate: FlexDecimal?
-    var platinumTierHours: FlexDecimal?
-    var platinumTierRate: FlexDecimal?
+    var silverTierHours: FlexDecimal
+    var silverTierRate: FlexDecimal
+    var goldTierHours: FlexDecimal
+    var goldTierRate: FlexDecimal
+    var platinumTierHours: FlexDecimal
+    var platinumTierRate: FlexDecimal
     var durationRate: FlexDecimal
     var liabilityProtectionRate: FlexDecimal?
     var pcdwProtectionRate: FlexDecimal?

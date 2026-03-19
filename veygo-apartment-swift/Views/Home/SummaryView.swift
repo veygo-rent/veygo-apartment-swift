@@ -49,6 +49,8 @@ struct SummaryView: View {
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.mainBG)
+                            
+                            /// Vehicle Detail Section
                             VStack (alignment: .leading, spacing: 16) {
                                 Text("\(vehicle.make) \(vehicle.model)")
                                     .foregroundStyle(Color.textBlackSecondary)
@@ -61,6 +63,7 @@ struct SummaryView: View {
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
                             
+                            /// Itinerary Section
                             VStack (alignment: .leading, spacing: 16) {
                                 Text("Itinerary")
                                     .foregroundStyle(Color.textBlackSecondary)
@@ -113,6 +116,7 @@ struct SummaryView: View {
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
                             
+                            /// Mileage Option Section
                             VStack (alignment: .leading, spacing: 16) {
                                 Text("Mileage Option")
                                     .foregroundStyle(Color.textBlackSecondary)
@@ -136,6 +140,7 @@ struct SummaryView: View {
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
                             
+                            /// Payment Info Section
                             VStack (alignment: .leading, spacing: 16) {
                                 Text("Payment Info")
                                     .foregroundStyle(Color.textBlackSecondary)
@@ -183,6 +188,30 @@ struct SummaryView: View {
                                 .navigationLinkIndicatorVisibility(.hidden)
                             }
                             .padding(.bottom, 80)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
+                            
+                            /// Price Details
+                            VStack (alignment: .leading, spacing: 16) {
+                                Text("Price Details")
+                                    .foregroundStyle(Color.textBlackSecondary)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                HStack {
+                                    Image(systemName: "map.fill")
+                                        .foregroundStyle(Color.accent)
+                                    Text("^[Included distance: \(10 + (mileagePackage?.miles ?? 0)) mile](inflect: true)")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
+                                HStack {
+                                    Image(systemName: "dollarsign.circle.fill")
+                                        .foregroundStyle(Color.textLink)
+                                    Text("\(pricingStandard.perMileSubtitle())")
+                                        .foregroundStyle(Color.textBlackPrimary)
+                                }
+                                .font(.subheadline)
+                            }
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
                         }
