@@ -403,84 +403,85 @@ struct VehicleCardView: View {
     let rateOffer: RateOffer
     let startDate: Date
     let endDate: Date
+
+    // Availability bar styling (easy to tweak)
+    private let availabilityBarHeight: CGFloat = 6
+    private let availabilityBarBorderWidth: CGFloat = 0.8
+    private let availabilityBarTrackColor: Color = Color(.systemBackground)
+    private let availabilityBarBorderColor: Color = Color(.systemGray4)
+    private let availabilityColorClear: Color = .clear
+    private let availabilityColorUnavailableOutsideRequest: Color = Color(.systemGray4)
+    private let availabilityHatchLineColor: Color = Color(.systemGray2)
+    private let availabilityHatchLineWidth: CGFloat = 0.8
+    private let availabilityHatchSpacing: CGFloat = 2.4
+    private let availabilityColorRequestedAvailable: Color = Color(.systemGreen)
+    private let availabilityColorRequestedUnavailable: Color = Color(.systemRed)
     
-    private struct HourlyBlock: Identifiable {
-        let id = UUID()
-        let hourStr: String
-        let firstQtrWanted: Bool
-        let secondQtrWanted: Bool
-        let thirdQtrWanted: Bool
-        let fourthQtrWanted: Bool
-        let firstQtrTaken: Bool
-        let secondQtrTaken: Bool
-        let thirdQtrTaken: Bool
-        let fourthQtrTaken: Bool
+    private enum AvailabilityState: Equatable {
+        case clear
+        case unavailableOutsideRequest
+        case requestedAvailable
+        case requestedUnavailable
     }
 
-    // Diagonal hatch fill for unavailable/taken blocks
-    private struct DiagonalHatch: View {
-        var cornerRadius: CGFloat = 4
-        var lineSpacing: CGFloat = 3
-        var lineWidth: CGFloat = 1
-        var lineColor: Color = Color(.systemGray)
+    private struct AvailabilitySegment: Identifiable {
+        let id = UUID()
+        let start: Date
+        let end: Date
+        let state: AvailabilityState
+    }
+
+    private struct CollapsedSegment {
+        var start: Date
+        var end: Date
+        var state: AvailabilityState
+    }
+
+    private func stateForBlock(wanted: Bool, taken: Bool) -> AvailabilityState {
+        if wanted {
+            return taken ? .requestedUnavailable : .requestedAvailable
+        } else {
+            return taken ? .unavailableOutsideRequest : .clear
+        }
+    }
+
+    private func color(for state: AvailabilityState) -> Color {
+        switch state {
+        case .clear:
+            return availabilityColorClear
+        case .unavailableOutsideRequest:
+            return availabilityColorUnavailableOutsideRequest
+        case .requestedAvailable:
+            return availabilityColorRequestedAvailable
+        case .requestedUnavailable:
+            return availabilityColorRequestedUnavailable
+        }
+    }
+
+    private struct DiagonalHatchFill: View {
+        let backgroundColor: Color
+        let lineColor: Color
+        let lineWidth: CGFloat
+        let lineSpacing: CGFloat
 
         var body: some View {
-            ZStack {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(lineColor, lineWidth: 1)
-                GeometryReader { geo in
-                    let w = geo.size.width
-                    let h = geo.size.height
-                    let step = lineSpacing + lineWidth
+            GeometryReader { geo in
+                ZStack {
+                    Rectangle().fill(backgroundColor)
                     Path { path in
-                        var x: CGFloat = -h
-                        while x < w {
+                        let width = geo.size.width
+                        let height = geo.size.height
+                        let step = lineSpacing + lineWidth
+                        var x: CGFloat = -height
+                        while x < width {
                             path.move(to: CGPoint(x: x, y: 0))
-                            path.addLine(to: CGPoint(x: x + h, y: h))
+                            path.addLine(to: CGPoint(x: x + height, y: height))
                             x += step
                         }
                     }
                     .stroke(lineColor, lineWidth: lineWidth)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-        }
-    }
-    
-    @ViewBuilder
-    private func QuarterlyBlock(wanted: Bool, taken: Bool) -> some View {
-        if wanted {
-            if taken {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color(.systemRed))
-                    .frame(width: 15, height: 16)
-            } else {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color(.systemGreen))
-                    .frame(width: 15, height: 16)
-            }
-        } else {
-            if taken {
-                DiagonalHatch(cornerRadius: 4, lineSpacing: 3, lineWidth: 1, lineColor: Color(.systemGray))
-                    .frame(width: 15, height: 16)
-            } else {
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(lineWidth: 1)
-                    .frame(width: 15, height: 16)
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func HourlyAvailability(availability: HourlyBlock) -> some View {
-        VStack (alignment: .center) {
-            HStack (spacing: 4) {
-                QuarterlyBlock(wanted: availability.firstQtrWanted, taken: availability.firstQtrTaken)
-                QuarterlyBlock(wanted: availability.secondQtrWanted, taken: availability.secondQtrTaken)
-                QuarterlyBlock(wanted: availability.thirdQtrWanted, taken: availability.thirdQtrTaken)
-                QuarterlyBlock(wanted: availability.fourthQtrWanted, taken: availability.fourthQtrTaken)
-            }
-            Text("\(availability.hourStr)").font(.caption)
         }
     }
 
@@ -488,49 +489,103 @@ struct VehicleCardView: View {
         max(aStart, bStart) < min(aEnd, bEnd)
     }
 
-    private func makeFourHourBlocks() -> [HourlyBlock] {
-        let cal = Calendar.current
-        // Start at the floor of the startDate to the hour
-        let comps = cal.dateComponents([.year,.month,.day,.hour], from: startDate)
-        guard let hourStart = cal.date(from: comps) else { return [] }
-        let hours: [Date] = [
-            hourStart,
-            cal.date(byAdding: .hour, value: 1, to: hourStart)!,
-            cal.date(byAdding: .hour, value: 2, to: hourStart)!,
-            cal.date(byAdding: .hour, value: 3, to: hourStart)!
-        ]
+    private func paddedWindow() -> (start: Date, end: Date)? {
+        let requestedDuration = endDate.timeIntervalSince(startDate)
+        guard requestedDuration > 0 else { return nil }
 
-        func quarterWanted(_ qStart: Date) -> Bool {
-            let qEnd = cal.date(byAdding: .minute, value: 15, to: qStart)!
-            return overlaps(qStart, qEnd, startDate, endDate)
-        }
-        func quarterTaken(_ qStart: Date) -> Bool {
-            let qEnd = cal.date(byAdding: .minute, value: 15, to: qStart)!
-            return vehicle.blockedDurations.contains { br in overlaps(qStart, qEnd, br.startTime, br.endTime) }
+        // Mirrors backend availability range:
+        // start = requested start - 1h; end = requested start + (numDays + 1) days.
+        let wholeDays = max(0, Int(requestedDuration / 86_400))
+        let paddedStart = startDate.addingTimeInterval(-3_600)
+        let paddedEnd = startDate.addingTimeInterval(TimeInterval(wholeDays + 1) * 86_400)
+
+        guard paddedEnd > paddedStart else { return nil }
+        return (paddedStart, paddedEnd)
+    }
+
+    private func makeAvailabilitySegments() -> [AvailabilitySegment] {
+        guard let window = paddedWindow() else { return [] }
+        let slice: TimeInterval = 15 * 60
+        var collapsed: [CollapsedSegment] = []
+        var cursor = window.start
+
+        while cursor < window.end {
+            let next = min(cursor.addingTimeInterval(slice), window.end)
+            let wanted = overlaps(cursor, next, startDate, endDate)
+            let taken = vehicle.blockedDurations.contains { blocked in
+                overlaps(cursor, next, blocked.startTime, blocked.endTime)
+            }
+            let state = stateForBlock(wanted: wanted, taken: taken)
+
+            if var last = collapsed.last, last.state == state {
+                last.end = next
+                collapsed[collapsed.count - 1] = last
+            } else {
+                collapsed.append(CollapsedSegment(start: cursor, end: next, state: state))
+            }
+
+            cursor = next
         }
 
-        var blocks: [HourlyBlock] = []
-        let df = DateFormatter(); df.dateFormat = "h a"
-
-        for h in hours {
-            let q1 = h
-            let q2 = cal.date(byAdding: .minute, value: 15, to: h)!
-            let q3 = cal.date(byAdding: .minute, value: 30, to: h)!
-            let q4 = cal.date(byAdding: .minute, value: 45, to: h)!
-            let block = HourlyBlock(
-                hourStr: df.string(from: h),
-                firstQtrWanted: quarterWanted(q1),
-                secondQtrWanted: quarterWanted(q2),
-                thirdQtrWanted: quarterWanted(q3),
-                fourthQtrWanted: quarterWanted(q4),
-                firstQtrTaken: quarterTaken(q1),
-                secondQtrTaken: quarterTaken(q2),
-                thirdQtrTaken: quarterTaken(q3),
-                fourthQtrTaken: quarterTaken(q4)
-            )
-            blocks.append(block)
+        return collapsed.map {
+            AvailabilitySegment(start: $0.start, end: $0.end, state: $0.state)
         }
-        return blocks
+    }
+
+    @ViewBuilder
+    private var availabilityBar: some View {
+        if let window = paddedWindow() {
+            let segments = makeAvailabilitySegments()
+            let totalDuration = window.end.timeIntervalSince(window.start)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(availabilityBarTrackColor)
+                    Capsule()
+                        .stroke(availabilityBarBorderColor, lineWidth: availabilityBarBorderWidth)
+
+                    // Draw hatch/gray segments first.
+                    ForEach(segments) { segment in
+                        if segment.state == .unavailableOutsideRequest {
+                            let segmentOffset = CGFloat(segment.start.timeIntervalSince(window.start) / totalDuration) * geo.size.width
+                            let segmentWidth = max(
+                                1,
+                                CGFloat(segment.end.timeIntervalSince(segment.start) / totalDuration) * geo.size.width
+                            )
+                            DiagonalHatchFill(
+                                backgroundColor: availabilityColorUnavailableOutsideRequest,
+                                lineColor: availabilityHatchLineColor,
+                                lineWidth: availabilityHatchLineWidth,
+                                lineSpacing: availabilityHatchSpacing
+                            )
+                            .frame(width: segmentWidth, height: geo.size.height)
+                            .offset(x: segmentOffset)
+                        }
+                    }
+
+                    // Draw requested segments on top so hatch never overlays them.
+                    ForEach(segments) { segment in
+                        if segment.state == .requestedAvailable || segment.state == .requestedUnavailable {
+                            let segmentOffset = CGFloat(segment.start.timeIntervalSince(window.start) / totalDuration) * geo.size.width
+                            let segmentWidth = max(
+                                1,
+                                CGFloat(segment.end.timeIntervalSince(segment.start) / totalDuration) * geo.size.width
+                            )
+                            Rectangle()
+                                .fill(color(for: segment.state))
+                                .frame(width: segmentWidth, height: geo.size.height)
+                                .offset(x: segmentOffset)
+                        }
+                    }
+                }
+                .clipShape(Capsule())
+            }
+            .frame(height: availabilityBarHeight)
+        } else {
+            Capsule()
+                .stroke(availabilityBarBorderColor, lineWidth: availabilityBarBorderWidth)
+                .frame(height: availabilityBarHeight)
+        }
     }
     
     var body: some View {
@@ -557,12 +612,8 @@ struct VehicleCardView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80)
             }
-            HStack(spacing: 8) {
-                ForEach(makeFourHourBlocks()) { hour in
-                    HourlyAvailability(availability: hour)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            availabilityBar
+                .frame(maxWidth: .infinity)
         }
         .padding()
         .background { Color("CardBG") }
@@ -647,7 +698,7 @@ private struct LocationStripView: View {
             .scrollPosition(id: $selectedLocation)
             .scrollIndicators(.hidden)
 
-            Text("* Veygo requires full coverage at all times.")
+            Text("* Veygo requires full coverage insurance at all times.")
                 .font(.caption.italic())
                 .padding(.leading, 32)
         }
