@@ -8,6 +8,7 @@ enum HomeDestination: Hashable {
     case apartment
     case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, rateOffer: RateOffer)
     case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment, rateOffer: RateOffer, mileagePackage: MileagePackage?)
+    case rentalTerms
 }
 
 struct HomeView: View {
@@ -60,7 +61,10 @@ struct HomeView: View {
             VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), rateOffer: rateOffer)
         case let .summary(vehicle, location, apartment, offer, mp):
             SummaryView(path: $path, startDate: startDate, endDate: endDate, vehicle: vehicle, apartment: apartment, location: location, promo: appliedPromoCode, mileagePackage: mp, rateOffer: offer)
+        case .rentalTerms:
+            TermsView(term: .rentalAgreement)
         }
+        
     }
     
     var body: some View {

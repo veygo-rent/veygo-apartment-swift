@@ -27,7 +27,7 @@ struct TextWithLink: UIViewRepresentable {
         textView.isScrollEnabled = false
         textView.isUserInteractionEnabled = true
         textView.isOpaque = false
-        textView.isSelectable = true
+        textView.isSelectable = false
         textView.backgroundColor = .clear
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0

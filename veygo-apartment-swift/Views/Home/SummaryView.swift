@@ -217,6 +217,12 @@ struct SummaryView: View {
                             }
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
+                            
+                            TextWithLink(fullText: "By proceeding with this booking, you agree to the Rental Terms.", highlightedTexts: [
+                                ("Rental Terms", { path.append(.rentalTerms) })
+                            ])
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.mainBG)
                             .padding(.bottom, 80)
                         }
                         .scrollIndicators(.hidden)
