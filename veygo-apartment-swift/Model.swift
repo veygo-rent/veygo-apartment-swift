@@ -427,7 +427,7 @@ nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
     var isDepositTax: Bool
 }
 
-nonisolated struct MileagePackage: Identifiable, Equatable, Codable {
+nonisolated struct MileagePackage: Identifiable, Equatable, Codable, Hashable {
     var id: Int
     var miles: Int
     var discountedRate: Int
@@ -440,7 +440,7 @@ nonisolated struct NewMileagePackage: Equatable, Codable {
     var isActive: Bool
 }
 
-nonisolated struct RateOffer: Identifiable, Equatable, Codable {
+nonisolated struct RateOffer: Identifiable, Equatable, Codable, Hashable {
     var id: Int
     var renterId: Int
     var apartmentId: Int

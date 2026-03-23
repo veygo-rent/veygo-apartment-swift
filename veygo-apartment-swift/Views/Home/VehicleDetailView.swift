@@ -27,6 +27,8 @@ struct VehicleDetailView: View {
     
     var pricingStandard: VeygoPricingStandard { VeygoPricingStandard(apartment: self.apartment, vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle) }
     
+    let rateOffer: RateOffer
+    
     // Protection option selections
     @State private var includeLiability = false
     @State private var includePCDW = false
@@ -34,7 +36,7 @@ struct VehicleDetailView: View {
     @State private var includeRSA = false
     @State private var includePAI = false
     
-    @Binding var mileagePackage: MileagePackage?
+    @State private var mileagePackage: MileagePackage?
     @State private var mileagePackages: [MileagePackage] = []
     
     private enum MileageRowPosition {
@@ -179,7 +181,7 @@ struct VehicleDetailView: View {
                 }
             }
             PrimaryButton(text: "Continue") {
-                path.append(.summary(vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle, location: vehicleWithBlocksAndLocationInfo.1, apartment: apartment))
+                path.append(.summary(vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle, location: vehicleWithBlocksAndLocationInfo.1, apartment: apartment, rateOffer: rateOffer, mileagePackage: mileagePackage))
             }
             .padding(.top, 6)
         }

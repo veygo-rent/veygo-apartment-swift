@@ -16,11 +16,13 @@ struct SummaryView: View {
     @State private var selectedPaymentMethod: PublishPaymentMethod?
     
     @State private var isLoadingPM: Bool = false
+    @State private var isCreatingAgreement: Bool = false
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
+    @State private var returnHomeTriggered: Bool = false
     
     @Binding var path: [HomeDestination]
     
@@ -32,6 +34,8 @@ struct SummaryView: View {
     let location: Location
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?
+    
+    let rateOffer: RateOffer
     
     var pricingStandard: VeygoPricingStandard { VeygoPricingStandard(apartment: apartment, vehicle: vehicle) }
     
@@ -218,14 +222,23 @@ struct SummaryView: View {
                         .scrollIndicators(.hidden)
                         .listStyle(.plain)
                         PrimaryButton(text: "Book Trip") {
-                            
+                            if let paymentMethodId = selectedPaymentMethod?.id {
+                                Task {
+                                    await ApiCallActor.shared.appendApi { token, userId in
+                                        await makeReservationAsync(token, userId, pmtId: paymentMethodId)
+                                    }
+                                }
+                            }
                         }
-                        .disabled(selectedPaymentMethod == nil)
+                        .disabled(selectedPaymentMethod == nil || isCreatingAgreement)
                         .padding()
                         .alert(alertTitle, isPresented: $showAlert) {
                             Button("OK") {
                                 if clearUserTriggered {
                                     session.user = nil
+                                }
+                                if returnHomeTriggered {
+                                    path = []
                                 }
                             }
                         } message: {
@@ -321,6 +334,207 @@ struct SummaryView: View {
                         }
                     }
                     return .clearUser
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
+    
+    @ApiCallActor func makeReservationAsync (_ token: String, _ userId: Int, pmtId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                
+                struct NewAgreementRequest: Encodable {
+                    let vehicleId: Int
+                    let startTime: Int
+                    let endTime: Int
+                    let paymentId: Int
+                    let liability: Bool
+                    let pcdw: Bool
+                    let pcdwExt: Bool
+                    let rsa: Bool
+                    let pai: Bool
+                    let rateOfferId: Int
+                    @CodableExplicitNull var mileagePackageId: Int?
+                    @CodableExplicitNull var promoCode: String?
+                    @CodableExplicitNull var hoursUsingReward: FlexDecimal?
+                }
+                
+                let requestBody = NewAgreementRequest(vehicleId: vehicle.id, startTime: Int(startDate.timeIntervalSince1970), endTime: Int(endDate.timeIntervalSince1970), paymentId: pmtId, liability: false, pcdw: false, pcdwExt: false, rsa: false, pai: false, rateOfferId: rateOffer.id, mileagePackageId: mileagePackage?.id ?? nil, promoCode: promo?.code ?? nil, hoursUsingReward: nil)
+                
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(requestBody)
+                
+                let request = veygoCurlRequest(
+                    url: "/api/v1/agreement/new",
+                    method: .post,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ],
+                    body: jsonData
+                )
+                await MainActor.run {
+                    isCreatingAgreement = true
+                }
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                await MainActor.run {
+                    isCreatingAgreement = false
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                    
+                case 201:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(Agreement.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        alertTitle = "Booking Successful"
+                        alertMessage = "Your confirmation number is \(decodedBody.confirmation)."
+                        returnHomeTriggered = true
+                        showAlert = true
+                    }
+                    return .doNothing
+                case 400:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            returnHomeTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E400
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            returnHomeTriggered = true
+                        }
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 403:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E403
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                case 402:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E402
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                case 409:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            returnHomeTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E409
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            returnHomeTriggered = true
+                        }
+                    }
+                    return .doNothing
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {

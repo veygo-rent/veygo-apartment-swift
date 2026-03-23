@@ -683,7 +683,8 @@ private struct LocationStripView: View {
                                         path.append(.vehicleDetails(
                                             vehicle: v,
                                             location: loc.location,
-                                            apartment: apartment
+                                            apartment: apartment,
+                                            rateOffer: rateOffer
                                         ))
                                     }
                                 )
