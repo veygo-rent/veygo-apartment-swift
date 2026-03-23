@@ -303,8 +303,6 @@ struct SummaryView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                                 VStack (spacing: 10) {
-                                    priceLine(title: "Base rate", value: "\(formatRate(hourlyRate))/hr")
-                                    
                                     if tier1Hours > 0 {
                                         priceLine(
                                             title: "\(formatHours(tier1Hours)) @ \(formatRate(hourlyRate))/hr",
@@ -350,11 +348,10 @@ struct SummaryView: View {
                                         Divider()
                                         ForEach(taxLines) { taxLine in
                                             priceLine(
-                                                title: "Tax: \(taxLine.name)",
+                                                title: "\(taxLine.name)",
                                                 value: formatRate(taxLine.amount)
                                             )
                                         }
-                                        priceLine(title: "Total taxes", value: formatRate(totalTax))
                                     }
                                     
                                     Divider()
@@ -587,10 +584,10 @@ struct SummaryView: View {
                     let rateOfferId: Int
                     @CodableExplicitNull var mileagePackageId: Int?
                     @CodableExplicitNull var promoCode: String?
-                    @CodableExplicitNull var hoursUsingReward: FlexDecimal?
+                    let hoursUsingReward: FlexDecimal
                 }
                 
-                let requestBody = NewAgreementRequest(vehicleId: vehicle.id, startTime: Int(startDate.timeIntervalSince1970), endTime: Int(endDate.timeIntervalSince1970), paymentId: pmtId, liability: false, pcdw: false, pcdwExt: false, rsa: false, pai: false, rateOfferId: rateOffer.id, mileagePackageId: mileagePackage?.id ?? nil, promoCode: promo?.code ?? nil, hoursUsingReward: nil)
+                let requestBody = NewAgreementRequest(vehicleId: vehicle.id, startTime: Int(startDate.timeIntervalSince1970), endTime: Int(endDate.timeIntervalSince1970), paymentId: pmtId, liability: false, pcdw: false, pcdwExt: false, rsa: false, pai: false, rateOfferId: rateOffer.id, mileagePackageId: mileagePackage?.id ?? nil, promoCode: promo?.code ?? nil, hoursUsingReward: FlexDecimal(Decimal(0)))
                 
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(requestBody)
                 
