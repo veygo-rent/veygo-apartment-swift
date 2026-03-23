@@ -373,14 +373,6 @@ struct SummaryView: View {
                                     .foregroundStyle(Color.footNote)
                                     .font(.footnote)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                HStack {
-                                    Image(systemName: "dollarsign.circle.fill")
-                                        .foregroundStyle(Color.textLink)
-                                    Text("\(pricingStandard.perMileSubtitle())")
-                                        .foregroundStyle(Color.textBlackPrimary)
-                                }
-                                .font(.subheadline)
                             }
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
