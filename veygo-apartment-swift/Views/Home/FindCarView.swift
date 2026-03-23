@@ -12,6 +12,7 @@ struct FindCarView: View {
     nonisolated struct Availability: Decodable {
         var offer: RateOffer
         var vehicles: [LocationWithVehicles]
+        var taxes: [Tax]
     }
     
     @Environment(\.dismiss) private var dismiss
@@ -104,7 +105,8 @@ struct FindCarView: View {
                     apartment: apartment,
                     startDate: startDate,
                     endDate: endDate,
-                    rateOffer: locations.offer
+                    rateOffer: locations.offer,
+                    taxes: locations.taxes
                 )
                 .presentationDetents([.height(300)])
                 .presentationBackgroundInteraction(.enabled)
@@ -661,6 +663,7 @@ private struct LocationStripView: View {
     let startDate: Date
     let endDate: Date
     let rateOffer: RateOffer
+    let taxes: [Tax]
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -684,7 +687,8 @@ private struct LocationStripView: View {
                                             vehicle: v,
                                             location: loc.location,
                                             apartment: apartment,
-                                            rateOffer: rateOffer
+                                            rateOffer: rateOffer,
+                                            taxes: taxes
                                         ))
                                     }
                                 )

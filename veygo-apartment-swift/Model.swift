@@ -418,7 +418,7 @@ nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {
     var exp: String?
 }
 
-nonisolated struct Tax: Identifiable, Equatable, Codable, HasName {
+nonisolated struct Tax: Identifiable, Equatable, Codable, Hashable, HasName {
     var id: Int
     var name: String
     var multiplier: FlexDecimal

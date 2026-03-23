@@ -24,6 +24,7 @@ struct VehicleDetailView: View {
     var endTime: Date
     let apartment: Apartment
     let vehicleWithBlocksAndLocationInfo: (VehicleWithBlockedDurations, Location)
+    let taxes: [Tax]
     
     var pricingStandard: VeygoPricingStandard { VeygoPricingStandard(apartment: self.apartment, vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle) }
     
@@ -181,7 +182,16 @@ struct VehicleDetailView: View {
                 }
             }
             PrimaryButton(text: "Continue") {
-                path.append(.summary(vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle, location: vehicleWithBlocksAndLocationInfo.1, apartment: apartment, rateOffer: rateOffer, mileagePackage: mileagePackage))
+                path.append(
+                    .summary(
+                        vehicle: vehicleWithBlocksAndLocationInfo.0.vehicle,
+                        location: vehicleWithBlocksAndLocationInfo.1,
+                        apartment: apartment,
+                        rateOffer: rateOffer,
+                        mileagePackage: mileagePackage,
+                        taxes: taxes
+                    )
+                )
             }
             .padding(.top, 6)
         }

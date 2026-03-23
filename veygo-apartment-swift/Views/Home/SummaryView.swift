@@ -34,10 +34,113 @@ struct SummaryView: View {
     let location: Location
     let promo: PublishPromo?
     let mileagePackage: MileagePackage?
+    let taxes: [Tax]
     
     let rateOffer: RateOffer
     
     var pricingStandard: VeygoPricingStandard { VeygoPricingStandard(apartment: apartment, vehicle: vehicle) }
+    
+    private var rawDuration: TimeInterval {
+        max(0, endDate.timeIntervalSince(startDate))
+    }
+    
+    private var hourlyRate: Decimal {
+        vehicle.msrpFactor.value * apartment.durationRate.value * rateOffer.multiplier.value
+    }
+    
+    private var rawHours: Decimal {
+        Decimal(rawDuration) / Decimal(3600)
+    }
+    
+    private var tier1Hours: Decimal {
+        max(Decimal.zero, min(rawHours, Decimal(8)))
+    }
+    
+    private var tier2Hours: Decimal {
+        max(Decimal.zero, min(rawHours - Decimal(8), Decimal(160)))
+    }
+    
+    private var tier3Hours: Decimal {
+        max(Decimal.zero, rawHours - Decimal(168))
+    }
+    
+    private var tier1Charge: Decimal {
+        tier1Hours * hourlyRate
+    }
+    
+    private var tier2HourlyRate: Decimal {
+        hourlyRate * Decimal(string: "0.25")!
+    }
+    
+    private var tier2Charge: Decimal {
+        tier2Hours * tier2HourlyRate
+    }
+    
+    private var tier3HourlyRate: Decimal {
+        hourlyRate * Decimal(string: "0.15")!
+    }
+    
+    private var tier3Charge: Decimal {
+        tier3Hours * tier3HourlyRate
+    }
+    
+    private var tripSubtotal: Decimal {
+        tier1Charge + tier2Charge + tier3Charge
+    }
+    
+    private var mileageSubtotal: Decimal {
+        guard let mileagePackage else { return Decimal.zero }
+        return pricingStandard.mileagePackagePrice(for: mileagePackage)
+    }
+    
+    private var subtotalBeforeDiscount: Decimal {
+        tripSubtotal + mileageSubtotal
+    }
+    
+    private var promoDiscount: Decimal {
+        min(promo?.amount.value ?? Decimal.zero, subtotalBeforeDiscount)
+    }
+    
+    private var subtotalBeforeTax: Decimal {
+        max(Decimal.zero, subtotalBeforeDiscount - promoDiscount)
+    }
+    
+    private var rawRentalDays: Int {
+        guard rawDuration > 0 else { return 0 }
+        return Int(ceil(rawDuration / (24 * 3600)))
+    }
+    
+    private var taxLines: [TaxLine] {
+        taxes
+            .map { tax in
+                let amount: Decimal
+                switch tax.taxType {
+                case .percent:
+                    amount = subtotalBeforeTax * normalizedPercentMultiplier(tax.multiplier.value)
+                case .daily:
+                    amount = Decimal(rawRentalDays) * tax.multiplier.value
+                case .fixed:
+                    amount = tax.multiplier.value
+                }
+                return TaxLine(id: tax.id, name: tax.name, amount: max(Decimal.zero, amount))
+            }
+    }
+    
+    private var totalTax: Decimal {
+        taxLines.reduce(Decimal.zero) { $0 + $1.amount }
+    }
+    
+    private var finalEstimatedTotal: Decimal {
+        subtotalBeforeTax + totalTax
+    }
+    
+    private func normalizedPercentMultiplier(_ multiplier: Decimal) -> Decimal {
+        let absolute = multiplier < 0 ? -multiplier : multiplier
+        if absolute > Decimal(1) {
+            return multiplier / Decimal(100)
+        }
+        return multiplier
+    }
     
     var body: some View {
         VStack {
@@ -186,7 +289,6 @@ struct SummaryView: View {
                                     .padding()
                                     .background(Color.cardBG)
                                     .cornerRadius(12)
-                                    .glassEffect(.identity, in: .rect(cornerRadius: 12))
                                 }
                                 .buttonStyle(.plain)
                                 .navigationLinkIndicatorVisibility(.hidden)
@@ -200,13 +302,78 @@ struct SummaryView: View {
                                     .foregroundStyle(Color.textBlackSecondary)
                                     .font(.title2)
                                     .fontWeight(.bold)
-                                HStack {
-                                    Image(systemName: "map.fill")
-                                        .foregroundStyle(Color.accent)
-                                    Text("^[Included distance: \(10 + (mileagePackage?.miles ?? 0)) mile](inflect: true)")
-                                        .foregroundStyle(Color.textBlackPrimary)
+                                VStack (spacing: 10) {
+                                    priceLine(title: "Base rate", value: "\(formatRate(hourlyRate))/hr")
+                                    
+                                    if tier1Hours > 0 {
+                                        priceLine(
+                                            title: "\(formatHours(tier1Hours)) @ \(formatRate(hourlyRate))/hr",
+                                            value: formatRate(tier1Charge)
+                                        )
+                                    }
+                                    
+                                    if tier2Hours > 0 {
+                                        priceLine(
+                                            title: "\(formatHours(tier2Hours)) @ \(formatRate(tier2HourlyRate))/hr",
+                                            value: formatRate(tier2Charge)
+                                        )
+                                    }
+                                    
+                                    if tier3Hours > 0 {
+                                        priceLine(
+                                            title: "\(formatHours(tier3Hours)) @ \(formatRate(tier3HourlyRate))/hr",
+                                            value: formatRate(tier3Charge)
+                                        )
+                                    }
+                                    
+                                    Divider()
+                                    
+                                    priceLine(title: "Trip subtotal", value: formatRate(tripSubtotal))
+                                    
+                                    if mileageSubtotal > 0 {
+                                        priceLine(
+                                            title: "Mileage package (\(10 + (mileagePackage?.miles ?? 0)) miles)",
+                                            value: formatRate(mileageSubtotal)
+                                        )
+                                    }
+                                    
+                                    if promoDiscount > 0 {
+                                        priceLine(
+                                            title: "Promo (\(promo?.code ?? ""))",
+                                            value: "-\(formatRate(promoDiscount))"
+                                        )
+                                    }
+                                    
+                                    priceLine(title: "Subtotal before tax", value: formatRate(subtotalBeforeTax))
+                                    
+                                    if !taxLines.isEmpty {
+                                        Divider()
+                                        ForEach(taxLines) { taxLine in
+                                            priceLine(
+                                                title: "Tax: \(taxLine.name)",
+                                                value: formatRate(taxLine.amount)
+                                            )
+                                        }
+                                        priceLine(title: "Total taxes", value: formatRate(totalTax))
+                                    }
+                                    
+                                    Divider()
+                                    
+                                    priceLine(
+                                        title: "Final total est.",
+                                        value: formatRate(finalEstimatedTotal),
+                                        emphasize: true
+                                    )
                                 }
-                                .font(.subheadline)
+                                .padding()
+                                .background(Color.cardBG)
+                                .cornerRadius(12)
+                                
+                                Text("Estimated total does not include fuel charges, tolls, or other fees that may occur during your trip.")
+                                    .foregroundStyle(Color.footNote)
+                                    .font(.footnote)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
                                 HStack {
                                     Image(systemName: "dollarsign.circle.fill")
                                         .foregroundStyle(Color.textLink)
@@ -265,6 +432,39 @@ struct SummaryView: View {
         .frame(maxWidth: .infinity)
         .navigationTitle(Text("Trip Summary"))
         .background(Color.mainBG, ignoresSafeAreaEdges: .all)
+    }
+    
+    @ViewBuilder
+    private func priceLine(title: String, value: String, emphasize: Bool = false) -> some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(Color.textBlackPrimary)
+                .fontWeight(emphasize ? .bold : .regular)
+            Spacer()
+            Text(value)
+                .foregroundStyle(Color.textBlackPrimary)
+                .fontWeight(emphasize ? .bold : .regular)
+        }
+        .font(.subheadline)
+    }
+    
+    private func formatRate(_ amount: Decimal) -> String {
+        VeygoCurrencyStandard.shared.dollarFormatter.string(from: amount as NSDecimalNumber) ?? "$0.00"
+    }
+    
+    private func formatHours(_ hours: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        let h = formatter.string(from: hours as NSDecimalNumber) ?? "0"
+        return "\(h) hr"
+    }
+    
+    private struct TaxLine: Identifiable {
+        let id: Int
+        let name: String
+        let amount: Decimal
     }
     
     @ApiCallActor func loadCardsAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {

@@ -6,8 +6,8 @@ import Crisp
 enum HomeDestination: Hashable {
     case university(apartment: Apartment)
     case apartment
-    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, rateOffer: RateOffer)
-    case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment, rateOffer: RateOffer, mileagePackage: MileagePackage?)
+    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, rateOffer: RateOffer, taxes: [Tax])
+    case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment, rateOffer: RateOffer, mileagePackage: MileagePackage?, taxes: [Tax])
     case rentalTerms
 }
 
@@ -57,10 +57,10 @@ struct HomeView: View {
             ListCarView()
         case let .university(apt):
             FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
-        case let .vehicleDetails(vehicle, location, apartment, rateOffer):
-            VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), rateOffer: rateOffer)
-        case let .summary(vehicle, location, apartment, offer, mp):
-            SummaryView(path: $path, startDate: startDate, endDate: endDate, vehicle: vehicle, apartment: apartment, location: location, promo: appliedPromoCode, mileagePackage: mp, rateOffer: offer)
+        case let .vehicleDetails(vehicle, location, apartment, rateOffer, taxes):
+            VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), taxes: taxes, rateOffer: rateOffer)
+        case let .summary(vehicle, location, apartment, offer, mp, taxes):
+            SummaryView(path: $path, startDate: startDate, endDate: endDate, vehicle: vehicle, apartment: apartment, location: location, promo: appliedPromoCode, mileagePackage: mp, taxes: taxes, rateOffer: offer)
         case .rentalTerms:
             TermsView(term: .rentalAgreement)
         }
