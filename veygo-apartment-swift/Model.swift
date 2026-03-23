@@ -407,6 +407,7 @@ nonisolated struct Payment: Identifiable, Equatable, Codable {
     var paymentMethodId: Int?
     var amountAuthorized: FlexDecimal
     var captureBefore: Date?
+    var refundAmount: FlexDecimal
 }
 
 nonisolated struct DoNotRentList: Identifiable, Equatable, Codable {

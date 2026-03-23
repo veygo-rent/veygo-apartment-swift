@@ -77,10 +77,12 @@ struct HomeView: View {
                                 // Make a Reservation & others
                                 Title(text: "Make a Reservation", fontSize: 20, color: Color("TextBlackPrimary"))
                                     .padding(.horizontal, 24)
-                                /// Implementing Apartment UI later
-                                SlidingToggleButton(selectedOption: $selectedToggle)
-                                    .padding(.horizontal, 24)
-                                    .sensoryFeedback(.selection, trigger: selectedToggle)
+                                
+                                // Implementing Apartment UI later
+//                                SlidingToggleButton(selectedOption: $selectedToggle)
+//                                    .padding(.horizontal, 24)
+//                                    .sensoryFeedback(.selection, trigger: selectedToggle)
+                                
                                 if selectedToggle == .university {
                                     Dropdown(
                                         selectedOption: $selectedLocation,
