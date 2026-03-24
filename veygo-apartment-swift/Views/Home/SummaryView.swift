@@ -451,7 +451,7 @@ struct SummaryView: View {
                 )).intValue
             let remainingHours = max(Decimal.zero, hours - Decimal(days * 24))
             let dayUnit = days == 1 ? "day" : "days"
-            return "\(days) \(dayUnit) \(formatHourNumber(remainingHours)) hr"
+            return "\(days) \(dayUnit) and \(formatHourNumber(remainingHours)) hr"
         }
         
         return "\(formatHourNumber(hours)) hr"
