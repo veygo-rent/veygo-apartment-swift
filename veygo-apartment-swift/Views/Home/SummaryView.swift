@@ -93,7 +93,8 @@ struct SummaryView: View {
     }
     
     private var averageHourlyRate: Decimal {
-        tripSubtotal / tripTotalHours
+        guard tripTotalHours > 0 else { return Decimal.zero }
+        return tripSubtotal / tripTotalHours
     }
     
     private var mileageSubtotal: Decimal {
@@ -438,12 +439,30 @@ struct SummaryView: View {
     }
     
     private func formatHours(_ hours: Decimal) -> String {
+        if hours >= Decimal(24) {
+            let days = NSDecimalNumber(decimal: hours / Decimal(24))
+                .rounding(accordingToBehavior: NSDecimalNumberHandler(
+                    roundingMode: .down,
+                    scale: 0,
+                    raiseOnExactness: false,
+                    raiseOnOverflow: false,
+                    raiseOnUnderflow: false,
+                    raiseOnDivideByZero: false
+                )).intValue
+            let remainingHours = max(Decimal.zero, hours - Decimal(days * 24))
+            let dayUnit = days == 1 ? "day" : "days"
+            return "\(days) \(dayUnit) \(formatHourNumber(remainingHours)) hr"
+        }
+        
+        return "\(formatHourNumber(hours)) hr"
+    }
+    
+    private func formatHourNumber(_ hours: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
-        let h = formatter.string(from: hours as NSDecimalNumber) ?? "0"
-        return "\(h) hr"
+        return formatter.string(from: hours as NSDecimalNumber) ?? "0"
     }
     
     private struct TaxLine: Identifiable {
