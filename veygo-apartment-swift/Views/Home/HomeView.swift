@@ -798,14 +798,22 @@ struct CurrentTripView: View {
                     Text(alertMessage)
                 }
                 .sheet(isPresented: $checkOut) {
-                    PickUpView(currentTrip: $currentTrip) {
-                        Task {
-                            await ApiCallActor.shared.appendApi { token, userId in
-                                await reloadCurrentTripAsync(token, userId)
-                            }
+                    if isPickedUp {
+                        DropOffView(currentTrip: $currentTrip) {
+                            checkOut = false
+                            dismiss()
                         }
-                    }
                         .presentationDragIndicator(.visible)
+                    } else {
+                        PickUpView(currentTrip: $currentTrip, onActionSuccess: {
+                            Task {
+                                await ApiCallActor.shared.appendApi { token, userId in
+                                    await reloadCurrentTripAsync(token, userId)
+                                }
+                            }
+                        })
+                        .presentationDragIndicator(.visible)
+                    }
                 }
             } else {
                 Text("Hello World")
@@ -1155,7 +1163,39 @@ struct CurrentTripView: View {
     }
 }
 
+private struct DropOffView: View {
+    @Binding var currentTrip: TripDetailedInfo?
+    let onCheckInSuccess: () -> Void
+
+    var body: some View {
+        PickUpView(
+            currentTrip: $currentTrip,
+            onActionSuccess: onCheckInSuccess,
+            mode: PickUpView.CheckInOutMode.dropOff
+        )
+    }
+}
+
 private struct PickUpView: View {
+    enum CheckInOutMode {
+        case pickUp
+        case dropOff
+
+        var submitButtonText: String {
+            switch self {
+            case .pickUp: return "Submit Pick Up Images"
+            case .dropOff: return "Submit Return Images"
+            }
+        }
+
+        var endpointPath: String {
+            switch self {
+            case .pickUp: return "/api/v1/agreement/check-out"
+            case .dropOff: return "/api/v1/agreement/check-in"
+            }
+        }
+    }
+
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -1167,7 +1207,8 @@ private struct PickUpView: View {
     
     // Stage 1: Eight corner images for pickup
     @Binding var currentTrip: TripDetailedInfo?
-    let onCheckOutSuccess: () -> Void
+    let onActionSuccess: () -> Void
+    let mode: CheckInOutMode
     
     @State private var isSubmitting: Bool = false
     @State private var isShowingCamera = false
@@ -1180,6 +1221,16 @@ private struct PickUpView: View {
     @State private var rearLeft: (String, UIImage)? = nil
     @State private var frontRight: (String, UIImage)? = nil
     @State private var frontLeft: (String, UIImage)? = nil
+    
+    init(
+        currentTrip: Binding<TripDetailedInfo?>,
+        onActionSuccess: @escaping () -> Void,
+        mode: CheckInOutMode = .pickUp
+    ) {
+        self._currentTrip = currentTrip
+        self.onActionSuccess = onActionSuccess
+        self.mode = mode
+    }
     
     private let gridColumns: [GridItem] = [
         GridItem(.flexible(), spacing: 12),
@@ -1282,10 +1333,10 @@ private struct PickUpView: View {
                 }
                 .padding()
                 .disabled(isSubmitting || allImagesCaptured)
-                PrimaryButton(text: "Submit Pick Up Images") {
+                PrimaryButton(text: mode.submitButtonText) {
                     Task {
                         await ApiCallActor.shared.appendApi { token, userId in
-                            await checkOutAsync(token, userId)
+                            await submitInspectionAsync(token, userId)
                         }
                     }
                 }
@@ -1500,7 +1551,7 @@ private struct PickUpView: View {
         }
     }
     
-    @ApiCallActor func checkOutAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+    @ApiCallActor func submitInspectionAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         do {
             let user = await MainActor.run { self.session.user }
             if !token.isEmpty && userId > 0, user != nil {
@@ -1550,13 +1601,14 @@ private struct PickUpView: View {
                 )
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
                 let request = veygoCurlRequest(
-                    url: "/api/v1/agreement/check-out",
+                    url: mode.endpointPath,
                     method: .post,
                     headers: [
                         "auth": "\(token)$\(userId)",
                         "Content-Type": "application/json"
                     ],
-                    body: jsonData
+                    body: jsonData,
+                    timeout: 20
                 )
                 await MainActor.run {
                     isSubmitting = true
@@ -1587,7 +1639,7 @@ private struct PickUpView: View {
                 switch httpResponse.statusCode {
                 case 200:
                     await MainActor.run {
-                        onCheckOutSuccess()
+                        onActionSuccess()
                         dismiss()
                     }
                     return .doNothing
