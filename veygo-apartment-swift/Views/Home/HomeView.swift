@@ -6,8 +6,8 @@ import Crisp
 enum HomeDestination: Hashable {
     case university(apartment: Apartment)
     case apartment
-    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, rateOffer: RateOffer, taxes: [Tax])
-    case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment, rateOffer: RateOffer, mileagePackage: MileagePackage?, taxes: [Tax])
+    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment, rateOffer: RateOffer, taxes: [Tax], startDate: Date, endDate: Date)
+    case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment, rateOffer: RateOffer, mileagePackage: MileagePackage?, taxes: [Tax], startDate: Date, endDate: Date)
     case rentalTerms
 }
 
@@ -30,8 +30,8 @@ struct HomeView: View {
     
     @State private var showCurrentTrip: Bool = false
     
-    @State private var startDate: Date = Date()
-    @State private var endDate: Date = Date()
+    @State private var startDate: Date = Date().nextQuarterHour().addingTimeInterval(15 * 60)
+    @State private var endDate: Date = Date().nextQuarterHour().addingTimeInterval(45 * 60)
     
     @State private var promoCodeInput: String = ""
     @State private var promoCodeActual: String = ""
@@ -57,9 +57,9 @@ struct HomeView: View {
             ListCarView()
         case let .university(apt):
             FindCarView(path: $path, startDate: $startDate, endDate: $endDate, apartment: apt)
-        case let .vehicleDetails(vehicle, location, apartment, rateOffer, taxes):
+        case let .vehicleDetails(vehicle, location, apartment, rateOffer, taxes, startDate, endDate):
             VehicleDetailView(path: $path, startTime: startDate, endTime: endDate, apartment: apartment, vehicleWithBlocksAndLocationInfo: (vehicle, location), taxes: taxes, rateOffer: rateOffer)
-        case let .summary(vehicle, location, apartment, offer, mp, taxes):
+        case let .summary(vehicle, location, apartment, offer, mp, taxes, startDate, endDate):
             SummaryView(path: $path, startDate: startDate, endDate: endDate, vehicle: vehicle, apartment: apartment, location: location, promo: appliedPromoCode, mileagePackage: mp, taxes: taxes, rateOffer: offer)
         case .rentalTerms:
             TermsView(term: .rentalAgreement)

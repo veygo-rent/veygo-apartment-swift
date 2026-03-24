@@ -688,7 +688,9 @@ private struct LocationStripView: View {
                                             location: loc.location,
                                             apartment: apartment,
                                             rateOffer: rateOffer,
-                                            taxes: taxes
+                                            taxes: taxes,
+                                            startDate: startDate,
+                                            endDate: endDate
                                         ))
                                     }
                                 )

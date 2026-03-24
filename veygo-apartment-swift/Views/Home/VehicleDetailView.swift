@@ -189,7 +189,9 @@ struct VehicleDetailView: View {
                         apartment: apartment,
                         rateOffer: rateOffer,
                         mileagePackage: mileagePackage,
-                        taxes: taxes
+                        taxes: taxes,
+                        startDate: startTime,
+                        endDate: endTime
                     )
                 )
             }

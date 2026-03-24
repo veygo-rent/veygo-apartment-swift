@@ -69,8 +69,15 @@ struct DatePanel: View {
                 .fill(Color("TextFieldBg"))
                 .stroke(Color("TextFieldFrame"), lineWidth: 1)
                 .onAppear {
-                    startDate = minimumStartDate
-                    endDate = minimumEndDate
+                    if startDate < minimumStartDate {
+                        startDate = minimumStartDate
+                    }
+                    if endDate < minimumEndDate {
+                        endDate = minimumEndDate
+                    }
+                    if endDate > minimumEndDate.addingTimeInterval(4*7*24*3600) {
+                        endDate = minimumEndDate.addingTimeInterval(4*7*24*3600)
+                    }
                 }
                 .onChange(of: startDate) { _, newValue in
                     if endDate < minimumEndDate {
