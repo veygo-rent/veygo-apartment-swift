@@ -105,7 +105,7 @@ nonisolated struct PublishRenter: Identifiable, Equatable, Codable {
     var driversLicenseExpiration: String?
     var insuranceIdImage: String?
     var insuranceLiabilityExpiration: String?
-    var insuranceCollisionExpiration: String?
+    var insuranceCollisionValid: Bool
     var leaseAgreementImage: String?
     var apartmentId: Int
     var leaseAgreementExpiration: String?
@@ -162,6 +162,10 @@ nonisolated struct Apartment: Identifiable, Equatable, Codable, Hashable, HasNam
     var mileageRateOverwrite: FlexDecimal?
     var mileagePackageOverwrite: FlexDecimal?
     var mileageConversion: FlexDecimal
+    var latitudeLowerBound: Double
+    var latitudeHigherBound: Double
+    var longitudeLowerBound: Double
+    var longitudeHigherBound: Double
 }
 
 nonisolated struct NewApartment: Equatable, Codable, HasName {
@@ -190,6 +194,10 @@ nonisolated struct NewApartment: Equatable, Codable, HasName {
     var mileageRateOverwrite: FlexDecimal?
     var mileagePackageOverwrite: FlexDecimal?
     var mileageConversion: FlexDecimal
+    var latitudeLowerDound: Double
+    var latitudeHigherBound: Double
+    var longitudeLowerBound: Double
+    var longitudeHigherBound: Double
 }
 
 nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
@@ -200,6 +208,10 @@ nonisolated struct Location: Identifiable, Equatable, Codable, Hashable, HasName
     var latitude: Double
     var longitude: Double
     var isOperational: Bool
+    var latitudeLowerDound: Double?
+    var latitudeHigherBound: Double?
+    var longitudeLowerBound: Double?
+    var longitudeHigherBound: Double?
 }
 
 nonisolated struct TransponderCompany: Identifiable, Equatable, Codable {
