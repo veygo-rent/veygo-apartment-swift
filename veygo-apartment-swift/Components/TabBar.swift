@@ -17,8 +17,8 @@ struct TabBar: View {
     private let settingImg = "gearshape"
     
     @State private var universities: [Apartment] = []
-    @State private var cards: [PublishPaymentMethod] = []
     @State private var settingPath: [SettingDestination] = []
+    @State private var accountPath: [AccountDestination] = []
     
     var body: some View {
         TabView(selection: $selected) {
@@ -49,7 +49,7 @@ struct TabBar: View {
             #endif
             
             Tab(value: .account) {
-                RewardView()
+                AccountView(path: $accountPath)
                     .background(Color("MainBG").ignoresSafeArea())
             } label: {
                 Label("Account", systemImage: accountImg)
@@ -57,7 +57,7 @@ struct TabBar: View {
             }
             
             Tab(value: .setting) {
-                SettingView(cards: $cards, path: $settingPath)
+                SettingView(path: $settingPath)
                     .background(Color("MainBG").ignoresSafeArea())
             } label: {
                 Label("Setting", systemImage: settingImg)

@@ -14,9 +14,9 @@ struct PhoneVerifyView: View {
     @State private var clearUserTriggered: Bool = false
     
     @EnvironmentObject var session: UserSession
+    @Environment(\.dismiss) private var dismiss
 
     @State private var verificationCode: String = ""
-    @Binding var path: [SettingDestination]
     
     var body: some View {
         VStack(spacing: 24) {
@@ -227,8 +227,8 @@ struct PhoneVerifyView: View {
                         return .doNothing
                     }
                     await MainActor.run {
-                        path.removeLast()
                         session.user = decodedBody
+                        dismiss()
                     }
                     return .doNothing
                 case 401:

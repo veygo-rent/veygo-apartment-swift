@@ -10,15 +10,6 @@ import Crisp
 import WebKit
 
 enum SettingDestination: Hashable {
-    // Account
-    case profile
-    case membership
-    case wallet
-    case addCard
-    case phone
-    case email
-    case password
-    case submitFile
     // Legal
     case privacyPolicy
     case memberAgreement
@@ -39,7 +30,6 @@ struct SettingView: View {
     
     @State private var showHelpCenter: Bool = false
     
-    @Binding var cards: [PublishPaymentMethod]
     @Binding var path: [SettingDestination]
     
     @EnvironmentObject var session: UserSession
@@ -49,30 +39,6 @@ struct SettingView: View {
         } else {
             NavigationStack (path: $path) {
                 List {
-                    Section {
-                        NavigationLink("Profile", value: SettingDestination.profile)
-                        NavigationLink("Membership", value: SettingDestination.membership)
-                        NavigationLink("Wallet", value: SettingDestination.wallet)
-                        if !session.user!.phoneIsVerified {
-                            NavigationLink("Verify Phone Number", value: SettingDestination.phone)
-                        }
-                        if let email_exp_str = session.user!.studentEmailExpiration,
-                           let email_exp = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: email_exp_str) {
-                            if Date() > email_exp {
-                                NavigationLink("Verify Your Email", value: SettingDestination.email)
-                            }
-                        } else {
-                            NavigationLink("Verify Your Email", value: SettingDestination.email)
-                        }
-                        NavigationLink("Password", value: SettingDestination.password)
-                        NavigationLink("Submit Documents", value: SettingDestination.submitFile)
-                    } header: {
-                        Text("Account")
-                            .fontWeight(.light)
-                    }
-                    .listRowBackground(Color("CardBG"))
-                    .foregroundStyle(Color("TextBlackSecondary"))
-                    .listSectionSeparator(.hidden)
                     
                     if session.user?.employeeTier != EmployeeTier.user {
                         Section {
@@ -137,8 +103,6 @@ struct SettingView: View {
                 .navigationTitle(Text("Setting"))
                 .navigationDestination(for: SettingDestination.self) { destination in
                     switch destination {
-                    case .membership:
-                        MembershipView()
                     case .memberAgreement:
                         TermsView(term: .membershipAgreement)
                     case .rentalAgreement:
@@ -147,16 +111,6 @@ struct SettingView: View {
                         TermsView(term: .privacyPolicy)
                     case .termsOfUse:
                         TermsView(term: .termsOfUse)
-                    case .wallet:
-                        CreditCardView(cards: $cards, path: $path)
-                    case .addCard:
-                        FullStripeCardEntryView()
-                    case .phone:
-                        PhoneVerifyView(path: $path)
-                    case .email:
-                        EmailVerifyView(path: $path)
-                    case .submitFile:
-                        SubmitFileView(path: $path)
                     case .submitVehicleSnapshot:
                         AdminVehicleSubmissionView()
                     default:

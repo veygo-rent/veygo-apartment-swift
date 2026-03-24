@@ -23,7 +23,7 @@ struct CreditCardView: View {
     @Binding var cards: [PublishPaymentMethod]
     @State private var expandedCardID: PublishPaymentMethod.ID? = nil
     
-    @Binding var path: [SettingDestination]
+    let onAddCard: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -73,7 +73,7 @@ struct CreditCardView: View {
             Spacer()
 
             PrimaryButton(text: "Add Card") {
-                path.append(.addCard)
+                onAddCard()
             }
             .padding(.horizontal)
             .padding(.bottom, 20)
@@ -380,5 +380,3 @@ func cardBrandImage(for brand: String) -> some View {
             .foregroundColor(.primaryButtonBg)
     }
 }
-
-

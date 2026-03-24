@@ -20,8 +20,6 @@ struct SubmitFileView: View {
     @State private var alertTitle: String = ""
     @State private var clearUserTriggered: Bool = false
     
-    @Binding var path: [SettingDestination]
-    
     @EnvironmentObject var session: UserSession
     var body: some View {
         if let user = session.user {
