@@ -28,6 +28,9 @@ nonisolated public func veygoCurlRequest (url: String, method: RequestMethods, h
     
     request.assumesHTTP3Capable = true
     
+    let uuid = UUID().uuidString
+    request.setValue(uuid, forHTTPHeaderField: "Request-ID")
+    
     if headers["Content-Type"] == nil && method != .get {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
