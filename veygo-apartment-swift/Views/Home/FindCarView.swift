@@ -407,7 +407,7 @@ struct VehicleCardView: View {
     let endDate: Date
 
     // Availability bar styling (easy to tweak)
-    private let availabilityBarHeight: CGFloat = 6
+    private let availabilityBarHeight: CGFloat = 8
     private let availabilityBarBorderWidth: CGFloat = 0.8
     private let availabilityBarTrackColor: Color = Color(.systemBackground)
     private let availabilityBarBorderColor: Color = Color(.systemGray4)
@@ -468,21 +468,23 @@ struct VehicleCardView: View {
 
         var body: some View {
             GeometryReader { geo in
+                let width = geo.size.width
+                let height = geo.size.height
+                let inset = lineWidth / 2
+                let step = lineSpacing + lineWidth
                 ZStack {
                     Rectangle().fill(backgroundColor)
                     Path { path in
-                        let width = geo.size.width
-                        let height = geo.size.height
-                        let step = lineSpacing + lineWidth
                         var x: CGFloat = -height
                         while x < width {
-                            path.move(to: CGPoint(x: x, y: 0))
-                            path.addLine(to: CGPoint(x: x + height, y: height))
+                            path.move(to: CGPoint(x: x, y: inset))
+                            path.addLine(to: CGPoint(x: x + height - inset * 2, y: height - inset))
                             x += step
                         }
                     }
                     .stroke(lineColor, lineWidth: lineWidth)
                 }
+                .clipped()
             }
         }
     }
@@ -561,6 +563,7 @@ struct VehicleCardView: View {
                                 lineSpacing: availabilityHatchSpacing
                             )
                             .frame(width: segmentWidth, height: geo.size.height)
+                            .clipped()
                             .offset(x: segmentOffset)
                         }
                     }
