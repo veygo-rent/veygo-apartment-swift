@@ -56,7 +56,7 @@ struct TextWithLink: UIViewRepresentable {
         let attributed = NSMutableAttributedString(
             string: fullText,
             attributes: [
-                .font: UIFont.systemFont(ofSize: 11, weight: .regular),
+                .font: UIFont.preferredFont(forTextStyle: .footnote),
                 .foregroundColor: UIColor(named: "FootNote") ?? UIColor.secondaryLabel
             ]
         )

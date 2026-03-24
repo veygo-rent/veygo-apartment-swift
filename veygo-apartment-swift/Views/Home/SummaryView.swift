@@ -88,6 +88,14 @@ struct SummaryView: View {
         tier1Charge + tier2Charge + tier3Charge
     }
     
+    private var tripTotalHours: Decimal {
+        tier1Hours + tier2Hours + tier3Hours
+    }
+    
+    private var averageHourlyRate: Decimal {
+        tripSubtotal / tripTotalHours
+    }
+    
     private var mileageSubtotal: Decimal {
         guard let mileagePackage else { return Decimal.zero }
         return pricingStandard.mileagePackagePrice(for: mileagePackage)
@@ -303,46 +311,31 @@ struct SummaryView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                                 VStack (spacing: 10) {
-                                    if tier1Hours > 0 {
-                                        priceLine(
-                                            title: "\(formatHours(tier1Hours)) @ \(formatRate(hourlyRate))/hr",
-                                            value: formatRate(tier1Charge)
-                                        )
-                                    }
-                                    
-                                    if tier2Hours > 0 {
-                                        priceLine(
-                                            title: "\(formatHours(tier2Hours)) @ \(formatRate(tier2HourlyRate))/hr",
-                                            value: formatRate(tier2Charge)
-                                        )
-                                    }
-                                    
-                                    if tier3Hours > 0 {
-                                        priceLine(
-                                            title: "\(formatHours(tier3Hours)) @ \(formatRate(tier3HourlyRate))/hr",
-                                            value: formatRate(tier3Charge)
-                                        )
-                                    }
+                                    priceLine(
+                                        title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageHourlyRate))/hr",
+                                        value: formatRate(tripSubtotal)
+                                    )
                                     
                                     Divider()
-                                    
-                                    priceLine(title: "Trip subtotal", value: formatRate(tripSubtotal))
-                                    
-                                    if mileageSubtotal > 0 {
-                                        priceLine(
-                                            title: "Mileage package (\(10 + (mileagePackage?.miles ?? 0)) miles)",
-                                            value: formatRate(mileageSubtotal)
-                                        )
-                                    }
                                     
                                     if promoDiscount > 0 {
                                         priceLine(
                                             title: "Promo (\(promo?.code ?? ""))",
                                             value: "-\(formatRate(promoDiscount))"
                                         )
+                                        
+                                        Divider()
                                     }
                                     
-                                    priceLine(title: "Subtotal before tax", value: formatRate(subtotalBeforeTax))
+                                    if mileageSubtotal > 0 {
+                                        priceLine(
+                                            title: "Mileage package (\(10 + (mileagePackage?.miles ?? 0)) miles)",
+                                            value: formatRate(mileageSubtotal)
+                                        )
+                                        Divider()
+                                    }
+                                    
+                                    priceLine(title: "Subtotal before tax", value: formatRate(subtotalBeforeTax), weight: .semibold)
                                     
                                     if !taxLines.isEmpty {
                                         Divider()
@@ -359,7 +352,7 @@ struct SummaryView: View {
                                     priceLine(
                                         title: "Final total est.",
                                         value: formatRate(finalEstimatedTotal),
-                                        emphasize: true
+                                        weight: .bold
                                     )
                                 }
                                 .padding()
@@ -370,13 +363,16 @@ struct SummaryView: View {
                                     .foregroundStyle(Color.footNote)
                                     .font(.footnote)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                Text("A $200 deposit is required at the time of pick-up.")
+                                    .foregroundStyle(Color.footNote)
+                                    .font(.footnote)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                TextWithLink(fullText: "By proceeding with this booking, you agree to the Rental Terms.", highlightedTexts: [
+                                    ("Rental Terms", { path.append(.rentalTerms) })
+                                ])
                             }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.mainBG)
-                            
-                            TextWithLink(fullText: "By proceeding with this booking, you agree to the Rental Terms.", highlightedTexts: [
-                                ("Rental Terms", { path.append(.rentalTerms) })
-                            ])
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.mainBG)
                             .padding(.bottom, 80)
@@ -424,15 +420,15 @@ struct SummaryView: View {
     }
     
     @ViewBuilder
-    private func priceLine(title: String, value: String, emphasize: Bool = false) -> some View {
+    private func priceLine(title: String, value: String, weight: Font.Weight = .regular) -> some View {
         HStack {
             Text(title)
                 .foregroundStyle(Color.textBlackPrimary)
-                .fontWeight(emphasize ? .bold : .regular)
+                .fontWeight(weight)
             Spacer()
             Text(value)
                 .foregroundStyle(Color.textBlackPrimary)
-                .fontWeight(emphasize ? .bold : .regular)
+                .fontWeight(weight)
         }
         .font(.subheadline)
     }
