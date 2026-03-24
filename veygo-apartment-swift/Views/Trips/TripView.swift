@@ -258,6 +258,122 @@ private struct UpcomingReservationDetailedView: View {
     @State private var details: TripDetailedInfo?
     
     let rsvp: Agreement
+    
+    private var rawDuration: TimeInterval {
+        guard let details else { return 0 }
+        return max(0, details.agreement.rsvpDropOffTime.timeIntervalSince(details.agreement.rsvpPickupTime))
+    }
+    
+    private var hourlyRate: Decimal {
+        guard let details else { return Decimal.zero }
+        return details.agreement.msrpFactor.value
+            * details.agreement.durationRate.value
+            * details.agreement.utilizationFactor.value
+    }
+    
+    private var rawHours: Decimal {
+        Decimal(rawDuration) / Decimal(3600)
+    }
+    
+    private var tier1Hours: Decimal {
+        max(Decimal.zero, min(rawHours, Decimal(8)))
+    }
+    
+    private var tier2Hours: Decimal {
+        max(Decimal.zero, min(rawHours - Decimal(8), Decimal(160)))
+    }
+    
+    private var tier3Hours: Decimal {
+        max(Decimal.zero, rawHours - Decimal(168))
+    }
+    
+    private var tier1Charge: Decimal {
+        tier1Hours * hourlyRate
+    }
+    
+    private var tier2HourlyRate: Decimal {
+        hourlyRate * Decimal(string: "0.25")!
+    }
+    
+    private var tier2Charge: Decimal {
+        tier2Hours * tier2HourlyRate
+    }
+    
+    private var tier3HourlyRate: Decimal {
+        hourlyRate * Decimal(string: "0.15")!
+    }
+    
+    private var tier3Charge: Decimal {
+        tier3Hours * tier3HourlyRate
+    }
+    
+    private var tripSubtotal: Decimal {
+        tier1Charge + tier2Charge + tier3Charge
+    }
+    
+    private var tripTotalHours: Decimal {
+        tier1Hours + tier2Hours + tier3Hours
+    }
+    
+    private var averageHourlyRate: Decimal {
+        guard tripTotalHours > 0 else { return Decimal.zero }
+        return tripSubtotal / tripTotalHours
+    }
+    
+    private var mileageSubtotal: Decimal {
+        guard let details, let pkg = details.mileagePackage else { return Decimal.zero }
+        let standard = VeygoPricingStandard(apartment: details.apartment, vehicle: details.vehicle)
+        return standard.mileagePackagePrice(for: pkg)
+    }
+    
+    private var subtotalBeforeDiscount: Decimal {
+        tripSubtotal + mileageSubtotal
+    }
+    
+    private var promoDiscount: Decimal {
+        min(details?.promo?.amount.value ?? Decimal.zero, subtotalBeforeDiscount)
+    }
+    
+    private var subtotalBeforeTax: Decimal {
+        max(Decimal.zero, subtotalBeforeDiscount - promoDiscount)
+    }
+    
+    private var rawRentalDays: Int {
+        guard rawDuration > 0 else { return 0 }
+        return Int(ceil(rawDuration / (24 * 3600)))
+    }
+    
+    private var taxLines: [TaxLine] {
+        (details?.taxes ?? []).map { tax in
+            let amount: Decimal
+            switch tax.taxType {
+            case .percent:
+                amount = subtotalBeforeTax * normalizedPercentMultiplier(tax.multiplier.value)
+            case .daily:
+                amount = Decimal(rawRentalDays) * tax.multiplier.value
+            case .fixed:
+                amount = tax.multiplier.value
+            }
+            return TaxLine(id: tax.id, name: tax.name, amount: max(Decimal.zero, amount))
+        }
+    }
+
+    private var totalTax: Decimal {
+        taxLines.reduce(Decimal.zero) { $0 + $1.amount }
+    }
+    
+    private var finalEstimatedTotal: Decimal {
+        subtotalBeforeTax + totalTax
+    }
+    
+    private func normalizedPercentMultiplier(_ multiplier: Decimal) -> Decimal {
+        let absolute = multiplier < 0 ? -multiplier : multiplier
+        if absolute > Decimal(1) {
+            return multiplier / Decimal(100)
+        }
+        return multiplier
+    }
+    
     var body: some View {
         if let _ = session.user {
             List {
@@ -364,21 +480,65 @@ private struct UpcomingReservationDetailedView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.mainBG)
-                    VStack (spacing: 12) {
-                        HStack {
-                            Text ("Total est.")
-                                .fontWeight(.bold)
-                            Spacer()
-                            Text("$52.39")
-                                .fontWeight(.bold)
+                    VStack (alignment: .leading, spacing: 16) {
+                        Text("Price Details")
+                            .foregroundStyle(Color.textBlackSecondary)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        VStack (spacing: 10) {
+                            priceLine(
+                                title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageHourlyRate))/hr",
+                                value: formatRate(tripSubtotal)
+                            )
+                            
+                            Divider()
+                            
+                            if promoDiscount > 0 {
+                                priceLine(
+                                    title: "Promo (\(details.promo?.code ?? ""))",
+                                    value: "-\(formatRate(promoDiscount))"
+                                )
+                                
+                                Divider()
+                            }
+                            
+                            if mileageSubtotal > 0 {
+                                priceLine(
+                                    title: "Mileage package (\(10 + (details.mileagePackage?.miles ?? 0)) miles)",
+                                    value: formatRate(mileageSubtotal)
+                                )
+                                Divider()
+                            }
+                            
+                            priceLine(title: "Subtotal before tax", value: formatRate(subtotalBeforeTax), weight: .semibold)
+                            
+                            if !taxLines.isEmpty {
+                                Divider()
+                                ForEach(taxLines) { taxLine in
+                                    priceLine(
+                                        title: taxLine.name,
+                                        value: formatRate(taxLine.amount)
+                                    )
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            priceLine(
+                                title: "Final total est.",
+                                value: formatRate(finalEstimatedTotal),
+                                weight: .bold
+                            )
                         }
                         .padding()
                         .background(Color.cardBG)
-                        .cornerRadius(16)
-                        ShortTextLink(text: "Price Details") {
-                            // TODO:
-                        }
-                        Text ("Estimated total does not include any fuel charges, tolls, or any other fees that may occur during your trip (taxes and fees may apply).")
+                        .cornerRadius(12)
+                        Text("Estimated total does not include fuel charges, tolls, or other fees that may occur during your trip.")
+                            .foregroundStyle(Color.footNote)
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text("A $200 deposit is required at the time of pick-up.")
                             .foregroundStyle(Color.footNote)
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -602,6 +762,57 @@ private struct UpcomingReservationDetailedView: View {
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func priceLine(title: String, value: String, weight: Font.Weight = .regular) -> some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(Color.textBlackPrimary)
+                .fontWeight(weight)
+            Spacer()
+            Text(value)
+                .foregroundStyle(Color.textBlackPrimary)
+                .fontWeight(weight)
+        }
+        .font(.subheadline)
+    }
+    
+    private func formatRate(_ amount: Decimal) -> String {
+        VeygoCurrencyStandard.shared.dollarFormatter.string(from: amount as NSDecimalNumber) ?? "$0.00"
+    }
+    
+    private func formatHours(_ hours: Decimal) -> String {
+        if hours >= Decimal(24) {
+            let days = NSDecimalNumber(decimal: hours / Decimal(24))
+                .rounding(accordingToBehavior: NSDecimalNumberHandler(
+                    roundingMode: .down,
+                    scale: 0,
+                    raiseOnExactness: false,
+                    raiseOnOverflow: false,
+                    raiseOnUnderflow: false,
+                    raiseOnDivideByZero: false
+                )).intValue
+            let remainingHours = max(Decimal.zero, hours - Decimal(days * 24))
+            let dayUnit = days == 1 ? "day" : "days"
+            return "\(days) \(dayUnit) and \(formatHourNumber(remainingHours)) hr"
+        }
+        
+        return "\(formatHourNumber(hours)) hr"
+    }
+    
+    private func formatHourNumber(_ hours: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: hours as NSDecimalNumber) ?? "0"
+    }
+    
+    private struct TaxLine: Identifiable {
+        let id: Int
+        let name: String
+        let amount: Decimal
     }
     
     @ApiCallActor func loadDetailedTripAsync(_ token: String, _ userId: Int) async -> ApiTaskResponse {

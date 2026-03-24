@@ -68,7 +68,7 @@ struct FindCarView: View {
             }
         }
         .sensoryFeedback(.selection, trigger: selectedLocation)
-        .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .all, showsTraffic: true))
+        .mapStyle(.standard(elevation: .flat, emphasis: .automatic, pointsOfInterest: .excludingAll, showsTraffic: true))
         .mapControls {
             MapCompass()
             if locationManager.authorizationStatus == .authorizedWhenInUse {
