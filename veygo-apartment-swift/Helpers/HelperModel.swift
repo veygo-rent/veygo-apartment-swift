@@ -83,6 +83,67 @@ nonisolated struct CheckOutRequest: Codable {
     let hoursUsingReward: Int
 }
 
+nonisolated enum CheckInOutRequest: Encodable {
+    case withSnapshotId(agreementId: Agreement.ID, vehicleSnapshotId: VehicleSnapshot.ID)
+    case withImagePath(
+        agreementId: Agreement.ID,
+        leftImagePath: String,
+        rightImagePath: String,
+        frontImagePath: String,
+        backImagePath: String,
+        frontRightImagePath: String,
+        frontLeftImagePath: String,
+        backLeftImagePath: String,
+        backRightImagePath: String
+    )
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case agreementId
+        case vehicleSnapshotId
+        case leftImagePath
+        case rightImagePath
+        case frontImagePath
+        case backImagePath
+        case frontRightImagePath
+        case frontLeftImagePath
+        case backLeftImagePath
+        case backRightImagePath
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        switch self {
+        case let .withSnapshotId(agreementId, vehicleSnapshotId):
+            try container.encode("with_snapshot_id", forKey: .type)
+            try container.encode(agreementId, forKey: .agreementId)
+            try container.encode(vehicleSnapshotId, forKey: .vehicleSnapshotId)
+        case let .withImagePath(
+            agreementId,
+            leftImagePath,
+            rightImagePath,
+            frontImagePath,
+            backImagePath,
+            frontRightImagePath,
+            frontLeftImagePath,
+            backLeftImagePath,
+            backRightImagePath
+        ):
+            try container.encode("with_image_path", forKey: .type)
+            try container.encode(agreementId, forKey: .agreementId)
+            try container.encode(leftImagePath, forKey: .leftImagePath)
+            try container.encode(rightImagePath, forKey: .rightImagePath)
+            try container.encode(frontImagePath, forKey: .frontImagePath)
+            try container.encode(backImagePath, forKey: .backImagePath)
+            try container.encode(frontRightImagePath, forKey: .frontRightImagePath)
+            try container.encode(frontLeftImagePath, forKey: .frontLeftImagePath)
+            try container.encode(backLeftImagePath, forKey: .backLeftImagePath)
+            try container.encode(backRightImagePath, forKey: .backRightImagePath)
+        }
+    }
+}
+
 nonisolated struct RewardHoursSummaryResponse: Decodable {
     let total: FlexDecimal
     let used: FlexDecimal

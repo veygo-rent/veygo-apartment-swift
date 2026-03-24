@@ -264,7 +264,13 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     }
                 }
-                .fullScreenCover(isPresented: $showCurrentTrip) {
+                .fullScreenCover(isPresented: $showCurrentTrip, onDismiss: {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await getCurrentAgreement(token, userId)
+                        }
+                    }
+                }) {
                     CurrentTripView(currentTrip: $currentTrip)
                 }
             }
@@ -653,7 +659,7 @@ struct HomeView: View {
 }
 
 struct CurrentTripView: View {
-    @State private var checkIn: Bool = false
+    @State private var checkOut: Bool = false
     
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismiss) var dismiss
@@ -669,7 +675,8 @@ struct CurrentTripView: View {
     @State private var route: MKPolyline? = nil
     var body: some View {
         NavigationStack {
-            if let currentTrip = currentTrip, currentTrip.agreement.actualPickupTime == nil {
+            if let currentTrip = currentTrip {
+                let isPickedUp = currentTrip.agreement.actualPickupTime != nil
                 Map {
                     UserAnnotation()
                     if let route = route {
@@ -712,6 +719,7 @@ struct CurrentTripView: View {
                                 print("Extend Button Pressed")
                             }
                             .frame(width: 100)
+                            .disabled(Date() > currentTrip.agreement.rsvpDropOffTime)
                         }
                         HStack {
                             VStack (alignment: .leading) {
@@ -743,10 +751,14 @@ struct CurrentTripView: View {
                             }
                             .buttonStyle(.glass)
                             .tint(.accent)
-                            Button("Honk", systemImage: "speaker.wave.3.fill") {
+                            Button(isPickedUp ? "Unlock" : "Honk", systemImage: isPickedUp ? "lock.open.fill" : "speaker.wave.3.fill") {
                                 Task {
                                     await ApiCallActor.shared.appendApi { token, userId in
-                                        await honkCurrentVehicle(token, userId)
+                                        if isPickedUp {
+                                            await agreementUnlockAsync(token, userId, confirmation: currentTrip.agreement.confirmation)
+                                        } else {
+                                            await honkCurrentVehicle(token, userId)
+                                        }
                                     }
                                 }
                             }
@@ -754,8 +766,8 @@ struct CurrentTripView: View {
                             .tint(.accent)
                             .disabled(Date() < currentTrip.agreement.rsvpPickupTime.addingTimeInterval(-15 * 60))
                         }
-                        PrimaryButton(text: "Check In") {
-                            checkIn = true
+                        PrimaryButton(text: isPickedUp ? "Return" : "Pick Up") {
+                            checkOut = true
                         }
                         .padding(.top, 24)
                         .disabled(currentTrip.agreement.rsvpPickupTime > Date())
@@ -785,12 +797,18 @@ struct CurrentTripView: View {
                 } message: {
                     Text(alertMessage)
                 }
-                .sheet(isPresented: $checkIn) {
-                    CheckInView(currentTrip: $currentTrip)
+                .sheet(isPresented: $checkOut) {
+                    PickUpView(currentTrip: $currentTrip) {
+                        Task {
+                            await ApiCallActor.shared.appendApi { token, userId in
+                                await reloadCurrentTripAsync(token, userId)
+                            }
+                        }
+                    }
                         .presentationDragIndicator(.visible)
                 }
             } else {
-                EmptyView()
+                Text("Hello World")
                     .toolbar {
                         ToolbarItem {
                             Button("Dismiss", systemImage: "xmark") {
@@ -857,6 +875,11 @@ struct CurrentTripView: View {
                 
                 switch httpResponse.statusCode {
                 case 200:
+                    await MainActor.run {
+                        alertTitle = "Honk Requested"
+                        alertMessage = "Honk request sent successfully."
+                        showAlert = true
+                    }
                     return .doNothing
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
@@ -914,9 +937,225 @@ struct CurrentTripView: View {
             return .doNothing
         }
     }
+    
+    @ApiCallActor func agreementUnlockAsync (_ token: String, _ userId: Int, confirmation: String) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                let request = veygoCurlRequest(
+                    url: "/api/v1/agreement/unlock/\(confirmation)",
+                    method: .get,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ]
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    await MainActor.run {
+                        alertTitle = "Unlock Requested"
+                        alertMessage = "Unlock request sent successfully."
+                        showAlert = true
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 403:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E403
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
+    
+    @ApiCallActor func reloadCurrentTripAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                let request = veygoCurlRequest(
+                    url: "/api/v1/agreement/current",
+                    method: .get,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ]
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(TripDetailedInfo.self, from: data) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid content"
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        self.currentTrip = decodedBody
+                        loadRoute()
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 404:
+                    await MainActor.run {
+                        self.currentTrip = nil
+                    }
+                    return .doNothing
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
 }
 
-private struct CheckInView: View {
+private struct PickUpView: View {
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var alertTitle: String = ""
@@ -926,8 +1165,9 @@ private struct CheckInView: View {
     
     @Environment(\.dismiss) var dismiss
     
-    // Stage 1: Eight corner images
+    // Stage 1: Eight corner images for pickup
     @Binding var currentTrip: TripDetailedInfo?
+    let onCheckOutSuccess: () -> Void
     
     @State private var isSubmitting: Bool = false
     @State private var isShowingCamera = false
@@ -940,21 +1180,21 @@ private struct CheckInView: View {
     @State private var rearLeft: (String, UIImage)? = nil
     @State private var frontRight: (String, UIImage)? = nil
     @State private var frontLeft: (String, UIImage)? = nil
-
+    
     private let gridColumns: [GridItem] = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
-
+    
     @ViewBuilder
     private func imageTile(label: String, binding: Binding<(String, UIImage)?>) -> some View {
         let tileCorner: CGFloat = 16
-
+        
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
                 .font(.footnote)
                 .foregroundStyle(.textBlackPrimary)
-
+            
             ZStack(alignment: .topTrailing) {
                 if let img = binding.wrappedValue?.1 {
                     ZStack {
@@ -969,7 +1209,7 @@ private struct CheckInView: View {
                     .frame(height: 140)
                     .frame(maxWidth: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: tileCorner, style: .continuous))
-
+                    
                     Button {
                         binding.wrappedValue = nil
                     } label: {
@@ -1000,7 +1240,7 @@ private struct CheckInView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private var nextCaptureButtonTitle: String {
         if leftImage == nil {
             return "Capture Left Image"
@@ -1042,12 +1282,16 @@ private struct CheckInView: View {
                 }
                 .padding()
                 .disabled(isSubmitting || allImagesCaptured)
-                PrimaryButton(text: "Submit Check-in Images") {
-                    
+                PrimaryButton(text: "Submit Pick Up Images") {
+                    Task {
+                        await ApiCallActor.shared.appendApi { token, userId in
+                            await checkOutAsync(token, userId)
+                        }
+                    }
                 }
                 .padding()
                 .disabled(isSubmitting || !allImagesCaptured)
-
+                
                 LazyVGrid(columns: gridColumns, spacing: 36) {
                     imageTile(label: "Left Image", binding: $leftImage)
                     imageTile(label: "Front-Left Image", binding: $frontLeft)
@@ -1143,10 +1387,10 @@ private struct CheckInView: View {
                 
                 guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
                     if let decodedString = String(data: data, encoding: .utf8) {
-                            print("Decoded String: \(decodedString)")
-                        } else {
-                            print("Decoding failed.")
-                        }
+                        print("Decoded String: \(decodedString)")
+                    } else {
+                        print("Decoding failed.")
+                    }
                     await MainActor.run {
                         alertTitle = "Server Error"
                         alertMessage = "Invalid content"
@@ -1255,4 +1499,170 @@ private struct CheckInView: View {
             return .doNothing
         }
     }
+    
+    @ApiCallActor func checkOutAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                let payload = await MainActor.run {
+                    (
+                        agreementId: currentTrip?.agreement.id,
+                        leftImagePath: leftImage?.0,
+                        rightImagePath: rightImage?.0,
+                        frontImagePath: frontImage?.0,
+                        backImagePath: backImage?.0,
+                        frontRightImagePath: frontRight?.0,
+                        frontLeftImagePath: frontLeft?.0,
+                        backLeftImagePath: rearLeft?.0,
+                        backRightImagePath: rearRight?.0
+                    )
+                }
+                
+                guard
+                    let agreementId = payload.agreementId,
+                    let leftImagePath = payload.leftImagePath,
+                    let rightImagePath = payload.rightImagePath,
+                    let frontImagePath = payload.frontImagePath,
+                    let backImagePath = payload.backImagePath,
+                    let frontRightImagePath = payload.frontRightImagePath,
+                    let frontLeftImagePath = payload.frontLeftImagePath,
+                    let backLeftImagePath = payload.backLeftImagePath,
+                    let backRightImagePath = payload.backRightImagePath
+                else {
+                    await MainActor.run {
+                        alertTitle = "Missing Photos"
+                        alertMessage = "Please capture and upload all required images before submitting."
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                let body: CheckInOutRequest = .withImagePath(
+                    agreementId: agreementId,
+                    leftImagePath: leftImagePath,
+                    rightImagePath: rightImagePath,
+                    frontImagePath: frontImagePath,
+                    backImagePath: backImagePath,
+                    frontRightImagePath: frontRightImagePath,
+                    frontLeftImagePath: frontLeftImagePath,
+                    backLeftImagePath: backLeftImagePath,
+                    backRightImagePath: backRightImagePath
+                )
+                let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
+                let request = veygoCurlRequest(
+                    url: "/api/v1/agreement/check-out",
+                    method: .post,
+                    headers: [
+                        "auth": "\(token)$\(userId)",
+                        "Content-Type": "application/json"
+                    ],
+                    body: jsonData
+                )
+                await MainActor.run {
+                    isSubmitting = true
+                }
+                let (data, response) = try await URLSession.shared.data(for: request)
+                await MainActor.run {
+                    isSubmitting = false
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid protocol"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                guard httpResponse.value(forHTTPHeaderField: "Content-Type") == "application/json" else {
+                    await MainActor.run {
+                        alertTitle = "Server Error"
+                        alertMessage = "Invalid content"
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    await MainActor.run {
+                        onCheckOutSuccess()
+                        dismiss()
+                    }
+                    return .doNothing
+                case 400:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E400
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                case 405:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E405
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
+                default:
+                    let body = ErrorResponse.E_DEFAULT
+                    await MainActor.run {
+                        alertTitle = body.title
+                        alertMessage = body.message
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                isSubmitting = false
+            }
+            await MainActor.run {
+                alertTitle = "Internal Error"
+                alertMessage = "\(error.localizedDescription)"
+                showAlert = true
+            }
+            return .doNothing
+        }
+    }
+    
 }
