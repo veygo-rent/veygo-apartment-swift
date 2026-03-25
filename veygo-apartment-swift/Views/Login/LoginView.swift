@@ -109,7 +109,7 @@ struct LoginView: View {
                 TextWithLink(fullText: "By using this App, you agree to its Terms of Use.", highlightedTexts: [
                     ("Terms of Use", { path.append(SignupRoute.tou) })
                 ])
-                TextWithLink(fullText: "By signing in, you agree to Veygo’s Membership Agreement and Privacy Policy.", highlightedTexts: [
+                TextWithLink(fullText: "By signing in, you agree to Veygo’s Privacy Policy and Membership Agreement.", highlightedTexts: [
                     ("Membership Agreement", { path.append(SignupRoute.membership) }),
                     ("Privacy Policy", { path.append(SignupRoute.privacy) })
                 ])

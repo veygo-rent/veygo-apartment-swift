@@ -69,6 +69,7 @@ enum PolicyType: String, Codable {
     case rental = "Rental"
     case privacy = "Privacy"
     case membership = "Membership"
+    case usage = "Usage"
 }
 
 nonisolated struct UsAddress: Equatable, Codable, Hashable {
