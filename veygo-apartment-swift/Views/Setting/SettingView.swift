@@ -36,13 +36,10 @@ struct SettingView: View {
     
     @EnvironmentObject var session: UserSession
     var body: some View {
-        if session.user == nil {
-            EmptyView()
-        } else {
+        if let user = session.user {
             NavigationStack (path: $path) {
                 List {
-                    
-                    if session.user?.employeeTier != EmployeeTier.user {
+                    if user.employeeTier != EmployeeTier.user && user.emailIsValid() {
                         Section {
                             NavigationLink("Upload Vehicle Snapshot", value: SettingDestination.submitVehicleSnapshot)
                         } header: {
@@ -143,6 +140,8 @@ struct SettingView: View {
             .sheet(isPresented: $showHelpCenter) {
                 ChatView()
             }
+        } else {
+            EmptyView()
         }
     }
     

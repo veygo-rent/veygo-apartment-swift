@@ -43,14 +43,11 @@ struct AccountView: View {
                         if !user.phoneIsVerified {
                             NavigationLink("Verify Phone Number", value: AccountDestination.phone)
                         }
-                        if let email_exp_str = user.studentEmailExpiration,
-                           let email_exp = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: email_exp_str) {
-                            if Date() > email_exp {
-                                NavigationLink("Verify Your Email", value: AccountDestination.email)
-                            }
-                        } else {
+                        
+                        if !user.emailIsValid() {
                             NavigationLink("Verify Your Email", value: AccountDestination.email)
                         }
+                        
                         NavigationLink("Submit Documents", value: AccountDestination.submitFile)
                     }
                     .listRowBackground(Color("CardBG"))
