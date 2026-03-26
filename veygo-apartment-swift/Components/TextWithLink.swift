@@ -104,20 +104,5 @@ struct TextWithLink: UIViewRepresentable {
         ) -> Bool {
             handleTap(on: url)
         }
-
-        @available(iOS 17.0, *)
-        func textView(
-            _ textView: UITextView,
-            primaryActionFor textItem: UITextItem,
-            defaultAction: UIAction
-        ) -> UIAction? {
-            guard case let .link(url) = textItem.content else {
-                return defaultAction
-            }
-
-            return UIAction { _ in
-                _ = self.handleTap(on: url)
-            }
-        }
     }
 }
