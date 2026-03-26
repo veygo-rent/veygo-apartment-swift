@@ -2,11 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State private var showAlert: Bool = false
-    @State private var alertMessage: String = ""
-    @State private var alertTitle: String = ""
-    @State private var clearUserTriggered: Bool = false
-    
     @EnvironmentObject var session: UserSession
 
     var body: some View {
@@ -16,15 +11,6 @@ struct ContentView: View {
                     .transition(.move(edge: .leading))
             } else {
                 TabBar()
-                    .alert(alertTitle, isPresented: $showAlert) {
-                        Button("OK") {
-                            if clearUserTriggered {
-                                session.user = nil
-                            }
-                        }
-                    } message: {
-                        Text(alertMessage)
-                    }
                     .transition(.move(edge: .trailing))
             }
         }
