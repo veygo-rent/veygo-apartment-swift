@@ -1718,3 +1718,15 @@ private struct PickUpView: View {
     }
     
 }
+
+private struct Title: View {
+    var text: String
+    var fontSize: CGFloat
+    var color: Color
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: fontSize, weight: .semibold))
+            .foregroundColor(color)
+    }
+}
