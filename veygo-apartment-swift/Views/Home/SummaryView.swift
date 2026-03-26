@@ -52,44 +52,24 @@ struct SummaryView: View {
         Decimal(rawDuration) / Decimal(3600)
     }
     
-    private var tier1Hours: Decimal {
-        max(Decimal.zero, min(rawHours, Decimal(8)))
+    private var rewardHoursUsed: Decimal {
+        Decimal.zero
     }
     
-    private var tier2Hours: Decimal {
-        max(Decimal.zero, min(rawHours - Decimal(8), Decimal(160)))
-    }
-    
-    private var tier3Hours: Decimal {
-        max(Decimal.zero, rawHours - Decimal(168))
-    }
-    
-    private var tier1Charge: Decimal {
-        tier1Hours * hourlyRate
-    }
-    
-    private var tier2HourlyRate: Decimal {
-        hourlyRate * Decimal(string: "0.25")!
-    }
-    
-    private var tier2Charge: Decimal {
-        tier2Hours * tier2HourlyRate
-    }
-    
-    private var tier3HourlyRate: Decimal {
-        hourlyRate * Decimal(string: "0.15")!
-    }
-    
-    private var tier3Charge: Decimal {
-        tier3Hours * tier3HourlyRate
-    }
-    
-    private var tripSubtotal: Decimal {
-        tier1Charge + tier2Charge + tier3Charge
+    private var durationAfterReward: TimeInterval {
+        pricingStandard.calculateDurationAfterReward(rawDuration: rawDuration, rewardHours: rewardHoursUsed)
     }
     
     private var tripTotalHours: Decimal {
-        tier1Hours + tier2Hours + tier3Hours
+        rawHours
+    }
+    
+    private var billableDurationHours: Decimal {
+        pricingStandard.calculateBillableDurationHours(rawDuration: durationAfterReward)
+    }
+    
+    private var tripSubtotal: Decimal {
+        billableDurationHours * hourlyRate
     }
     
     private var averageHourlyRate: Decimal {
@@ -97,42 +77,133 @@ struct SummaryView: View {
         return tripSubtotal / tripTotalHours
     }
     
+    private var selectedLiability: Bool {
+        false
+    }
+    
+    private var selectedPcdw: Bool {
+        false
+    }
+    
+    private var selectedPcdwExt: Bool {
+        false
+    }
+    
+    private var selectedRsa: Bool {
+        false
+    }
+    
+    private var selectedPai: Bool {
+        false
+    }
+    
+    private var totalHoursReservedRoundedUp: Decimal {
+        guard rawHours > 0 else { return Decimal.zero }
+        return NSDecimalNumber(decimal: rawHours).rounding(accordingToBehavior: NSDecimalNumberHandler(
+            roundingMode: .up,
+            scale: 0,
+            raiseOnExactness: false,
+            raiseOnOverflow: false,
+            raiseOnUnderflow: false,
+            raiseOnDivideByZero: false
+        )).decimalValue
+    }
+    
+    private var totalHoursReservedRoundedUpInt: Int {
+        NSDecimalNumber(decimal: totalHoursReservedRoundedUp).intValue
+    }
+    
+    private var selectedInsuranceHourlyRate: Decimal {
+        var total = Decimal.zero
+        if selectedLiability {
+            total += apartment.liabilityProtectionRate?.value ?? Decimal.zero
+        }
+        if selectedPcdw {
+            total += apartment.pcdwProtectionRate?.value ?? Decimal.zero
+        }
+        if selectedPcdwExt {
+            total += apartment.pcdwExtProtectionRate?.value ?? Decimal.zero
+        }
+        if selectedRsa {
+            total += apartment.rsaProtectionRate?.value ?? Decimal.zero
+        }
+        if selectedPai {
+            total += apartment.paiProtectionRate?.value ?? Decimal.zero
+        }
+        return total
+    }
+    
+    private var insuranceSubtotal: Decimal {
+        totalHoursReservedRoundedUp * selectedInsuranceHourlyRate
+    }
+    
     private var mileageSubtotal: Decimal {
         guard let mileagePackage else { return Decimal.zero }
         return pricingStandard.mileagePackagePrice(for: mileagePackage)
     }
     
-    private var subtotalBeforeDiscount: Decimal {
-        tripSubtotal + mileageSubtotal
+    private var promoDiscount: Decimal {
+        min(promo?.amount.value ?? Decimal.zero, tripSubtotal)
     }
     
-    private var promoDiscount: Decimal {
-        min(promo?.amount.value ?? Decimal.zero, subtotalBeforeDiscount)
+    private var durationSubtotalAfterPromo: Decimal {
+        max(Decimal.zero, tripSubtotal - promoDiscount)
     }
     
     private var subtotalBeforeTax: Decimal {
-        max(Decimal.zero, subtotalBeforeDiscount - promoDiscount)
+        durationSubtotalAfterPromo + insuranceSubtotal + mileageSubtotal
     }
     
-    private var rawRentalDays: Int {
-        guard rawDuration > 0 else { return 0 }
-        return Int(ceil(rawDuration / (24 * 3600)))
+    private var billableDaysCount: Int {
+        pricingStandard.billableDaysCount(rawDuration: rawDuration)
+    }
+    
+    private var applicableTaxes: [Tax] {
+        taxes.filter { tax in
+            if let threshold = tax.threshold, let isLower = tax.isLower {
+                if isLower {
+                    return totalHoursReservedRoundedUpInt < threshold
+                } else {
+                    return totalHoursReservedRoundedUpInt >= threshold
+                }
+            } else {
+                return true
+            }
+        }
+    }
+    
+    private var certainTaxesNeededToApplySalesTax: Decimal {
+        applicableTaxes.reduce(Decimal.zero) { partial, tax in
+            guard tax.isSalesTax else { return partial }
+            switch tax.taxType {
+            case .daily:
+                return partial + (Decimal(billableDaysCount) * tax.multiplier.value)
+            case .fixed:
+                return partial + tax.multiplier.value
+            case .percent:
+                return partial
+            }
+        }
+    }
+    
+    private var totalSubjectToSalesTax: Decimal {
+        subtotalBeforeTax + certainTaxesNeededToApplySalesTax
     }
     
     private var taxLines: [TaxLine] {
-        taxes
-            .map { tax in
-                let amount: Decimal
-                switch tax.taxType {
-                case .percent:
-                    amount = subtotalBeforeTax * normalizedPercentMultiplier(tax.multiplier.value)
-                case .daily:
-                    amount = Decimal(rawRentalDays) * tax.multiplier.value
-                case .fixed:
-                    amount = tax.multiplier.value
-                }
-                return TaxLine(id: tax.id, name: tax.name, amount: max(Decimal.zero, amount))
+        applicableTaxes.map { tax in
+            let amount: Decimal
+            switch tax.taxType {
+            case .percent:
+                let base = tax.isSalesTax ? totalSubjectToSalesTax : subtotalBeforeTax
+                amount = base * tax.multiplier.value
+            case .daily:
+                amount = Decimal(billableDaysCount) * tax.multiplier.value
+            case .fixed:
+                amount = tax.multiplier.value
             }
+            return TaxLine(id: tax.id, name: tax.name, amount: amount)
+        }
     }
     
     private var totalTax: Decimal {
@@ -141,14 +212,6 @@ struct SummaryView: View {
     
     private var finalEstimatedTotal: Decimal {
         subtotalBeforeTax + totalTax
-    }
-    
-    private func normalizedPercentMultiplier(_ multiplier: Decimal) -> Decimal {
-        let absolute = multiplier < 0 ? -multiplier : multiplier
-        if absolute > Decimal(1) {
-            return multiplier / Decimal(100)
-        }
-        return multiplier
     }
     
     var body: some View {

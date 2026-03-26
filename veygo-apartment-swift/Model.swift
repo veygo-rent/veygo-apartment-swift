@@ -402,10 +402,11 @@ nonisolated struct Charge: Identifiable, Equatable, Codable {
     var time: Date
     var amount: FlexDecimal
     var note: String?
-    var agreementId: Int
+    var agreementId: Int?
     var vehicleId: Int
     var transponderCompanyId: Int?
     var vehicleIdentifier: String?
+    var isTaxed: Bool
 }
 
 nonisolated struct Payment: Identifiable, Equatable, Codable {
@@ -439,6 +440,8 @@ nonisolated struct Tax: Identifiable, Equatable, Codable, Hashable, HasName {
     var isSalesTax: Bool
     var taxType: TaxType
     var isDepositTax: Bool
+    var threshold: Int?
+    var isLower: Bool?
 }
 
 nonisolated struct MileagePackage: Identifiable, Equatable, Codable, Hashable {
