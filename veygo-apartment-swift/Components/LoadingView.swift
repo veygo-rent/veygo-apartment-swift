@@ -18,16 +18,18 @@ struct LoadingView: View {
     ]
     
     var body: some View {
-        LinearGradient(colors: gradientColor, startPoint: startPoint, endPoint: endPoint)
-            .onAppear {
-                withAnimation(.easeOut(duration: 1.0).repeatForever(autoreverses: false)) {
-                    startPoint = .init(x: 1, y: 1)
-                    endPoint = .init(x: 2.2, y: 2.2)
+        GeometryReader { geometry in
+            LinearGradient(colors: gradientColor, startPoint: startPoint, endPoint: endPoint)
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .clipped()
+                .onAppear {
+                    withAnimation(.easeOut(duration: 1.0).repeatForever(autoreverses: false)) {
+                        startPoint = .init(x: 1, y: 1)
+                        endPoint = .init(x: 2.2, y: 2.2)
+                    }
                 }
-            }
+        }
+        .clipped()
+        .allowsHitTesting(false)
     }
-}
-
-#Preview {
-    LoadingView()
 }

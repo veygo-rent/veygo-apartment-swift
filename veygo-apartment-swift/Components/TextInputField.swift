@@ -37,7 +37,3 @@ struct TextInputField: View {
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
 }
-
-#Preview {
-    TextInputField(placeholder: "Email", text: .constant(""))
-}
