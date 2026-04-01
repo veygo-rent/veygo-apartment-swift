@@ -72,20 +72,29 @@ struct SummaryView: View {
         NSDecimalNumber(decimal: maxRewardHoursUsable).doubleValue
     }
     
-    private var durationAfterReward: TimeInterval {
-        pricingStandard.calculateDurationAfterReward(rawDuration: rawDuration, rewardHours: rewardHoursUsed)
-    }
-    
     private var tripTotalHours: Decimal {
         rawHours
     }
     
     private var billableDurationHours: Decimal {
-        pricingStandard.calculateBillableDurationHours(rawDuration: durationAfterReward)
+        pricingStandard.calculateBillableDurationHours(rawDuration: rawDuration)
+    }
+    
+    private var tripSubtotalBeforeReward: Decimal {
+        billableDurationHours * hourlyRate
+    }
+    
+    private var averageReservedHourRate: Decimal {
+        guard rawHours > 0 else { return Decimal.zero }
+        return tripSubtotalBeforeReward / rawHours
+    }
+    
+    private var rewardDiscountAmount: Decimal {
+        min(tripSubtotalBeforeReward, max(Decimal.zero, averageReservedHourRate * rewardHoursUsed))
     }
     
     private var tripSubtotal: Decimal {
-        billableDurationHours * hourlyRate
+        max(Decimal.zero, tripSubtotalBeforeReward - rewardDiscountAmount)
     }
     
     private var averageHourlyRate: Decimal {
@@ -212,7 +221,7 @@ struct SummaryView: View {
             switch tax.taxType {
             case .percent:
                 let base = tax.isSalesTax ? totalSubjectToSalesTax : subtotalBeforeTax
-                amount = base * tax.multiplier.value
+                amount = base * normalizedPercentMultiplier(tax.multiplier.value)
             case .daily:
                 amount = Decimal(billableDaysCount) * tax.multiplier.value
             case .fixed:
@@ -228,6 +237,14 @@ struct SummaryView: View {
     
     private var finalEstimatedTotal: Decimal {
         subtotalBeforeTax + totalTax
+    }
+    
+    private func normalizedPercentMultiplier(_ multiplier: Decimal) -> Decimal {
+        let absolute = multiplier < 0 ? -multiplier : multiplier
+        if absolute > Decimal(1) {
+            return multiplier / Decimal(100)
+        }
+        return multiplier
     }
     
     var body: some View {
@@ -428,9 +445,16 @@ struct SummaryView: View {
                                 
                                 VStack (spacing: 10) {
                                     priceLine(
-                                        title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageHourlyRate))/hr",
-                                        value: formatRate(tripSubtotal)
+                                        title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageReservedHourRate))/hr",
+                                        value: formatRate(tripSubtotalBeforeReward)
                                     )
+                                    
+                                    if rewardDiscountAmount > 0 {
+                                        priceLine(
+                                            title: "Reward hours used (\(formatHourNumber(rewardHoursUsed)) hr)",
+                                            value: "-\(formatRate(rewardDiscountAmount))"
+                                        )
+                                    }
                                     
                                     Divider()
                                     

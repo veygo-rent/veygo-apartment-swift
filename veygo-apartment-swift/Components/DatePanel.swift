@@ -17,6 +17,8 @@ struct DatePanel: View {
     var isEditMode: Bool
     var schoolTimezoneIdentifier: String? = nil
     
+    private let nowTicker = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+    
     private var minimumStartDate: Date {
         Date().nextQuarterHour().addingTimeInterval(15 * 60)
     }
@@ -63,21 +65,28 @@ struct DatePanel: View {
         return "Local time: \(formatter.string(from: date))"
     }
     
+    private func clampDatesToCurrentRules() {
+        if startDate < minimumStartDate {
+            startDate = minimumStartDate
+        }
+        if startDate > minimumStartDate.addingTimeInterval(6 * 7 * 24 * 3600) {
+            startDate = minimumStartDate.addingTimeInterval(6 * 7 * 24 * 3600)
+        }
+        if endDate < minimumEndDate {
+            endDate = minimumEndDate
+        }
+        if endDate > minimumEndDate.addingTimeInterval(4 * 7 * 24 * 3600) {
+            endDate = minimumEndDate.addingTimeInterval(4 * 7 * 24 * 3600)
+        }
+    }
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color("TextFieldBg"))
                 .stroke(Color("TextFieldFrame"), lineWidth: 1)
                 .onAppear {
-                    if startDate < minimumStartDate {
-                        startDate = minimumStartDate
-                    }
-                    if endDate < minimumEndDate {
-                        endDate = minimumEndDate
-                    }
-                    if endDate > minimumEndDate.addingTimeInterval(4*7*24*3600) {
-                        endDate = minimumEndDate.addingTimeInterval(4*7*24*3600)
-                    }
+                    clampDatesToCurrentRules()
                 }
                 .onChange(of: startDate) { _, newValue in
                     if endDate < minimumEndDate {
@@ -96,14 +105,6 @@ struct DatePanel: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .onChange(of: context.date) { _, _ in
-                                if startDate < minimumStartDate {
-                                    startDate = minimumStartDate
-                                }
-                                if startDate > minimumStartDate.addingTimeInterval(6*7*24*3600) {
-                                    startDate = minimumStartDate.addingTimeInterval(6*7*24*3600)
-                                }
-                            }
                     }
                     
                     Divider()
@@ -176,6 +177,9 @@ struct DatePanel: View {
             }, isEditMode: isEditMode))
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+        .onReceive(nowTicker) { _ in
+            clampDatesToCurrentRules()
+        }
     }
     
     private struct optionalDateSheet: ViewModifier {

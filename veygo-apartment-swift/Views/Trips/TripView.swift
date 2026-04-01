@@ -271,8 +271,29 @@ private struct UpcomingReservationDetailedView: View {
             * details.agreement.utilizationFactor.value
     }
     
+    private var pricingStandard: VeygoPricingStandard? {
+        guard let details else { return nil }
+        return VeygoPricingStandard(apartment: details.apartment, vehicle: details.vehicle)
+    }
+    
     private var rawHours: Decimal {
         Decimal(rawDuration) / Decimal(3600)
+    }
+    
+    private var totalHoursReservedRoundedUp: Decimal {
+        guard rawHours > 0 else { return Decimal.zero }
+        return NSDecimalNumber(decimal: rawHours).rounding(accordingToBehavior: NSDecimalNumberHandler(
+            roundingMode: .up,
+            scale: 0,
+            raiseOnExactness: false,
+            raiseOnOverflow: false,
+            raiseOnUnderflow: false,
+            raiseOnDivideByZero: false
+        )).decimalValue
+    }
+    
+    private var totalHoursReservedRoundedUpInt: Int {
+        NSDecimalNumber(decimal: totalHoursReservedRoundedUp).intValue
     }
     
     private var rewardHoursUsed: Decimal {
@@ -284,57 +305,42 @@ private struct UpcomingReservationDetailedView: View {
         }
     }
     
-    private var billableHours: Decimal {
-        max(Decimal.zero, rawHours - rewardHoursUsed)
+    private var billableDaysCount: Int {
+        pricingStandard?.billableDaysCount(rawDuration: rawDuration) ?? 0
     }
     
-    private var tier1Hours: Decimal {
-        max(Decimal.zero, min(billableHours, Decimal(8)))
-    }
-    
-    private var tier2Hours: Decimal {
-        max(Decimal.zero, min(billableHours - Decimal(8), Decimal(160)))
-    }
-    
-    private var tier3Hours: Decimal {
-        max(Decimal.zero, billableHours - Decimal(168))
-    }
-    
-    private var tier1Charge: Decimal {
-        tier1Hours * hourlyRate
-    }
-    
-    private var tier2HourlyRate: Decimal {
-        hourlyRate * Decimal(string: "0.25")!
-    }
-    
-    private var tier2Charge: Decimal {
-        tier2Hours * tier2HourlyRate
-    }
-    
-    private var tier3HourlyRate: Decimal {
-        hourlyRate * Decimal(string: "0.15")!
-    }
-    
-    private var tier3Charge: Decimal {
-        tier3Hours * tier3HourlyRate
-    }
-    
-    private var tripSubtotal: Decimal {
-        tier1Charge + tier2Charge + tier3Charge
+    private var billableDurationHours: Decimal {
+        pricingStandard?.calculateBillableDurationHours(rawDuration: rawDuration) ?? Decimal.zero
     }
     
     private var tripSubtotalBeforeReward: Decimal {
-        let tier1Hours = max(Decimal.zero, min(rawHours, Decimal(8)))
-        let tier2Hours = max(Decimal.zero, min(rawHours - Decimal(8), Decimal(160)))
-        let tier3Hours = max(Decimal.zero, rawHours - Decimal(168))
-        return (tier1Hours * hourlyRate)
-            + (tier2Hours * tier2HourlyRate)
-            + (tier3Hours * tier3HourlyRate)
+        billableDurationHours * hourlyRate
+    }
+    
+    private var averageReservedHourRate: Decimal {
+        guard rawHours > 0 else { return Decimal.zero }
+        return tripSubtotalBeforeReward / rawHours
     }
     
     private var rewardDiscountAmount: Decimal {
-        max(Decimal.zero, tripSubtotalBeforeReward - tripSubtotal)
+        min(tripSubtotalBeforeReward, max(Decimal.zero, averageReservedHourRate * rewardHoursUsed))
+    }
+    
+    private var tripSubtotal: Decimal {
+        max(Decimal.zero, tripSubtotalBeforeReward - rewardDiscountAmount)
+    }
+    
+    private var insuranceHourlyRate: Decimal {
+        guard let details else { return Decimal.zero }
+        return (details.agreement.liabilityProtectionRate?.value ?? Decimal.zero)
+            + (details.agreement.pcdwProtectionRate?.value ?? Decimal.zero)
+            + (details.agreement.pcdwExtProtectionRate?.value ?? Decimal.zero)
+            + (details.agreement.rsaProtectionRate?.value ?? Decimal.zero)
+            + (details.agreement.paiProtectionRate?.value ?? Decimal.zero)
+    }
+    
+    private var insuranceSubtotal: Decimal {
+        totalHoursReservedRoundedUp * insuranceHourlyRate
     }
     
     private var tripTotalHours: Decimal {
@@ -353,7 +359,7 @@ private struct UpcomingReservationDetailedView: View {
     }
     
     private var subtotalBeforeDiscount: Decimal {
-        tripSubtotal + mileageSubtotal
+        tripSubtotal + insuranceSubtotal + mileageSubtotal
     }
     
     private var promoDiscount: Decimal {
@@ -364,19 +370,47 @@ private struct UpcomingReservationDetailedView: View {
         max(Decimal.zero, subtotalBeforeDiscount - promoDiscount)
     }
     
-    private var rawRentalDays: Int {
-        guard rawDuration > 0 else { return 0 }
-        return Int(ceil(rawDuration / (24 * 3600)))
+    private var applicableTaxes: [Tax] {
+        (details?.taxes ?? []).filter { tax in
+            if let threshold = tax.threshold, let isLower = tax.isLower {
+                if isLower {
+                    return totalHoursReservedRoundedUpInt < threshold
+                } else {
+                    return totalHoursReservedRoundedUpInt >= threshold
+                }
+            } else {
+                return true
+            }
+        }
+    }
+    
+    private var certainTaxesNeededToApplySalesTax: Decimal {
+        applicableTaxes.reduce(Decimal.zero) { partial, tax in
+            guard tax.isSalesTax else { return partial }
+            switch tax.taxType {
+            case .daily:
+                return partial + (Decimal(billableDaysCount) * tax.multiplier.value)
+            case .fixed:
+                return partial + tax.multiplier.value
+            case .percent:
+                return partial
+            }
+        }
+    }
+    
+    private var totalSubjectToSalesTax: Decimal {
+        subtotalBeforeTax + certainTaxesNeededToApplySalesTax
     }
     
     private var taxLines: [TaxLine] {
-        (details?.taxes ?? []).map { tax in
+        applicableTaxes.map { tax in
             let amount: Decimal
             switch tax.taxType {
             case .percent:
-                amount = subtotalBeforeTax * normalizedPercentMultiplier(tax.multiplier.value)
+                let taxBase = tax.isSalesTax ? totalSubjectToSalesTax : subtotalBeforeTax
+                amount = taxBase * normalizedPercentMultiplier(tax.multiplier.value)
             case .daily:
-                amount = Decimal(rawRentalDays) * tax.multiplier.value
+                amount = Decimal(billableDaysCount) * tax.multiplier.value
             case .fixed:
                 amount = tax.multiplier.value
             }
@@ -512,17 +546,18 @@ private struct UpcomingReservationDetailedView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                         VStack (spacing: 10) {
+                            
+                            priceLine(
+                                title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageReservedHourRate))/hr",
+                                value: formatRate(tripSubtotalBeforeReward)
+                            )
+                            
                             if rewardDiscountAmount > 0 {
                                 priceLine(
                                     title: "Reward hours used (\(formatHourNumber(rewardHoursUsed)) hr)",
-                                    value: ""
+                                    value: "-\(formatRate(rewardDiscountAmount))"
                                 )
                             }
-                            
-                            priceLine(
-                                title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageHourlyRate))/hr",
-                                value: formatRate(tripSubtotal)
-                            )
                             
                             Divider()
                             
@@ -539,6 +574,14 @@ private struct UpcomingReservationDetailedView: View {
                                 priceLine(
                                     title: "Mileage package (\(10 + (details.mileagePackage?.miles ?? 0)) miles)",
                                     value: formatRate(mileageSubtotal)
+                                )
+                                Divider()
+                            }
+                            
+                            if insuranceSubtotal > 0 {
+                                priceLine(
+                                    title: "Insurance options",
+                                    value: formatRate(insuranceSubtotal)
                                 )
                                 Divider()
                             }
