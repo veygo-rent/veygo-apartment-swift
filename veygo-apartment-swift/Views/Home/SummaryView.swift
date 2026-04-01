@@ -16,7 +16,10 @@ struct SummaryView: View {
     @State private var selectedPaymentMethod: PublishPaymentMethod?
     
     @State private var isLoadingPM: Bool = false
+    @State private var isLoadingRewardHours: Bool = false
     @State private var isCreatingAgreement: Bool = false
+    @State private var rewardHoursSummary: RewardHoursSummaryResponse? = nil
+    @State private var rewardHoursUsedValue: Double = 0
     
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
@@ -53,7 +56,20 @@ struct SummaryView: View {
     }
     
     private var rewardHoursUsed: Decimal {
-        Decimal.zero
+        Decimal(min(max(rewardHoursUsedValue, 0), maxRewardHoursUsableDouble))
+    }
+    
+    private var rewardHoursRemaining: Decimal {
+        guard let rewardHoursSummary else { return Decimal.zero }
+        return max(Decimal.zero, rewardHoursSummary.total.value - rewardHoursSummary.used.value)
+    }
+    
+    private var maxRewardHoursUsable: Decimal {
+        min(rawHours, rewardHoursRemaining)
+    }
+    
+    private var maxRewardHoursUsableDouble: Double {
+        NSDecimalNumber(decimal: maxRewardHoursUsable).doubleValue
     }
     
     private var durationAfterReward: TimeInterval {
@@ -374,6 +390,42 @@ struct SummaryView: View {
                                     .foregroundStyle(Color.textBlackSecondary)
                                     .font(.title2)
                                     .fontWeight(.bold)
+                                
+                                if isLoadingRewardHours {
+                                    HStack(spacing: 8) {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                        Text("Loading reward hours...")
+                                            .foregroundStyle(Color.footNote)
+                                            .font(.footnote)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else if maxRewardHoursUsable > 0 {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack {
+                                            Text("Use reward hours")
+                                                .foregroundStyle(Color.textBlackPrimary)
+                                                .font(.subheadline)
+                                                .fontWeight(.semibold)
+                                            Spacer()
+                                            Text("\(formatHourNumber(rewardHoursUsed)) / \(formatHourNumber(maxRewardHoursUsable)) hr")
+                                                .foregroundStyle(Color.footNote)
+                                                .font(.footnote)
+                                        }
+                                        Slider(
+                                            value: Binding(
+                                                get: { min(max(rewardHoursUsedValue, 0), maxRewardHoursUsableDouble) },
+                                                set: { rewardHoursUsedValue = min(max($0, 0), maxRewardHoursUsableDouble) }
+                                            ),
+                                            in: 0...maxRewardHoursUsableDouble,
+                                            step: min(0.25, maxRewardHoursUsableDouble)
+                                        )
+                                    }
+                                    .padding()
+                                    .background(Color.cardBG)
+                                    .cornerRadius(12)
+                                }
+                                
                                 VStack (spacing: 10) {
                                     priceLine(
                                         title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageHourlyRate))/hr",
@@ -469,7 +521,9 @@ struct SummaryView: View {
                         .onAppear {
                             Task {
                                 await ApiCallActor.shared.appendApi { token, userId in
-                                    await loadCardsAsync(token, userId)
+                                    _ = await loadCardsAsync(token, userId)
+                                    _ = await loadRewardHoursAsync(token, userId)
+                                    return .doNothing
                                 }
                             }
                         }
@@ -840,6 +894,73 @@ struct SummaryView: View {
                 alertTitle = "Internal Error"
                 alertMessage = "\(error.localizedDescription)"
                 showAlert = true
+            }
+            return .doNothing
+        }
+    }
+    
+    @ApiCallActor
+    private func loadRewardHoursAsync(_ token: String, _ userId: Int) async -> ApiTaskResponse {
+        do {
+            let user = await MainActor.run { self.session.user }
+            if !token.isEmpty && userId > 0, user != nil {
+                await MainActor.run {
+                    isLoadingRewardHours = true
+                }
+                
+                let request = veygoCurlRequest(
+                    url: "/api/v1/user/reward-hour",
+                    method: .get,
+                    headers: [
+                        "auth": "\(token)$\(userId)"
+                    ]
+                )
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                await MainActor.run {
+                    isLoadingRewardHours = false
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    return .doNothing
+                }
+                
+                switch httpResponse.statusCode {
+                case 200:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(RewardHoursSummaryResponse.self, from: data) else {
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        rewardHoursSummary = decodedBody
+                        rewardHoursUsedValue = min(rewardHoursUsedValue, maxRewardHoursUsableDouble)
+                    }
+                    return .doNothing
+                case 401:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E401
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                            clearUserTriggered = true
+                        }
+                    }
+                    return .clearUser
+                default:
+                    return .doNothing
+                }
+            }
+            return .doNothing
+        } catch {
+            await MainActor.run {
+                isLoadingRewardHours = false
             }
             return .doNothing
         }

@@ -275,16 +275,29 @@ private struct UpcomingReservationDetailedView: View {
         Decimal(rawDuration) / Decimal(3600)
     }
     
+    private var rewardHoursUsed: Decimal {
+        guard let details else { return Decimal.zero }
+        return details.rewardTransactions.reduce(Decimal.zero) { partial, transaction in
+            let duration = transaction.duration.value
+            guard duration > Decimal.zero else { return partial }
+            return partial + duration
+        }
+    }
+    
+    private var billableHours: Decimal {
+        max(Decimal.zero, rawHours - rewardHoursUsed)
+    }
+    
     private var tier1Hours: Decimal {
-        max(Decimal.zero, min(rawHours, Decimal(8)))
+        max(Decimal.zero, min(billableHours, Decimal(8)))
     }
     
     private var tier2Hours: Decimal {
-        max(Decimal.zero, min(rawHours - Decimal(8), Decimal(160)))
+        max(Decimal.zero, min(billableHours - Decimal(8), Decimal(160)))
     }
     
     private var tier3Hours: Decimal {
-        max(Decimal.zero, rawHours - Decimal(168))
+        max(Decimal.zero, billableHours - Decimal(168))
     }
     
     private var tier1Charge: Decimal {
@@ -311,8 +324,21 @@ private struct UpcomingReservationDetailedView: View {
         tier1Charge + tier2Charge + tier3Charge
     }
     
+    private var tripSubtotalBeforeReward: Decimal {
+        let tier1Hours = max(Decimal.zero, min(rawHours, Decimal(8)))
+        let tier2Hours = max(Decimal.zero, min(rawHours - Decimal(8), Decimal(160)))
+        let tier3Hours = max(Decimal.zero, rawHours - Decimal(168))
+        return (tier1Hours * hourlyRate)
+            + (tier2Hours * tier2HourlyRate)
+            + (tier3Hours * tier3HourlyRate)
+    }
+    
+    private var rewardDiscountAmount: Decimal {
+        max(Decimal.zero, tripSubtotalBeforeReward - tripSubtotal)
+    }
+    
     private var tripTotalHours: Decimal {
-        tier1Hours + tier2Hours + tier3Hours
+        rawHours
     }
     
     private var averageHourlyRate: Decimal {
@@ -486,6 +512,13 @@ private struct UpcomingReservationDetailedView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                         VStack (spacing: 10) {
+                            if rewardDiscountAmount > 0 {
+                                priceLine(
+                                    title: "Reward hours used (\(formatHourNumber(rewardHoursUsed)) hr)",
+                                    value: ""
+                                )
+                            }
+                            
                             priceLine(
                                 title: "\(formatHours(tripTotalHours)) @ \(formatRate(averageHourlyRate))/hr",
                                 value: formatRate(tripSubtotal)
