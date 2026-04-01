@@ -665,7 +665,7 @@ struct SummaryView: View {
                     let hoursUsingReward: FlexDecimal
                 }
                 
-                let requestBody = NewAgreementRequest(vehicleId: vehicle.id, startTime: Int(startDate.timeIntervalSince1970), endTime: Int(endDate.timeIntervalSince1970), paymentId: pmtId, liability: false, pcdw: false, pcdwExt: false, rsa: false, pai: false, rateOfferId: rateOffer.id, mileagePackageId: mileagePackage?.id ?? nil, promoCode: promo?.code ?? nil, hoursUsingReward: FlexDecimal(Decimal(0)))
+                let requestBody = NewAgreementRequest(vehicleId: vehicle.id, startTime: Int(startDate.timeIntervalSince1970), endTime: Int(endDate.timeIntervalSince1970), paymentId: pmtId, liability: false, pcdw: false, pcdwExt: false, rsa: false, pai: false, rateOfferId: rateOffer.id, mileagePackageId: mileagePackage?.id ?? nil, promoCode: promo?.code ?? nil, hoursUsingReward: FlexDecimal(await rewardHoursUsed))
                 
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(requestBody)
                 
