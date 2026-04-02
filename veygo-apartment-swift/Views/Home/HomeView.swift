@@ -1546,6 +1546,7 @@ private struct PickUpView: View {
                 alertTitle = "Internal Error"
                 alertMessage = "\(error.localizedDescription)"
                 showAlert = true
+                isSubmitting = false
             }
             return .doNothing
         }
@@ -1706,12 +1707,10 @@ private struct PickUpView: View {
             return .doNothing
         } catch {
             await MainActor.run {
-                isSubmitting = false
-            }
-            await MainActor.run {
                 alertTitle = "Internal Error"
                 alertMessage = "\(error.localizedDescription)"
                 showAlert = true
+                isSubmitting = false
             }
             return .doNothing
         }
