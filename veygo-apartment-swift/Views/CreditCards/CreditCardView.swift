@@ -313,7 +313,8 @@ private struct CreditCardRow: View {
     private func convertDateToString(_ date: Date?) -> String {
         if let date = date {
             let formatter = DateFormatter()
-            formatter.dateFormat = "Month D, Yr"
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
             return formatter.string(from: date)
         } else {
             return "Never"
@@ -349,12 +350,24 @@ private struct CreditCardRow: View {
             if isExpanded {
                 Divider()
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Card Number: \(card.maskedCardNumber)")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.textBlackSecondary)
-                    Text("Last Used: \(convertDateToString(card.lastUsedDateTime))")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.textBlackSecondary)
+                    HStack {
+                        Text("Card Number:")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.textBlackSecondary)
+                        Text("\(card.maskedCardNumber)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.textBlackSecondary)
+                    }
+                    HStack {
+                        Text("Last Used:")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.textBlackSecondary)
+                        Text("\(convertDateToString(card.lastUsedDateTime))")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.textBlackSecondary)
+                    }
                 }
             }
         }
