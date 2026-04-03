@@ -386,6 +386,7 @@ func cardBrandImage(for brand: String) -> some View {
     if knownBrands.contains(lowercased) {
         Image(lowercased)
             .resizable()
+            .frame(width: 64, height: 42)
     } else {
         Image(systemName: "creditcard")
             .resizable()
