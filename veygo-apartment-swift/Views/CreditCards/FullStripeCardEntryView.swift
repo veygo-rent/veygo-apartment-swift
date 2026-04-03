@@ -99,10 +99,19 @@ struct FullStripeCardEntryView: View {
     @ApiCallActor func createPaymentMethodAsync (_ token: String, _ userId: Int) async -> ApiTaskResponse {
         guard let params = await paymentMethodParams,
               let cardParams = params.card else { return .doNothing }
+
+        let (enteredCardholderName, enteredNickname) = await MainActor.run {
+            (self.cardholderName, self.nickname)
+        }
         
+        let billingDetails = params.billingDetails ?? STPPaymentMethodBillingDetails()
+        if !enteredCardholderName.isEmpty {
+            billingDetails.name = enteredCardholderName
+        }
+
         let paymentMethodParams = STPPaymentMethodParams(
             card: cardParams,
-            billingDetails: nil,
+            billingDetails: billingDetails,
             metadata: nil
         )
         do {
@@ -115,10 +124,10 @@ struct FullStripeCardEntryView: View {
                 
                 let payment = try await STPAPIClient.shared.createPaymentMethod(with: paymentMethodParams)
                 
-                let body = await [
+                let body = [
                     "pm_id": payment.stripeId,
-                    "cardholder_name": cardholderName,
-                    "nickname": nickname.isEmpty ? nil : nickname
+                    "cardholder_name": enteredCardholderName,
+                    "nickname": enteredNickname.isEmpty ? nil : enteredNickname
                 ]
                 
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
@@ -273,6 +282,7 @@ struct CardInputFieldWrapper: UIViewRepresentable {
 
     func makeUIView(context: Context) -> STPPaymentCardTextField {
         let textField = STPPaymentCardTextField()
+        textField.postalCodeEntryEnabled = true
         textField.layer.borderWidth = 0
         textField.layer.borderColor = UIColor.clear.cgColor
         // Styling to match SwiftUI modifiers
