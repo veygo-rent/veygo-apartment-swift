@@ -9,7 +9,7 @@
 import SwiftUI
 @preconcurrency import Stripe
 import StripePaymentsUI
-import StripeCardScan
+import WebKit
 
 struct FullStripeCardEntryView: View {
     
@@ -24,6 +24,7 @@ struct FullStripeCardEntryView: View {
     @State private var cardholderName: String = ""
     @State private var nickname: String = ""
     @State private var showCardScan = false
+    @State private var threeDSRedirect: ThreeDSRedirect?
     
     @EnvironmentObject var session: UserSession
     
@@ -93,6 +94,15 @@ struct FullStripeCardEntryView: View {
         }
         .onTapGesture {
             focusedField = nil
+        }
+        .sheet(item: $threeDSRedirect) { redirect in
+            ThreeDSWebViewSheet(
+                redirectURL: redirect.url,
+                onThreeDSCompleted: {
+                    threeDSRedirect = nil
+                    dismiss()
+                }
+            )
         }
     }
     
@@ -166,6 +176,20 @@ struct FullStripeCardEntryView: View {
                 }
                 
                 switch httpResponse.statusCode {
+                case 200:
+                    guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ThreeDSRedirectResponse.self, from: data),
+                          let url = URL(string: decodedBody.url) else {
+                        await MainActor.run {
+                            alertTitle = "Server Error"
+                            alertMessage = "Invalid 3DS response"
+                            showAlert = true
+                        }
+                        return .doNothing
+                    }
+                    await MainActor.run {
+                        threeDSRedirect = ThreeDSRedirect(url: url)
+                    }
+                    return .doNothing
                 case 201:
                     let _ = await MainActor.run {
                         dismiss()
@@ -266,6 +290,7 @@ struct FullStripeCardEntryView: View {
             return .doNothing
         } catch {
             await MainActor.run {
+                isSubmitting = false
                 alertTitle = "Internal Error"
                 alertMessage = "\(error.localizedDescription)"
                 showAlert = true
@@ -276,7 +301,78 @@ struct FullStripeCardEntryView: View {
 
 }
 
-// MARK: - CardInputFieldWrapper
+private struct ThreeDSRedirectResponse: Decodable {
+    let url: String
+}
+
+private struct ThreeDSRedirect: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
+private struct ThreeDSWebViewSheet: View {
+    let redirectURL: URL
+    let onThreeDSCompleted: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Stripe3DSWebView(redirectURL: redirectURL) {
+                onThreeDSCompleted()
+            }
+            .ignoresSafeArea(edges: .bottom)
+            .navigationTitle("Verify Card")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct Stripe3DSWebView: UIViewRepresentable {
+    private static let threeDSReturnURLPrefix = "veygo-app://3ds-dismissed"
+
+    let redirectURL: URL
+    let onCompleted: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onCompleted: onCompleted)
+    }
+
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView(frame: .zero)
+        webView.navigationDelegate = context.coordinator
+        webView.load(URLRequest(url: redirectURL))
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        private let onCompleted: () -> Void
+
+        init(onCompleted: @escaping () -> Void) {
+            self.onCompleted = onCompleted
+        }
+
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
+            if let currentURLString = navigationAction.request.url?.absoluteString,
+               currentURLString.hasPrefix(Stripe3DSWebView.threeDSReturnURLPrefix) {
+                onCompleted()
+                return .cancel
+            }
+            return .allow
+        }
+    }
+}
+
+
 struct CardInputFieldWrapper: UIViewRepresentable {
     @Binding var paymentMethodParams: STPPaymentMethodParams?
 
