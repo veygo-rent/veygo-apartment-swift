@@ -323,6 +323,7 @@ private struct ThreeDSWebViewSheet: View {
             }
             .ignoresSafeArea(edges: .bottom)
             .navigationTitle("Verify Card")
+            .background(Color.mainBG.ignoresSafeArea(.all))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
