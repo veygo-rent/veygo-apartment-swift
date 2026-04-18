@@ -9,7 +9,6 @@
 import SwiftUI
 @preconcurrency import Stripe
 import StripePaymentsUI
-import StripeApplePay
 import PassKit
 import WebKit
 
