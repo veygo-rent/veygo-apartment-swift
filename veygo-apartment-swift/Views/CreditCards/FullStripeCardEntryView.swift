@@ -274,6 +274,8 @@ struct FullStripeCardEntryView: View {
         request.paymentSummaryItems = [
             PKPaymentSummaryItem(label: "Veygo (No charge today)", amount: .zero, type: .final)
         ]
+        request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
+        request.merchantCategoryCode = .init(rawValue: 7512)
         return request
     }
     
