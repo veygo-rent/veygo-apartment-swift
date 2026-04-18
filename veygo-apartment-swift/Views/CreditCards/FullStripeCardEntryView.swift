@@ -80,7 +80,8 @@ struct FullStripeCardEntryView: View {
                 ApplePayButtonRepresentable(action: handleApplePayButtonTapped)
                     .frame(maxWidth: .infinity)
                     .frame(height: 45)
-                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                    .cornerRadius(14)
+                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
                     .disabled(isSubmitting)
             }
             
