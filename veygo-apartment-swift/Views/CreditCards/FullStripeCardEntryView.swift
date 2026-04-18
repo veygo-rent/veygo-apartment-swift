@@ -560,7 +560,7 @@ private struct ApplePayButtonRepresentable: UIViewRepresentable {
     }
     
     func makeUIView(context: Context) -> PKPaymentButton {
-        let button = PKPaymentButton(paymentButtonType: .setUp, paymentButtonStyle: .black)
+        let button = PKPaymentButton(paymentButtonType: .setUp, paymentButtonStyle: .automatic)
         button.addTarget(context.coordinator, action: #selector(Coordinator.tapped), for: .touchUpInside)
         button.cornerRadius = 14
         return button
