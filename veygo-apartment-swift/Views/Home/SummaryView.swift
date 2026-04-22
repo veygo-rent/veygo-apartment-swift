@@ -836,6 +836,22 @@ struct SummaryView: View {
                         }
                     }
                     return .clearUser
+                case 402:
+                    if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    } else {
+                        let decodedBody = ErrorResponse.E402
+                        await MainActor.run {
+                            alertTitle = decodedBody.title
+                            alertMessage = decodedBody.message
+                            showAlert = true
+                        }
+                    }
+                    return .doNothing
                 case 403:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
