@@ -9,6 +9,28 @@ import SwiftUI
 import CodeScanner
 
 struct AdminVehicleSubmissionView: View {
+    enum InspectionImageSlot: Sendable {
+        case left
+        case frontLeft
+        case front
+        case frontRight
+        case right
+        case rearRight
+        case back
+        case rearLeft
+    }
+
+    struct InspectionImageUpload: Identifiable {
+        let id = UUID()
+        var filePath: String?
+        let image: UIImage
+        var uploadFailed = false
+
+        var isUploading: Bool {
+            filePath == nil && !uploadFailed
+        }
+    }
+
     @State private var vinInput: String = ""
     @State private var isScanningVin: Bool = false
     
@@ -22,14 +44,14 @@ struct AdminVehicleSubmissionView: View {
     @State private var isSubmitting: Bool = false
     @State private var isShowingCamera = false
     
-    @State private var leftImage: (String, UIImage)? = nil
-    @State private var rightImage: (String, UIImage)? = nil
-    @State private var frontImage: (String, UIImage)? = nil
-    @State private var backImage: (String, UIImage)? = nil
-    @State private var rearRight: (String, UIImage)? = nil
-    @State private var rearLeft: (String, UIImage)? = nil
-    @State private var frontRight: (String, UIImage)? = nil
-    @State private var frontLeft: (String, UIImage)? = nil
+    @State private var leftImage: InspectionImageUpload? = nil
+    @State private var rightImage: InspectionImageUpload? = nil
+    @State private var frontImage: InspectionImageUpload? = nil
+    @State private var backImage: InspectionImageUpload? = nil
+    @State private var rearRight: InspectionImageUpload? = nil
+    @State private var rearLeft: InspectionImageUpload? = nil
+    @State private var frontRight: InspectionImageUpload? = nil
+    @State private var frontLeft: InspectionImageUpload? = nil
     
     @State private var clearScreen: Bool = false
     var body: some View {
@@ -68,7 +90,7 @@ struct AdminVehicleSubmissionView: View {
                         isShowingCamera = true
                     }
                     .padding(.top)
-                    .disabled(isSubmitting || allImagesCaptured)
+                    .disabled(allImagesCaptured)
                     PrimaryButton(text: "Submit Vehicle Images") {
                         Task {
                             await ApiCallActor.shared.appendApi { token, userId in
@@ -80,7 +102,7 @@ struct AdminVehicleSubmissionView: View {
                         }
                     }
                     .padding(.top)
-                    .disabled(isSubmitting || !allImagesCaptured)
+                    .disabled(isSubmitting || !allImageUploadsComplete)
 
                     LazyVGrid(columns: gridColumns, spacing: 36) {
                         imageTile(label: "Left Image", binding: $leftImage)
@@ -103,15 +125,17 @@ struct AdminVehicleSubmissionView: View {
         .fullScreenCover(isPresented: $isShowingCamera) {
             CameraImagePicker { image in
                 // Convert to Data and upload
-                if let data = image.jpegData(compressionQuality: 0.5) {
+                if let data = image.heicData() {
                     Task {
+                        guard let reservation = reserveImageSlot(image) else { return }
                         await ApiCallActor.shared.appendApi { token, userId in
                             await submitFileAsync(
                                 token,
                                 userId,
                                 data,
-                                "vehicle_inspection_camera.jpg",
-                                image
+                                "vehicle_inspection_camera_\(reservation.1.uuidString).heic",
+                                reservation.0,
+                                reservation.1
                             )
                         }
                     }
@@ -154,7 +178,7 @@ struct AdminVehicleSubmissionView: View {
     ]
 
     @ViewBuilder
-    private func imageTile(label: String, binding: Binding<(String, UIImage)?>) -> some View {
+    private func imageTile(label: String, binding: Binding<InspectionImageUpload?>) -> some View {
         let tileCorner: CGFloat = 16
 
         VStack(alignment: .leading, spacing: 8) {
@@ -163,14 +187,37 @@ struct AdminVehicleSubmissionView: View {
                 .foregroundStyle(.textBlackPrimary)
 
             ZStack(alignment: .topTrailing) {
-                if let img = binding.wrappedValue?.1 {
+                if let upload = binding.wrappedValue {
                     ZStack {
                         GeometryReader { geo in
-                            Image(uiImage: img)
+                            Image(uiImage: upload.image)
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: geo.size.width, height: geo.size.height)
                                 .clipped()
+                        }
+
+                        if upload.isUploading {
+                            Rectangle()
+                                .fill(.black.opacity(0.35))
+
+                            VStack(spacing: 8) {
+                                ProgressView()
+                                    .tint(.white)
+                                Text("Uploading")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.white)
+                            }
+                        } else if upload.uploadFailed {
+                            Rectangle()
+                                .fill(.black.opacity(0.45))
+
+                            Text("Upload failed")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(.red.opacity(0.85), in: Capsule())
                         }
                     }
                     .frame(height: 140)
@@ -240,8 +287,122 @@ struct AdminVehicleSubmissionView: View {
         frontRight != nil &&
         frontLeft != nil
     }
+
+    private var allImageUploadsComplete: Bool {
+        leftImage?.filePath != nil &&
+        rightImage?.filePath != nil &&
+        frontImage?.filePath != nil &&
+        backImage?.filePath != nil &&
+        rearRight?.filePath != nil &&
+        rearLeft?.filePath != nil &&
+        frontRight?.filePath != nil &&
+        frontLeft?.filePath != nil
+    }
+
+    private func nextCaptureSlot() -> InspectionImageSlot? {
+        if leftImage == nil {
+            return .left
+        } else if frontLeft == nil {
+            return .frontLeft
+        } else if frontImage == nil {
+            return .front
+        } else if frontRight == nil {
+            return .frontRight
+        } else if rightImage == nil {
+            return .right
+        } else if rearRight == nil {
+            return .rearRight
+        } else if backImage == nil {
+            return .back
+        } else if rearLeft == nil {
+            return .rearLeft
+        } else {
+            return nil
+        }
+    }
+
+    @MainActor
+    private func reserveImageSlot(_ image: UIImage) -> (InspectionImageSlot, UUID)? {
+        guard let slot = nextCaptureSlot() else { return nil }
+        let upload = InspectionImageUpload(image: image)
+
+        switch slot {
+        case .left:
+            leftImage = upload
+        case .frontLeft:
+            frontLeft = upload
+        case .front:
+            frontImage = upload
+        case .frontRight:
+            frontRight = upload
+        case .right:
+            rightImage = upload
+        case .rearRight:
+            rearRight = upload
+        case .back:
+            backImage = upload
+        case .rearLeft:
+            rearLeft = upload
+        }
+
+        return (slot, upload.id)
+    }
+
+    @MainActor
+    private func completeImageUpload(slot: InspectionImageSlot, id: UUID, filePath: String) {
+        updateImageUpload(slot: slot, id: id) { upload in
+            upload.filePath = filePath
+            upload.uploadFailed = false
+        }
+    }
+
+    @MainActor
+    private func failImageUpload(slot: InspectionImageSlot, id: UUID) {
+        updateImageUpload(slot: slot, id: id) { upload in
+            upload.filePath = nil
+            upload.uploadFailed = true
+        }
+    }
+
+    @MainActor
+    private func updateImageUpload(slot: InspectionImageSlot, id: UUID, update: (inout InspectionImageUpload) -> Void) {
+        switch slot {
+        case .left:
+            guard var upload = leftImage, upload.id == id else { return }
+            update(&upload)
+            leftImage = upload
+        case .frontLeft:
+            guard var upload = frontLeft, upload.id == id else { return }
+            update(&upload)
+            frontLeft = upload
+        case .front:
+            guard var upload = frontImage, upload.id == id else { return }
+            update(&upload)
+            frontImage = upload
+        case .frontRight:
+            guard var upload = frontRight, upload.id == id else { return }
+            update(&upload)
+            frontRight = upload
+        case .right:
+            guard var upload = rightImage, upload.id == id else { return }
+            update(&upload)
+            rightImage = upload
+        case .rearRight:
+            guard var upload = rearRight, upload.id == id else { return }
+            update(&upload)
+            rearRight = upload
+        case .back:
+            guard var upload = backImage, upload.id == id else { return }
+            update(&upload)
+            backImage = upload
+        case .rearLeft:
+            guard var upload = rearLeft, upload.id == id else { return }
+            update(&upload)
+            rearLeft = upload
+        }
+    }
     
-    @ApiCallActor func submitFileAsync (_ token: String, _ userId: Int, _ file: Data, _ fileName: String, _ image: UIImage) async -> ApiTaskResponse {
+    @ApiCallActor func submitFileAsync (_ token: String, _ userId: Int, _ file: Data, _ fileName: String, _ slot: InspectionImageSlot, _ uploadId: UUID) async -> ApiTaskResponse {
         do {
             let user = await MainActor.run { self.session.user }
             if !token.isEmpty && userId > 0, user != nil {
@@ -255,19 +416,14 @@ struct AdminVehicleSubmissionView: View {
                         "file-name": fileName,
                         "vehicle-vin": await vinInput
                     ],
-                    body: file
+                    timeout: 300
                 )
                 
-                await MainActor.run {
-                    isSubmitting = true
-                }
-                let (data, response) = try await URLSession.shared.data(for: request)
-                await MainActor.run {
-                    isSubmitting = false
-                }
+                let (data, response) = try await URLSession.shared.upload(for: request, from: file)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
                     await MainActor.run {
+                        failImageUpload(slot: slot, id: uploadId)
                         alertTitle = "Server Error"
                         alertMessage = "Invalid protocol"
                         showAlert = true
@@ -282,6 +438,7 @@ struct AdminVehicleSubmissionView: View {
                             print("Decoding failed.")
                         }
                     await MainActor.run {
+                        failImageUpload(slot: slot, id: uploadId)
                         alertTitle = "Server Error"
                         alertMessage = "Invalid content"
                         showAlert = true
@@ -293,6 +450,7 @@ struct AdminVehicleSubmissionView: View {
                 case 201:
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(FilePath.self, from: data) else {
                         await MainActor.run {
+                            failImageUpload(slot: slot, id: uploadId)
                             alertTitle = "Server Error"
                             alertMessage = "Invalid content"
                             showAlert = true
@@ -300,29 +458,14 @@ struct AdminVehicleSubmissionView: View {
                         return .doNothing
                     }
                     await MainActor.run {
-                        if leftImage == nil {
-                            leftImage = (decodedBody.filePath, image)
-                        } else if frontLeft == nil {
-                            frontLeft = (decodedBody.filePath, image)
-                        } else if frontImage == nil {
-                            frontImage = (decodedBody.filePath, image)
-                        } else if frontRight == nil {
-                            frontRight = (decodedBody.filePath, image)
-                        } else if rightImage == nil {
-                            rightImage = (decodedBody.filePath, image)
-                        } else if rearRight == nil {
-                            rearRight = (decodedBody.filePath, image)
-                        } else if backImage == nil {
-                            backImage = (decodedBody.filePath, image)
-                        } else if rearLeft == nil {
-                            rearLeft = (decodedBody.filePath, image)
-                        }
+                        completeImageUpload(slot: slot, id: uploadId, filePath: decodedBody.filePath)
                     }
                     return .doNothing
                 case 400:
                     guard let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) else {
                         let msg = ErrorResponse.E400
                         await MainActor.run {
+                            failImageUpload(slot: slot, id: uploadId)
                             alertTitle = msg.title
                             alertMessage = msg.message
                             showAlert = true
@@ -330,6 +473,7 @@ struct AdminVehicleSubmissionView: View {
                         return .doNothing
                     }
                     await MainActor.run {
+                        failImageUpload(slot: slot, id: uploadId)
                         alertTitle = decodedBody.title
                         alertMessage = decodedBody.message
                         showAlert = true
@@ -338,6 +482,7 @@ struct AdminVehicleSubmissionView: View {
                 case 401:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
+                            failImageUpload(slot: slot, id: uploadId)
                             alertTitle = decodedBody.title
                             alertMessage = decodedBody.message
                             showAlert = true
@@ -346,6 +491,7 @@ struct AdminVehicleSubmissionView: View {
                     } else {
                         let decodedBody = ErrorResponse.E401
                         await MainActor.run {
+                            failImageUpload(slot: slot, id: uploadId)
                             alertTitle = decodedBody.title
                             alertMessage = decodedBody.message
                             showAlert = true
@@ -356,6 +502,7 @@ struct AdminVehicleSubmissionView: View {
                 case 405:
                     if let decodedBody = try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data) {
                         await MainActor.run {
+                            failImageUpload(slot: slot, id: uploadId)
                             alertTitle = decodedBody.title
                             alertMessage = decodedBody.message
                             showAlert = true
@@ -363,6 +510,7 @@ struct AdminVehicleSubmissionView: View {
                     } else {
                         let decodedBody = ErrorResponse.E405
                         await MainActor.run {
+                            failImageUpload(slot: slot, id: uploadId)
                             alertTitle = decodedBody.title
                             alertMessage = decodedBody.message
                             showAlert = true
@@ -372,6 +520,7 @@ struct AdminVehicleSubmissionView: View {
                 default:
                     let body = ErrorResponse.E_DEFAULT
                     await MainActor.run {
+                        failImageUpload(slot: slot, id: uploadId)
                         alertTitle = body.title
                         alertMessage = body.message
                         showAlert = true
@@ -382,6 +531,7 @@ struct AdminVehicleSubmissionView: View {
             return .doNothing
         } catch {
             await MainActor.run {
+                failImageUpload(slot: slot, id: uploadId)
                 alertTitle = "Internal Error"
                 alertMessage = "\(error.localizedDescription)"
                 showAlert = true
@@ -394,17 +544,48 @@ struct AdminVehicleSubmissionView: View {
         do {
             let user = await MainActor.run { self.session.user }
             if !token.isEmpty && userId > 0, user != nil {
-                
+                let payload = await MainActor.run {
+                    (
+                        vehicleVin: vinInput,
+                        leftImagePath: leftImage?.filePath,
+                        rightImagePath: rightImage?.filePath,
+                        frontImagePath: frontImage?.filePath,
+                        backImagePath: backImage?.filePath,
+                        frontRightImagePath: frontRight?.filePath,
+                        frontLeftImagePath: frontLeft?.filePath,
+                        backRightImagePath: rearRight?.filePath,
+                        backLeftImagePath: rearLeft?.filePath
+                    )
+                }
+
+                guard
+                    let leftImagePath = payload.leftImagePath,
+                    let rightImagePath = payload.rightImagePath,
+                    let frontImagePath = payload.frontImagePath,
+                    let backImagePath = payload.backImagePath,
+                    let frontRightImagePath = payload.frontRightImagePath,
+                    let frontLeftImagePath = payload.frontLeftImagePath,
+                    let backRightImagePath = payload.backRightImagePath,
+                    let backLeftImagePath = payload.backLeftImagePath
+                else {
+                    await MainActor.run {
+                        alertTitle = "Missing Photos"
+                        alertMessage = "Please wait for all images to finish uploading before submitting."
+                        showAlert = true
+                    }
+                    return .doNothing
+                }
+
                 let body = [
-                    "vehicle_vin": await vinInput,
-                    "left_image_path": await leftImage!.0,
-                    "right_image_path": await rightImage!.0,
-                    "front_image_path": await frontImage!.0,
-                    "back_image_path": await backImage!.0,
-                    "front_right_image_path": await frontRight!.0,
-                    "front_left_image_path": await frontLeft!.0,
-                    "back_right_image_path": await rearRight!.0,
-                    "back_left_image_path": await rearLeft!.0
+                    "vehicle_vin": payload.vehicleVin,
+                    "left_image_path": leftImagePath,
+                    "right_image_path": rightImagePath,
+                    "front_image_path": frontImagePath,
+                    "back_image_path": backImagePath,
+                    "front_right_image_path": frontRightImagePath,
+                    "front_left_image_path": frontLeftImagePath,
+                    "back_right_image_path": backRightImagePath,
+                    "back_left_image_path": backLeftImagePath
                 ]
                 
                 let jsonData: Data = try VeygoJsonStandard.shared.encoder.encode(body)
