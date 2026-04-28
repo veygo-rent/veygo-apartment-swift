@@ -1415,14 +1415,13 @@ private struct PickUpView: View {
                         "Content-Type": "application/octet-stream",
                         "file-name": fileName,
                         "vehicle-vin": await currentTrip?.vehicle.vin ?? ""
-                    ],
-                    body: file
+                    ]
                 )
                 
                 await MainActor.run {
                     isSubmitting = true
                 }
-                let (data, response) = try await URLSession.shared.data(for: request)
+                let (data, response) = try await URLSession.shared.upload(for: request, from: file)
                 await MainActor.run {
                     isSubmitting = false
                 }
