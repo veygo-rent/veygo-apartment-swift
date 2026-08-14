@@ -80,7 +80,7 @@ struct EmailView: View {
             }
             .padding(.top, 40)
         }
-        .background(Color("MainBG"))
+        .background(Color.mainBG)
         .ignoresSafeArea()
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") { }

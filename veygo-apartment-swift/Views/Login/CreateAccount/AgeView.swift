@@ -64,7 +64,7 @@ struct AgeView: View {
             }
             .padding(.top, 40)
         }
-        .background(Color("MainBG"))
+        .background(Color.mainBG)
         .ignoresSafeArea()
         .onAppear {
             if let age = signup.dateOfBirth {

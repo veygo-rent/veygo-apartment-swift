@@ -68,7 +68,7 @@ struct PhoneView: View {
             }
             .padding(.top, 40)
         }
-        .background(Color("MainBG"))
+        .background(Color.mainBG)
         .ignoresSafeArea()
         .onAppear() {
             if let phone = signup.phone {

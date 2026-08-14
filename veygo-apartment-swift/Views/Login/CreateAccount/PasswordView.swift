@@ -78,7 +78,7 @@ struct PasswordView: View {
             }
             .padding(.top, 40)
         }
-        .background(Color("MainBG"))
+        .background(Color.mainBG)
         .ignoresSafeArea()
         .navigationDestination(item: $registered) { info in
             CongratsView(user: info)
