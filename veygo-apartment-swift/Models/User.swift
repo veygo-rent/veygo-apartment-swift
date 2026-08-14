@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PublishRenter: Identifiable, Equatable, Codable {
+struct PublishRenter: Identifiable, Equatable, Codable, Hashable {
     var id: Int
     var name: String
     var studentEmail: String
@@ -42,7 +42,7 @@ struct PublishRenter: Identifiable, Equatable, Codable {
     var planTotalAvailability: FlexDecimal
 }
 
-struct NewRenter: Codable {
+struct NewRenter: Codable, Equatable, Hashable {
     var name: String?
     var dateOfBirth: String?     // MM/DD/YYYY
     var phone: String?

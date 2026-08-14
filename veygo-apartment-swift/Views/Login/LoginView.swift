@@ -9,10 +9,10 @@ import SwiftUI
 
 enum SignupRoute: Hashable {
     case name
-    case age
-    case phone
-    case email
-    case password
+    case age(renterInfo: NewRenter)
+    case phone(renterInfo: NewRenter)
+    case email(renterInfo: NewRenter)
+    case password(renterInfo: NewRenter)
 
     case membership
     case privacy
@@ -113,27 +113,14 @@ struct LoginView: View {
             })
             .navigationDestination(for: SignupRoute.self) { route in
                 switch route {
-                case .name:
-                    EmptyView()
-//                    NameView(signup: $signup, path: $path)
-                case .age:
-                    EmptyView()
-//                    AgeView(signup: $signup, path: $path)
-                case .phone:
-                    EmptyView()
-//                    PhoneView(signup: $signup, path: $path)
-                case .email:
-                    EmptyView()
-//                    EmailView(signup: $signup, path: $path)
-                case .password:
-                    EmptyView()
-//                    PasswordView(signup: $signup, path: $path)
-                case .membership:
-                    TermsView(term: .membershipAgreement)
-                case .privacy:
-                    TermsView(term: .privacyPolicy)
-                case .tou:
-                    TermsView(term: .termsOfUse)
+                case .name:                     NameView(path: $path)
+                case .age(let renterInfo):      AgeView(renterInfo: renterInfo, path: $path)
+                case .phone(let renterInfo):    PhoneView(renterInfo: renterInfo, path: $path)
+                case .email(let renterInfo):    EmailView(renterInfo: renterInfo, path: $path)
+                case .password(let renterInfo): PasswordView(renterInfo: renterInfo, path: $path)
+                case .membership:               TermsView(term: .membershipAgreement)
+                case .privacy:                  TermsView(term: .privacyPolicy)
+                case .tou:                      TermsView(term: .termsOfUse)
                 }
             }
             .navigationDestination(isPresented: $goToResetView) {

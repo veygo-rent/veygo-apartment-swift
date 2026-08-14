@@ -71,4 +71,9 @@ final class Session {
         defaults.removeObject(forKey: Keys.token)
         defaults.removeObject(forKey: Keys.userId)
     }
+    
+    /// Retrieve current renter
+    func getRenter() -> PublishRenter? {
+        renter
+    }
 }
