@@ -1,0 +1,33 @@
+{
+  "originHash" : "1408e29a4173d9dd6c6bb043151034721a90822dee6571b31e260d26a9d24a8f",
+  "pins" : [
+    {
+      "identity" : "codescanner",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/twostraws/CodeScanner.git",
+      "state" : {
+        "revision" : "5e886430238944c7200fc9e10dbf2d9550dba865",
+        "version" : "2.5.2"
+      }
+    },
+    {
+      "identity" : "crisp-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/crisp-im/crisp-sdk-ios.git",
+      "state" : {
+        "revision" : "61e11393f22812e3b3fc6ab98a2d22a4eaef0102",
+        "version" : "2.13.0"
+      }
+    },
+    {
+      "identity" : "stripe-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stripe/stripe-ios.git",
+      "state" : {
+        "revision" : "3410ff0853b66e5ade3e8763e99f3ddb5dd77bc3",
+        "version" : "26.6.0"
+      }
+    }
+  ],
+  "version" : 3
+}
