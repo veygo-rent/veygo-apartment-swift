@@ -1,0 +1,9 @@
+{
+  "id" : "d8348dd2-f00d-4498-9af9-7ee31649eef4",
+  "targets" : [
+    {
+      "id" : "AA09233E-EB4A-4D2C-B02B-C69F0818B01B",
+      "name" : "veygo-apartment-swift"
+    }
+  ]
+}
