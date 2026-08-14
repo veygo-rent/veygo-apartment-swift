@@ -73,7 +73,7 @@ struct RootView: View {
     @ViewBuilder
     private var destinationView: some View {
         if session.renter != nil {
-            HomeView()
+            AppView()
                 .transition(hasAppearedOnce ? .move(edge: .trailing) : .identity)
         } else {
             LoginView()
