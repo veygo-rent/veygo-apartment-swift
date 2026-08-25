@@ -11,8 +11,5 @@ struct HomeView: View {
     @Environment(Session.self) private var session
     var body: some View {
         Text("Hello, World!")
-            .onTapGesture {
-                session.clear()
-            }
     }
 }
