@@ -52,7 +52,7 @@ struct ResetView: View {
         }
         .padding(22)
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(Color("MainBG").ignoresSafeArea().onTapGesture {
+        .background(Color.mainBG.ignoresSafeArea().onTapGesture {
             focusedField = nil
         })
         .navigationTitle("Reset Password")

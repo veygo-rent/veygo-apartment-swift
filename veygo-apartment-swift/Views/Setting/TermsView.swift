@@ -69,7 +69,7 @@ struct TermsView: View {
         .scrollContentBackground(.hidden)
         .scrollIndicators(.never)
         .listStyle(.plain)
-        .background(Color("MainBG").ignoresSafeArea(.all))
+        .background(Color.mainBG.ignoresSafeArea(.all))
         .navigationTitle(term.rawValue)
         .navigationBarTitleDisplayMode(.automatic)
         .task {

@@ -49,3 +49,19 @@ struct NewRenter: Codable, Equatable, Hashable {
     var studentEmail: String?
     var password: String?
 }
+
+extension PublishRenter {
+    func emailIsValid() -> Bool {
+        if let expUnwrapped = self.studentEmailExpiration {
+            let expDate = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: expUnwrapped)!
+            let now = Date()
+            if expDate < now {
+                return false
+            } else {
+                return true
+            }
+        } else {
+            return false
+        }
+    }
+}

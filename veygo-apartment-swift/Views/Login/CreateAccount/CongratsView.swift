@@ -55,7 +55,7 @@ struct CongratsView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color("MainBG").ignoresSafeArea()
+                Color.mainBG.ignoresSafeArea()
 
                 // Edge decorations — base position fixed; only an offset
                 // driven by tilt is applied, so size/layout never change.

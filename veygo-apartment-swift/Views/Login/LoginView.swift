@@ -108,7 +108,7 @@ struct LoginView: View {
                 Spacer().frame(height: 15)
             }
             .padding(.horizontal, 32)
-            .background(Color("MainBG").ignoresSafeArea().onTapGesture {
+            .background(Color.mainBG.ignoresSafeArea().onTapGesture {
                 focusedField = nil
             })
             .navigationDestination(for: SignupRoute.self) { route in

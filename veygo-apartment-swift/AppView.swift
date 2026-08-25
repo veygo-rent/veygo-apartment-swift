@@ -12,10 +12,24 @@ enum RootDestination: String, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
+enum SettingDestination: Hashable {
+    // Legal
+    case privacyPolicy
+    case memberAgreement
+    case rentalAgreement
+    case termsOfUse
+    // Admin Support
+    case submitVehicleSnapshot // Accessable to none user
+    // Support
+    case roadside
+    // Account Deletion
+    case deleteAccount
+}
+
 struct AppView: View {
 
     @State private var selected: RootDestination = .home
-    @State private var path = NavigationPath()
+    @State private var router = Router()
 
     // Shared tab state that used to live in TabBar.
     @State private var universities: [Apartment] = []
@@ -27,7 +41,7 @@ struct AppView: View {
     private let settingImg = "gearshape"
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $router.path) {
             TabView(selection: $selected) {
                 Tab(value: RootDestination.home) {
                     HomeView()
@@ -66,12 +80,27 @@ struct AppView: View {
                         .environment(\.symbolVariants, selected == .setting ? .fill : .none)
                 }
             }
+            .navigationDestination(for: SettingDestination.self) { destination in
+                settingDestination(destination)
+            }
 //            .navigationDestination(for: AccountDestination.self) { destination in
 //                accountDestination(destination)
 //            }
-//            .navigationDestination(for: SettingDestination.self) { destination in
-//                settingDestination(destination)
-//            }
+        }
+        .environment(router)
+    }
+    
+    @ViewBuilder
+    private func settingDestination(_ destination: SettingDestination) -> some View {
+        switch destination {
+        // Legal
+        case .termsOfUse: TermsView(term: .termsOfUse)
+        case .privacyPolicy: TermsView(term: .privacyPolicy)
+        case .rentalAgreement: TermsView(term: .rentalAgreement)
+        case .memberAgreement: TermsView(term: .membershipAgreement)
+        // Admin Support
+        
+        default: EmptyView()
         }
     }
 
@@ -84,12 +113,4 @@ struct AppView: View {
 //        }
 //    }
 //
-//    @ViewBuilder
-//    private func settingDestination(_ destination: SettingDestination) -> some View {
-//        switch destination {
-//        // case .terms: TermsView(term: .termsOfUse)
-//        // case .verifyEmail: EmailVerifyView()
-//        default: EmptyView()
-//        }
-//    }
 }
