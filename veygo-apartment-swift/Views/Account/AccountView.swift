@@ -31,7 +31,7 @@ struct AccountView: View {
         List {
             Section {
                 membershipSummaryCard
-                    .listRowBackground(Color("CardBG"))
+                    .listRowBackground(Color.cardBG)
                     .listRowSeparator(.hidden)
             }
             .listSectionSeparator(.hidden)
@@ -46,13 +46,13 @@ struct AccountView: View {
                 }
                 NavigationLink("Submit Documents", value: AccountDestination.submitFile)
             }
-            .listRowBackground(Color("CardBG"))
-            .foregroundStyle(Color("TextBlackSecondary"))
+            .listRowBackground(Color.cardBG)
+            .foregroundStyle(Color.textBlackSecondary)
             .listSectionSeparator(.hidden)
         }
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
-        .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
+        .background(Color.mainBG, ignoresSafeAreaEdges: .all)
         .navigationTitle(Text("Account"))
         .task {
             await loadRewardHours()
