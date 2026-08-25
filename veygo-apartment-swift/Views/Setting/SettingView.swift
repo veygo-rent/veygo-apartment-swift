@@ -66,7 +66,9 @@ struct SettingView: View {
             .listSectionSeparator(.hidden)
 
             Section {
+                #if DEBUG
                 NavigationLink("Roadside Assistance", value: SettingDestination.roadside)
+                #endif
                 Button {
                     showHelpCenter.toggle()
                 } label: {
