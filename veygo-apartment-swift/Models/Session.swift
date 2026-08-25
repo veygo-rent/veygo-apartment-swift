@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import Crisp
 
 @Observable
 @MainActor
@@ -53,6 +54,11 @@ final class Session {
         self.token = token
         self.userId = userId
         self.renter = renter
+        
+        CrispSDK.user.email = renter.studentEmail
+        CrispSDK.user.phone = renter.phone
+        CrispSDK.user.nickname = renter.name
+        
         defaults.set(token, forKey: Keys.token)
         defaults.set(userId, forKey: Keys.userId)
     }
@@ -60,6 +66,10 @@ final class Session {
     /// Set the in-memory renter after fetching it with stored credentials.
     func setRenter(_ renter: PublishRenter) {
         self.renter = renter
+        
+        CrispSDK.user.email = renter.studentEmail
+        CrispSDK.user.phone = renter.phone
+        CrispSDK.user.nickname = renter.name
     }
 
     /// Clear credentials and profile on logout or when the token is rejected
