@@ -31,3 +31,21 @@ struct PublishRenterVehicle: Identifiable, Equatable, Codable, Hashable {
     var remoteMgmt: RemoteMgmtType
     var requiresOwnInsurance: Bool
 }
+
+struct VehicleSnapshot: Identifiable, Equatable, Codable {
+    var id: Int
+    var leftImage: String
+    var rightImage: String
+    var frontImage: String
+    var backImage: String
+    var time: Date
+    var odometer: Int
+    var level: Int
+    var vehicleId: Int
+    var rearRight: String
+    var rearLeft: String
+    var frontRight: String
+    var frontLeft: String
+    var dashboard: String?
+    var renterId: Int
+}

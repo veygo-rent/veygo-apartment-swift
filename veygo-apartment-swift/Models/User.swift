@@ -55,6 +55,10 @@ struct RewardHoursSummaryResponse: Decodable {
     let used: FlexDecimal
 }
 
+struct FilePath: Decodable {
+    let filePath: String
+}
+
 extension PublishRenter {
     func emailIsValid() -> Bool {
         if let expUnwrapped = self.studentEmailExpiration {

@@ -116,22 +116,40 @@ struct AppView: View {
     private func settingDestination(_ destination: SettingDestination) -> some View {
         switch destination {
         // Legal
-        case .termsOfUse: TermsView(term: .termsOfUse)
-        case .privacyPolicy: TermsView(term: .privacyPolicy)
-        case .rentalAgreement: TermsView(term: .rentalAgreement)
-        case .memberAgreement: TermsView(term: .membershipAgreement)
+        case .termsOfUse:
+            TermsView(term: .termsOfUse)
+        case .privacyPolicy:
+            TermsView(term: .privacyPolicy)
+        case .rentalAgreement:
+            TermsView(term: .rentalAgreement)
+        case .memberAgreement:
+            TermsView(term: .membershipAgreement)
         // Admin Support
-        
-        default: EmptyView()
+        case .submitVehicleSnapshot:
+            AdminVehicleSubmissionView()
+        // Service
+        case .roadside:
+            EmptyView()
+        case .deleteAccount:
+            DeleteAccountView()
         }
     }
 
     @ViewBuilder
     private func accountDestination(_ destination: AccountDestination) -> some View {
         switch destination {
-        // case .editProfile: EditProfileView()
-        // case .paymentMethods: CreditCardView()
-        default: EmptyView()
+        case .addCard:
+            EmptyView()
+        case .profile:
+            EmptyView()
+        case .wallet:
+            EmptyView()
+        case .phone:
+            PhoneVerifyView()
+        case .email:
+            EmailVerifyView()
+        case .submitFile:
+            EmptyView()
         }
     }
 
