@@ -104,7 +104,6 @@ struct SettingView: View {
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
         .background(Color.mainBG, ignoresSafeAreaEdges: .all)
-        .navigationTitle("Setting")
     }
 
     // MARK: - Logout

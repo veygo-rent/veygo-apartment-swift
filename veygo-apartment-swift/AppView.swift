@@ -39,6 +39,16 @@ struct AppView: View {
     private let journeyImg = "sailboat"
     private let accountImg = "person"
     private let settingImg = "gearshape"
+    
+    private var titleForSelectedTab: String {
+        switch selected {
+        case .home:    return ""
+        case .trips:   return ""
+        case .journey: return ""
+        case .account: return ""
+        case .setting: return "Setting"
+        }
+    }
 
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -80,6 +90,8 @@ struct AppView: View {
                         .environment(\.symbolVariants, selected == .setting ? .fill : .none)
                 }
             }
+            .navigationTitle(titleForSelectedTab)
+            .navigationBarTitleDisplayMode(.large)
             .navigationDestination(for: SettingDestination.self) { destination in
                 settingDestination(destination)
             }
