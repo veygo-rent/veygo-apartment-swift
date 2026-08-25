@@ -42,12 +42,17 @@ struct PublishRenter: Identifiable, Equatable, Codable, Hashable {
     var planTotalAvailability: FlexDecimal
 }
 
-struct NewRenter: Codable, Equatable, Hashable {
+struct NewRenter: Encodable, Equatable, Hashable {
     var name: String?
     var dateOfBirth: String?     // MM/DD/YYYY
     var phone: String?
     var studentEmail: String?
     var password: String?
+}
+
+struct RewardHoursSummaryResponse: Decodable {
+    let total: FlexDecimal
+    let used: FlexDecimal
 }
 
 extension PublishRenter {

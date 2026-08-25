@@ -26,6 +26,16 @@ enum SettingDestination: Hashable {
     case deleteAccount
 }
 
+enum AccountDestination: Hashable {
+    // Account
+    case profile
+    case wallet
+    case addCard
+    case phone
+    case email
+    case submitFile
+}
+
 struct AppView: View {
 
     @State private var selected: RootDestination = .home
@@ -45,7 +55,7 @@ struct AppView: View {
         case .home:    return ""
         case .trips:   return ""
         case .journey: return ""
-        case .account: return ""
+        case .account: return "Account"
         case .setting: return "Setting"
         }
     }
@@ -95,9 +105,9 @@ struct AppView: View {
             .navigationDestination(for: SettingDestination.self) { destination in
                 settingDestination(destination)
             }
-//            .navigationDestination(for: AccountDestination.self) { destination in
-//                accountDestination(destination)
-//            }
+            .navigationDestination(for: AccountDestination.self) { destination in
+                accountDestination(destination)
+            }
         }
         .environment(router)
     }
@@ -116,13 +126,13 @@ struct AppView: View {
         }
     }
 
-//    @ViewBuilder
-//    private func accountDestination(_ destination: AccountDestination) -> some View {
-//        switch destination {
-//        // case .editProfile: EditProfileView()
-//        // case .paymentMethods: CreditCardView()
-//        default: EmptyView()
-//        }
-//    }
-//
+    @ViewBuilder
+    private func accountDestination(_ destination: AccountDestination) -> some View {
+        switch destination {
+        // case .editProfile: EditProfileView()
+        // case .paymentMethods: CreditCardView()
+        default: EmptyView()
+        }
+    }
+
 }
