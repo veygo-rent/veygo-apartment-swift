@@ -325,12 +325,18 @@ struct AdminVehicleSubmissionView: View {
         }
     }
 
-    // MARK: - Upload one image
+    // MARK: - Upload one image (signed-URL flow)
+    //
+    // 1. Ask our backend for a signed Google upload URL for this VIN + filename.
+    // 2. PUT the raw bytes straight to that signed URL (no auth headers).
+    // 3. Keep the returned file_name (UUID) as the path for generate-snapshot.
 
     private func uploadImage(data: Data, fileName: String, slot: InspectionImageSlot, uploadId: UUID) async {
         do {
-            let filePath = try await uploadImageRequest(data: data, fileName: fileName)
-            completeImageUpload(slot: slot, id: uploadId, filePath: filePath)
+            let link = try await requestUploadLink(fileName: fileName)
+            try await putToSignedURL(link.fileLink, data: data, contentType: contentType(for: fileName))
+            
+            completeImageUpload(slot: slot, id: uploadId, filePath: link.fileName)
         } catch let error as VeygoError {
             failImageUpload(slot: slot, id: uploadId)
             if case .unauthorized = error { session.clear() }
@@ -341,40 +347,40 @@ struct AdminVehicleSubmissionView: View {
         }
     }
 
-    private func uploadImageRequest(data: Data, fileName: String) async throws -> String {
+    /// Step 1 — ask the backend for a signed upload link.
+    private func requestUploadLink(fileName: String) async throws -> FileLink {
         let token = session.token
         let userId = session.userId
         guard !token.isEmpty, userId > 0 else {
             throw VeygoError.unknown
         }
 
+        let body = [
+            "vehicle_vin": vinInput,
+            "file_name": fileName
+        ]
+        let jsonData = try VeygoJsonStandard.shared.encoder.encode(body)
         let request = veygoCurlRequest(
-            url: "/api/v1/vehicle/upload-image",
+            url: "/api/v1/vehicle/request-upload-link",
             method: .post,
-            headers: [
-                "auth": "\(token)$\(userId)",
-                "Content-Type": "application/octet-stream",
-                "file-name": fileName,
-                "vehicle-vin": vinInput
-            ],
-            timeout: 300
+            headers: ["auth": "\(token)$\(userId)"],
+            body: jsonData
         )
         do {
-            let (respData, response) = try await URLSession.shared.upload(for: request, from: data)
+            let (data, response) = try await URLSession.shared.data(for: request)
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw VeygoError.unknown
             }
             let httpCode = httpResponse.statusCode
 
-            if httpCode == 201 {
-                let decoded = try VeygoJsonStandard.shared.decoder.decode(FilePath.self, from: respData)
-                return decoded.filePath
+            if httpCode == 200 {
+                return try VeygoJsonStandard.shared.decoder.decode(FileLink.self, from: data)
             } else if httpCode == 401 {
-                let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: respData)
+                let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)
                 throw VeygoError.unauthorized(decodedError)
             } else {
-                let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: respData)
+                let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)
                 throw VeygoError.server(status: httpCode, error: decodedError)
             }
         } catch let error as URLError {
@@ -388,13 +394,56 @@ struct AdminVehicleSubmissionView: View {
         }
     }
 
+    /// Step 2 — PUT the raw bytes to the Google signed URL. This is NOT a
+    /// veygoCurlRequest (that would prepend our base path and headers); it's a
+    /// plain request to the absolute signed URL with only Content-Type.
+    private func putToSignedURL(_ urlString: String, data: Data, contentType: String) async throws {
+        guard let url = URL(string: urlString) else {
+            throw VeygoError.unknown
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 300
+
+        do {
+            let (_, response) = try await URLSession.shared.upload(for: request, from: data)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw VeygoError.unknown
+            }
+            // Google returns 200 (or 201) on a successful signed-URL PUT.
+            guard (200...299).contains(httpResponse.statusCode) else {
+                throw VeygoError.server(status: httpResponse.statusCode, error: .E_DEFAULT)
+            }
+        } catch let error as URLError {
+            throw VeygoError.network(error)
+        } catch let error as VeygoError {
+            throw error
+        } catch {
+            throw VeygoError.unknown
+        }
+    }
+
+    /// Match the Content-Type the backend signed the URL with (by extension).
+    private func contentType(for fileName: String) -> String {
+        switch (fileName as NSString).pathExtension.uppercased() {
+        case "PDF":          return "application/pdf"
+        case "JPG", "JPEG":  return "image/jpeg"
+        case "PNG":          return "image/png"
+        case "CSV":          return "text/csv"
+        case "HEIC":         return "image/heic"
+        default:             return "application/octet-stream"
+        }
+    }
+
     // MARK: - Generate snapshot
 
     private func generateSnapshot() async {
         isSubmitting = true
         defer { isSubmitting = false }
 
-        // All paths must be present before submitting.
         guard
             let leftImagePath = leftImage?.filePath,
             let rightImagePath = rightImage?.filePath,

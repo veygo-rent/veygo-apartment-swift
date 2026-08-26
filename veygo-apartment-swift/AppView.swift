@@ -129,7 +129,7 @@ struct AppView: View {
             AdminVehicleSubmissionView()
         // Service
         case .roadside:
-            EmptyView()
+            RoadsideView()
         case .deleteAccount:
             DeleteAccountView()
         }
