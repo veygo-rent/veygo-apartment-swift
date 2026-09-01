@@ -139,11 +139,11 @@ struct AppView: View {
     private func accountDestination(_ destination: AccountDestination) -> some View {
         switch destination {
         case .addCard:
-            EmptyView()
+            FullStripeCardEntryView()
         case .profile:
             EmptyView()
         case .wallet:
-            EmptyView()
+            CreditCardView()
         case .phone:
             PhoneVerifyView()
         case .email:

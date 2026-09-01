@@ -12,7 +12,8 @@ struct LargeTitleText: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 38, weight: .semibold, design: .default))
+            .font(.largeTitle)
+            .fontWeight(.semibold)
             .foregroundColor(Color.textBlackPrimary)
             .multilineTextAlignment(.center)
     }

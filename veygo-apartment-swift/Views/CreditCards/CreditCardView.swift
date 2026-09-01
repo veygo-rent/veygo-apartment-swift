@@ -39,7 +39,7 @@ struct CreditCardView: View {
                                 }
                             )
                             .listRowSeparator(.hidden, edges: .all)
-                            .listRowBackground(Color("MainBG"))
+                            .listRowBackground(Color.mainBG)
                         }
                         .onDelete { indexSet in
                             Task { await deleteCard(at: indexSet) }
@@ -50,7 +50,7 @@ struct CreditCardView: View {
                             .frame(maxWidth: .infinity)
                             .cornerRadius(12)
                             .listRowSeparator(.hidden, edges: .all)
-                            .listRowBackground(Color("MainBG"))
+                            .listRowBackground(Color.mainBG)
                     }
                 }
                 .listStyle(.plain)
@@ -68,7 +68,7 @@ struct CreditCardView: View {
             .padding(.bottom, 20)
         }
         .navigationTitle(Text("My Cards"))
-        .background(Color("MainBG"), ignoresSafeAreaEdges: .all)
+        .background(Color.mainBG, ignoresSafeAreaEdges: .all)
         .task {
             await loadCards()
         }
