@@ -319,9 +319,8 @@ private struct UpcomingReservationDetailedView: View {
     }
 
     private var mileageSubtotal: Decimal {
-        guard let details, let pkg = details.mileagePackage else { return Decimal.zero }
-        let standard = VeygoPricingStandard(apartment: details.apartment, vehicle: details.vehicle)
-        return standard.mileagePackagePrice(for: pkg)
+        guard let details, let pkg = details.mileagePackage, let pricingStandard else { return Decimal.zero }
+        return pricingStandard.mileagePackagePrice(for: pkg)
     }
 
     private var subtotalBeforeDiscount: Decimal {
@@ -577,9 +576,10 @@ private struct UpcomingReservationDetailedView: View {
                     Divider()
                 }
                 priceLine(title: "Subtotal before tax", value: formatRate(subtotalBeforeTax), weight: .semibold)
-                if !taxLines.isEmpty {
+                let currentTaxLines = taxLines
+                if !currentTaxLines.isEmpty {
                     Divider()
-                    ForEach(taxLines) { taxLine in
+                    ForEach(currentTaxLines) { taxLine in
                         priceLine(title: taxLine.name, value: formatRate(taxLine.amount))
                     }
                 }
@@ -780,12 +780,16 @@ private struct UpcomingReservationDetailedView: View {
         return "\(formatHourNumber(hours)) hr"
     }
 
-    private func formatHourNumber(_ hours: Decimal) -> String {
+    private static let hourNumberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
-        return formatter.string(from: hours as NSDecimalNumber) ?? "0"
+        return formatter
+    }()
+
+    private func formatHourNumber(_ hours: Decimal) -> String {
+        Self.hourNumberFormatter.string(from: hours as NSDecimalNumber) ?? "0"
     }
 
     private struct TaxLine: Identifiable {

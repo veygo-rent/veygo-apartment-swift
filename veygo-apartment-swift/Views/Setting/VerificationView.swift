@@ -1,13 +1,55 @@
 //
-//  EmailVerifyView.swift
+//  VerificationView.swift
 //  veygo-apartment-swift
 //
-//  Created by sardine on 7/21/25.
+//  Created by Shenghong Zhou on 7/21/25.
 //
 
 import SwiftUI
 
-struct EmailVerifyView: View {
+enum VerificationMethod {
+    case email
+    case phone
+
+    var apiValue: String {
+        switch self {
+        case .email: return "Email"
+        case .phone: return "Phone"
+        }
+    }
+
+    var fieldPrompt: String {
+        switch self {
+        case .email: return "Your Email"
+        case .phone: return "Your Phone number"
+        }
+    }
+
+    var navigationTitle: String {
+        switch self {
+        case .email: return "Verify Your Email"
+        case .phone: return "Verify Phone Number"
+        }
+    }
+
+    var changeLinkText: String {
+        switch self {
+        case .email: return "Change Email"
+        case .phone: return "Change Phone Number"
+        }
+    }
+
+    var changeDebugLabel: String {
+        switch self {
+        case .email: return "email"
+        case .phone: return "phone number"
+        }
+    }
+}
+
+struct VerificationView: View {
+    let method: VerificationMethod
+
     @Environment(Session.self) private var session
     @Environment(\.dismiss) private var dismiss
 
@@ -17,11 +59,18 @@ struct EmailVerifyView: View {
 
     @State private var verificationCode: String = ""
 
+    private var currentValue: String {
+        switch method {
+        case .email: return session.renter?.studentEmail ?? "Not set"
+        case .phone: return session.renter?.phone ?? "Not set"
+        }
+    }
+
     var body: some View {
         VStack(spacing: 24) {
 
             HStack(spacing: 12) {
-                InputWithInlinePrompt(userInput: .constant(session.renter?.studentEmail ?? "Not set"), promptText: "Your Email")
+                InputWithInlinePrompt(userInput: .constant(currentValue), promptText: method.fieldPrompt)
                     .disabled(true)
                     .foregroundColor(Color.footNote)
 
@@ -43,8 +92,8 @@ struct EmailVerifyView: View {
 
             HStack {
                 Spacer()
-                ShortTextLink(text: "Change Email") {
-                    print("User wants to change email")
+                ShortTextLink(text: method.changeLinkText) {
+                    print("User wants to change \(method.changeDebugLabel)")
                 }
                 Spacer()
             }
@@ -53,7 +102,7 @@ struct EmailVerifyView: View {
         }
         .padding(.horizontal, 20)
         .background(Color.mainBG.ignoresSafeArea(.all))
-        .navigationTitle("Verify Your Email")
+        .navigationTitle(method.navigationTitle)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") { }
         } message: {
@@ -82,7 +131,7 @@ struct EmailVerifyView: View {
             throw VeygoError.unknown
         }
 
-        let body = ["verification_method": "Email"]
+        let body = ["verification_method": method.apiValue]
         let jsonData = try VeygoJsonStandard.shared.encoder.encode(body)
         let request = veygoCurlRequest(
             url: "/api/v1/verification/request-token",
@@ -129,7 +178,7 @@ struct EmailVerifyView: View {
 
         do {
             let renter = try await verifyRequest(code: code)
-            session.setRenter(renter)   // refresh profile with verified email
+            session.setRenter(renter)   // refresh profile with verified contact info
             dismiss()
         } catch let error as VeygoError {
             switch error {
@@ -154,7 +203,7 @@ struct EmailVerifyView: View {
         }
 
         let body = [
-            "verification_method": "Email",
+            "verification_method": method.apiValue,
             "code": code
         ]
         let jsonData = try VeygoJsonStandard.shared.encoder.encode(body)

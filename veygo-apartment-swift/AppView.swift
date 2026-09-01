@@ -145,9 +145,9 @@ struct AppView: View {
         case .wallet:
             CreditCardView()
         case .phone:
-            PhoneVerifyView()
+            VerificationView(method: .phone)
         case .email:
-            EmailVerifyView()
+            VerificationView(method: .email)
         case .submitFile:
             EmptyView()
         }

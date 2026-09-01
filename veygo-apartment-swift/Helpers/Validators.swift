@@ -9,13 +9,17 @@ import Foundation
 
 public struct AgeValidator {
     let dob: String
-    
-    var parsedDate: Date? {
-        guard dob.count == 10 else { return nil }
+
+    private static let dobFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MM/dd/yyyy"
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter.date(from: dob)
+        return formatter
+    }()
+
+    var parsedDate: Date? {
+        guard dob.count == 10 else { return nil }
+        return Self.dobFormatter.date(from: dob)
     }
     
     var isValidFormat: Bool {
@@ -35,14 +39,18 @@ public struct AgeValidator {
 public struct EmailValidator {
     let email: String
     let acceptedDomains: [String]
+
+    private static let emailRegex = try? NSRegularExpression(
+        pattern: #"(?i)^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-](?:[a-z0-9-]{0,61}[a-z0-9])+(?:\.[a-z0-9-](?:[a-z0-9-]{0,61}[a-z0-9])+)+$"#,
+        options: []
+    )
+
     var isValidEmail: Bool {
         // RFC 5321 limit (commonly used threshold)
         guard email.count <= 254 else { return false }
-        
-        let pattern = #"(?i)^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-](?:[a-z0-9-]{0,61}[a-z0-9])+(?:\.[a-z0-9-](?:[a-z0-9-]{0,61}[a-z0-9])+)+$"#
-        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+
         let range = NSRange(email.startIndex..<email.endIndex, in: email)
-        return regex?.firstMatch(in: email, options: [], range: range) != nil
+        return Self.emailRegex?.firstMatch(in: email, options: [], range: range) != nil
     }
     var isValidUniversity: Bool {
         guard let domain = email.split(separator: "@").last.map(String.init) else {
@@ -77,11 +85,12 @@ public struct NameValidator {
 
 public struct PhoneNumberValidator {
     let number: String
+
+    private static let phoneRegex = try? NSRegularExpression(pattern: #"^\d{3}-\d{3}-\d{4}$"#)
+
     var isValidNumber: Bool {
-        let pattern = #"^\d{3}-\d{3}-\d{4}$"#
-        let regex = try? NSRegularExpression(pattern: pattern)
         let range = NSRange(number.startIndex..<number.endIndex, in: number)
-        return regex?.firstMatch(in: number, options: [], range: range) != nil
+        return Self.phoneRegex?.firstMatch(in: number, options: [], range: range) != nil
     }
     var normalizedNumber: String {
         number.filter { $0.isNumber }

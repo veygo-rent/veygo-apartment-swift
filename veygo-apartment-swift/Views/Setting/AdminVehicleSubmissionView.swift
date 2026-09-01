@@ -10,8 +10,47 @@ import CodeScanner
 internal import AVFoundation
 
 struct AdminVehicleSubmissionView: View {
-    enum InspectionImageSlot: Sendable {
+    enum InspectionImageSlot: CaseIterable, Sendable {
         case left, frontLeft, front, frontRight, right, rearRight, back, rearLeft
+
+        var label: String {
+            switch self {
+            case .left: return "Left Image"
+            case .frontLeft: return "Front-Left Image"
+            case .front: return "Front Image"
+            case .frontRight: return "Front-Right Image"
+            case .right: return "Right Image"
+            case .rearRight: return "Back-Right Image"
+            case .back: return "Back Image"
+            case .rearLeft: return "Back-Left Image"
+            }
+        }
+
+        var captureButtonTitle: String {
+            switch self {
+            case .left: return "Capture Left Image"
+            case .frontLeft: return "Capture Front-left Image"
+            case .front: return "Capture Front Image"
+            case .frontRight: return "Capture Front-right Image"
+            case .right: return "Capture Right Image"
+            case .rearRight: return "Capture Rear-right Image"
+            case .back: return "Capture Back Image"
+            case .rearLeft: return "Capture Rear-left Image"
+            }
+        }
+
+        var bodyKey: String {
+            switch self {
+            case .left: return "left_image_path"
+            case .right: return "right_image_path"
+            case .front: return "front_image_path"
+            case .back: return "back_image_path"
+            case .frontRight: return "front_right_image_path"
+            case .frontLeft: return "front_left_image_path"
+            case .rearRight: return "back_right_image_path"
+            case .rearLeft: return "back_left_image_path"
+            }
+        }
     }
 
     struct InspectionImageUpload: Identifiable {
@@ -38,14 +77,7 @@ struct AdminVehicleSubmissionView: View {
     @State private var isSubmitting: Bool = false
     @State private var isShowingCamera = false
 
-    @State private var leftImage: InspectionImageUpload? = nil
-    @State private var rightImage: InspectionImageUpload? = nil
-    @State private var frontImage: InspectionImageUpload? = nil
-    @State private var backImage: InspectionImageUpload? = nil
-    @State private var rearRight: InspectionImageUpload? = nil
-    @State private var rearLeft: InspectionImageUpload? = nil
-    @State private var frontRight: InspectionImageUpload? = nil
-    @State private var frontLeft: InspectionImageUpload? = nil
+    @State private var images: [InspectionImageSlot: InspectionImageUpload] = [:]
 
     var body: some View {
         ScrollView(.vertical) {
@@ -91,14 +123,9 @@ struct AdminVehicleSubmissionView: View {
                     .disabled(isSubmitting || !allImageUploadsComplete)
 
                     LazyVGrid(columns: gridColumns, spacing: 36) {
-                        imageTile(label: "Left Image", binding: $leftImage)
-                        imageTile(label: "Front-Left Image", binding: $frontLeft)
-                        imageTile(label: "Front Image", binding: $frontImage)
-                        imageTile(label: "Front-Right Image", binding: $frontRight)
-                        imageTile(label: "Right Image", binding: $rightImage)
-                        imageTile(label: "Back-Right Image", binding: $rearRight)
-                        imageTile(label: "Back Image", binding: $backImage)
-                        imageTile(label: "Back-Left Image", binding: $rearLeft)
+                        ForEach(InspectionImageSlot.allCases, id: \.self) { slot in
+                            imageTile(slot: slot)
+                        }
                     }
                     .padding(.top, 12)
                 }
@@ -136,14 +163,7 @@ struct AdminVehicleSubmissionView: View {
             Text(alertMessage)
         }
         .onChange(of: vinInput) { _, _ in
-            leftImage = nil
-            rightImage = nil
-            frontLeft = nil
-            frontRight = nil
-            rearLeft = nil
-            rearRight = nil
-            frontImage = nil
-            backImage = nil
+            images.removeAll()
         }
     }
 
@@ -155,8 +175,9 @@ struct AdminVehicleSubmissionView: View {
     ]
 
     @ViewBuilder
-    private func imageTile(label: String, binding: Binding<InspectionImageUpload?>) -> some View {
+    private func imageTile(slot: InspectionImageSlot) -> some View {
         let tileCorner: CGFloat = 16
+        let label = slot.label
 
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
@@ -164,7 +185,7 @@ struct AdminVehicleSubmissionView: View {
                 .foregroundStyle(.textBlackPrimary)
 
             ZStack(alignment: .topTrailing) {
-                if let upload = binding.wrappedValue {
+                if let upload = images[slot] {
                     ZStack {
                         GeometryReader { geo in
                             Image(uiImage: upload.image)
@@ -197,7 +218,7 @@ struct AdminVehicleSubmissionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: tileCorner, style: .continuous))
 
                     Button {
-                        binding.wrappedValue = nil
+                        images[slot] = nil
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title3)
@@ -230,55 +251,25 @@ struct AdminVehicleSubmissionView: View {
     // MARK: - Capture progress helpers
 
     private var nextCaptureButtonTitle: String {
-        if leftImage == nil { return "Capture Left Image" }
-        else if frontLeft == nil { return "Capture Front-left Image" }
-        else if frontImage == nil { return "Capture Front Image" }
-        else if frontRight == nil { return "Capture Front-right Image" }
-        else if rightImage == nil { return "Capture Right Image" }
-        else if rearRight == nil { return "Capture Rear-right Image" }
-        else if backImage == nil { return "Capture Back Image" }
-        else if rearLeft == nil { return "Capture Rear-left Image" }
-        else { return "All photos captured" }
+        nextCaptureSlot()?.captureButtonTitle ?? "All photos captured"
     }
 
     private var allImagesCaptured: Bool {
-        leftImage != nil && rightImage != nil && frontImage != nil && backImage != nil &&
-        rearRight != nil && rearLeft != nil && frontRight != nil && frontLeft != nil
+        images.count == InspectionImageSlot.allCases.count
     }
 
     private var allImageUploadsComplete: Bool {
-        leftImage?.filePath != nil && rightImage?.filePath != nil &&
-        frontImage?.filePath != nil && backImage?.filePath != nil &&
-        rearRight?.filePath != nil && rearLeft?.filePath != nil &&
-        frontRight?.filePath != nil && frontLeft?.filePath != nil
+        InspectionImageSlot.allCases.allSatisfy { images[$0]?.filePath != nil }
     }
 
     private func nextCaptureSlot() -> InspectionImageSlot? {
-        if leftImage == nil { return .left }
-        else if frontLeft == nil { return .frontLeft }
-        else if frontImage == nil { return .front }
-        else if frontRight == nil { return .frontRight }
-        else if rightImage == nil { return .right }
-        else if rearRight == nil { return .rearRight }
-        else if backImage == nil { return .back }
-        else if rearLeft == nil { return .rearLeft }
-        else { return nil }
+        InspectionImageSlot.allCases.first { images[$0] == nil }
     }
 
     private func reserveImageSlot(_ image: UIImage) -> (InspectionImageSlot, UUID)? {
         guard let slot = nextCaptureSlot() else { return nil }
         let upload = InspectionImageUpload(image: image)
-
-        switch slot {
-        case .left:       leftImage = upload
-        case .frontLeft:  frontLeft = upload
-        case .front:      frontImage = upload
-        case .frontRight: frontRight = upload
-        case .right:      rightImage = upload
-        case .rearRight:  rearRight = upload
-        case .back:       backImage = upload
-        case .rearLeft:   rearLeft = upload
-        }
+        images[slot] = upload
         return (slot, upload.id)
     }
 
@@ -297,32 +288,9 @@ struct AdminVehicleSubmissionView: View {
     }
 
     private func updateImageUpload(slot: InspectionImageSlot, id: UUID, update: (inout InspectionImageUpload) -> Void) {
-        switch slot {
-        case .left:
-            guard var upload = leftImage, upload.id == id else { return }
-            update(&upload); leftImage = upload
-        case .frontLeft:
-            guard var upload = frontLeft, upload.id == id else { return }
-            update(&upload); frontLeft = upload
-        case .front:
-            guard var upload = frontImage, upload.id == id else { return }
-            update(&upload); frontImage = upload
-        case .frontRight:
-            guard var upload = frontRight, upload.id == id else { return }
-            update(&upload); frontRight = upload
-        case .right:
-            guard var upload = rightImage, upload.id == id else { return }
-            update(&upload); rightImage = upload
-        case .rearRight:
-            guard var upload = rearRight, upload.id == id else { return }
-            update(&upload); rearRight = upload
-        case .back:
-            guard var upload = backImage, upload.id == id else { return }
-            update(&upload); backImage = upload
-        case .rearLeft:
-            guard var upload = rearLeft, upload.id == id else { return }
-            update(&upload); rearLeft = upload
-        }
+        guard var upload = images[slot], upload.id == id else { return }
+        update(&upload)
+        images[slot] = upload
     }
 
     // MARK: - Upload one image (signed-URL flow)
@@ -444,32 +412,16 @@ struct AdminVehicleSubmissionView: View {
         isSubmitting = true
         defer { isSubmitting = false }
 
-        guard
-            let leftImagePath = leftImage?.filePath,
-            let rightImagePath = rightImage?.filePath,
-            let frontImagePath = frontImage?.filePath,
-            let backImagePath = backImage?.filePath,
-            let frontRightImagePath = frontRight?.filePath,
-            let frontLeftImagePath = frontLeft?.filePath,
-            let backRightImagePath = rearRight?.filePath,
-            let backLeftImagePath = rearLeft?.filePath
-        else {
+        guard allImageUploadsComplete else {
             present(title: "Missing Photos",
                     message: "Please wait for all images to finish uploading before submitting.")
             return
         }
 
-        let body = [
-            "vehicle_vin": vinInput,
-            "left_image_path": leftImagePath,
-            "right_image_path": rightImagePath,
-            "front_image_path": frontImagePath,
-            "back_image_path": backImagePath,
-            "front_right_image_path": frontRightImagePath,
-            "front_left_image_path": frontLeftImagePath,
-            "back_right_image_path": backRightImagePath,
-            "back_left_image_path": backLeftImagePath
-        ]
+        var body = ["vehicle_vin": vinInput]
+        for slot in InspectionImageSlot.allCases {
+            body[slot.bodyKey] = images[slot]?.filePath
+        }
 
         do {
             let snapshot = try await generateSnapshotRequest(body: body)
