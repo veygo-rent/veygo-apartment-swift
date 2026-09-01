@@ -53,7 +53,7 @@ struct AppView: View {
     private var titleForSelectedTab: String {
         switch selected {
         case .home:    return ""
-        case .trips:   return ""
+        case .trips:   return "Trips"
         case .journey: return ""
         case .account: return "Account"
         case .setting: return "Setting"
@@ -71,7 +71,7 @@ struct AppView: View {
                 }
 
                 Tab(value: RootDestination.trips) {
-                    TripView()
+                    TripView(selectedTab: $selected)
                 } label: {
                     Label("Trips", systemImage: tripsImg)
                         .environment(\.symbolVariants, selected == .trips ? .fill : .none)

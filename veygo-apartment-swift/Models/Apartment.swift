@@ -39,3 +39,28 @@ struct Apartment: Identifiable, Equatable, Codable, Hashable, HasName {
     var longitudeLowerBound: Double
     var longitudeHigherBound: Double
 }
+
+struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
+    var id: Int
+    var apartmentId: Int
+    var name: String
+    var description: String?
+    var latitude: Double
+    var longitude: Double
+    var isOperational: Bool
+    var latitudeLowerDound: Double?
+    var latitudeHigherBound: Double?
+    var longitudeLowerBound: Double?
+    var longitudeHigherBound: Double?
+}
+
+struct Tax: Identifiable, Equatable, Codable, Hashable, HasName {
+    var id: Int
+    var name: String
+    var multiplier: FlexDecimal
+    var isSalesTax: Bool
+    var taxType: TaxType
+    var isDepositTax: Bool
+    var threshold: Int?
+    var isLower: Bool?
+}
