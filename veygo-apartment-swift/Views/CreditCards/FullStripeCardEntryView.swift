@@ -53,7 +53,7 @@ struct FullStripeCardEntryView: View {
         VStack(spacing: 28) {
 
             CardInputFieldWrapper(paymentMethodParams: $paymentMethodParams)
-                .background(Color("TextFieldBg"))
+                .background(Color.textFieldBg)
                 .cornerRadius(14)
                 .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
                 .frame(height: 36)
@@ -96,7 +96,7 @@ struct FullStripeCardEntryView: View {
         .padding()
         .padding(.vertical, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color("MainBG").ignoresSafeArea(.all))
+        .background(Color.mainBG.ignoresSafeArea(.all))
         .navigationTitle("Add Card")
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") { }
