@@ -149,7 +149,7 @@ struct AppView: View {
         case .email:
             VerificationView(method: .email)
         case .submitFile:
-            EmptyView()
+            SubmitFileView()
         }
     }
 
