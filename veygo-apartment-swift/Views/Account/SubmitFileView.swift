@@ -62,7 +62,7 @@ struct SubmitFileView: View {
                 .disabled(isSubmitting)
             }
 
-            SecondaryButton(text: "Upload Lease or Proof of Address") {
+            SecondaryButton(text: "Upload Proof of Address") {
                 activeUpload = .leaseAgreement
             }
             .disabled(isSubmitting)
