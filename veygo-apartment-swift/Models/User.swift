@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PublishRenter: Identifiable, Equatable, Codable, Hashable {
+struct PublishRenter: Identifiable, Equatable, Decodable, Hashable {
     var id: Int
     var name: String
     var studentEmail: String

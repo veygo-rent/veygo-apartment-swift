@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Apartment: Identifiable, Equatable, Codable, Hashable, HasName {
+struct Apartment: Identifiable, Equatable, Decodable, Hashable, HasName {
     var id: Int
     var name: String
     var timezone: String
@@ -40,7 +40,7 @@ struct Apartment: Identifiable, Equatable, Codable, Hashable, HasName {
     var longitudeHigherBound: Double
 }
 
-struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
+struct Location: Identifiable, Equatable, Decodable, Hashable, HasName {
     var id: Int
     var apartmentId: Int
     var name: String
@@ -54,7 +54,7 @@ struct Location: Identifiable, Equatable, Codable, Hashable, HasName {
     var longitudeHigherBound: Double?
 }
 
-struct Tax: Identifiable, Equatable, Codable, Hashable, HasName {
+struct Tax: Identifiable, Equatable, Decodable, Hashable, HasName {
     var id: Int
     var name: String
     var multiplier: FlexDecimal

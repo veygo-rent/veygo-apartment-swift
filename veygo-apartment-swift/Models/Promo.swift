@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PublishPromo: Identifiable, Equatable, Codable, HasName {
+struct PublishPromo: Identifiable, Equatable, Decodable, HasName {
     var id: String { code }
     var code: String
     var name: String

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PublishRenterVehicle: Identifiable, Equatable, Codable, Hashable {
+struct PublishRenterVehicle: Identifiable, Equatable, Decodable, Hashable {
     var id: Int
     var vin: String
     var name: String
@@ -32,7 +32,7 @@ struct PublishRenterVehicle: Identifiable, Equatable, Codable, Hashable {
     var requiresOwnInsurance: Bool
 }
 
-struct VehicleSnapshot: Identifiable, Equatable, Codable {
+struct VehicleSnapshot: Identifiable, Equatable, Decodable {
     var id: Int
     var leftImage: String
     var rightImage: String

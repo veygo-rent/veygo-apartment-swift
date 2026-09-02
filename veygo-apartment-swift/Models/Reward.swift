@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RewardTransaction: Identifiable, Equatable, Codable {
+struct RewardTransaction: Identifiable, Equatable, Decodable {
     var id: Int
     var agreementId: Int?
     var duration: FlexDecimal

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Agreement: Identifiable, Equatable, Codable {
+struct Agreement: Identifiable, Equatable, Decodable {
     var id: Int
     var confirmation: String
     var status: AgreementStatus
@@ -48,7 +48,7 @@ struct Agreement: Identifiable, Equatable, Codable {
     var depositPmtId: Int?
 }
 
-struct TripInfo: Codable, Identifiable {
+struct TripInfo: Decodable, Identifiable {
     var id: Agreement.ID { agreement.id }
     let agreement: Agreement
     let apartmentTimezone: String

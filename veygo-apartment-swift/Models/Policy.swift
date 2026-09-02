@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Policy: Identifiable, Equatable, Codable {
+struct Policy: Identifiable, Equatable, Decodable {
     var id: Int
     var policyType: PolicyType
     var policyEffectiveDate: String
