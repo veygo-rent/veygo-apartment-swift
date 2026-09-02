@@ -252,6 +252,8 @@ struct FullStripeCardEntryView: View {
         ]
         request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
         request.merchantCategoryCode = .init(rawValue: 7512)
+        request.applePayLaterAvailability = .unavailable(.recurringTransaction)
+        request.merchantCapabilities = .threeDSecure
         return request
     }
 
