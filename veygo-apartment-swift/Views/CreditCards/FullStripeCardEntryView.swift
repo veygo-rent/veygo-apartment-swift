@@ -532,8 +532,8 @@ struct CardInputFieldWrapper: UIViewRepresentable {
         textField.postalCodeEntryEnabled = true
         textField.layer.borderWidth = 0
         textField.layer.borderColor = UIColor.clear.cgColor
-        textField.textColor = UIColor(named: "TextFieldWordColor") ?? .label
-        textField.backgroundColor = UIColor(named: "TextFieldBg")
+        textField.textColor = UIColor.textFieldWord
+        textField.backgroundColor = UIColor.textFieldBg
         textField.layer.cornerRadius = 14
         textField.layer.masksToBounds = true
         textField.delegate = context.coordinator
