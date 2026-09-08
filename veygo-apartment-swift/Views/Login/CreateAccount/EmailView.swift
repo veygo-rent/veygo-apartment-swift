@@ -50,7 +50,9 @@ struct EmailView: View {
                     )
                     .focused($fieldIsFocused)
                     .sensoryFeedback(.selection, trigger: fieldIsFocused)
+                    .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
+                    .textContentType(.emailAddress)
                 }
                 .padding(.horizontal, 32)
 

@@ -61,12 +61,16 @@ struct LoginView: View {
                     .onChange(of: email) { _, newValue in
                         email = newValue.lowercased()
                     }
+                    .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
-                    .textInputAutocapitalization(.none)
+                    .textContentType(.emailAddress)
                     .focused($focusedField, equals: .email)
                 Spacer().frame(height: 15)
                 TextInputField(text: $password, placeholder: "Password", isSecure: true)
                     .focused($focusedField, equals: .password)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .textContentType(.password)
                 Spacer().frame(height: 20)
                 PrimaryButton(text: "Sign In") {
                     if email.isEmpty {

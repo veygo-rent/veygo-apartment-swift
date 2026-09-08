@@ -40,6 +40,29 @@ struct Apartment: Identifiable, Equatable, Decodable, Hashable, HasName {
     var longitudeHigherBound: Double
 }
 
+extension Apartment {
+    func localizedDate(for date: Date) -> String {
+        let currentTimeZone = TimeZone.current
+        let apartmentTimeZone = TimeZone(identifier: self.timezone) ?? currentTimeZone
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = apartmentTimeZone
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+
+        let formattedDate = dateFormatter.string(from: date)
+
+        let currentAbbreviation = currentTimeZone.abbreviation(for: date)
+        let apartmentAbbreviation = apartmentTimeZone.abbreviation(for: date)
+
+        if apartmentAbbreviation != nil && apartmentAbbreviation != currentAbbreviation {
+            return "\(formattedDate) \(apartmentAbbreviation!)"
+        } else {
+            return formattedDate
+        }
+    }
+}
+
 struct Location: Identifiable, Equatable, Decodable, Hashable, HasName {
     var id: Int
     var apartmentId: Int
@@ -63,4 +86,11 @@ struct Tax: Identifiable, Equatable, Decodable, Hashable, HasName {
     var isDepositTax: Bool
     var threshold: Int?
     var isLower: Bool?
+}
+
+struct LocationWithVehicles: Decodable, Identifiable {
+    var location: Location
+    var vehicles: [VehicleWithBlockedDurations]
+    var id: Location.ID { location.id }
+    var duration: TimeInterval? = nil
 }

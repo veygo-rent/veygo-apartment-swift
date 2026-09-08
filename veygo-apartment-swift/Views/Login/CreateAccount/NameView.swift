@@ -32,6 +32,7 @@ struct NameView: View {
                     .focused($fieldIsFocused)
                     .sensoryFeedback(.selection, trigger: fieldIsFocused)
                     .textInputAutocapitalization(.words)
+                    .textContentType(.name)
                     .onChange(of: fieldIsFocused) { old, _ in
                         if old {
                             let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }

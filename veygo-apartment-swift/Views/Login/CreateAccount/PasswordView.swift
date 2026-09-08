@@ -50,6 +50,7 @@ struct PasswordView: View {
                         text: $password,
                         descriptions: $descriptions
                     )
+                    .textContentType(.newPassword)
                     .focused($fieldIsFocused)
                     .sensoryFeedback(.selection, trigger: fieldIsFocused)
                 }

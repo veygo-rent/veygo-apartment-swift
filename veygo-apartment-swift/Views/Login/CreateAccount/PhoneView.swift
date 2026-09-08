@@ -41,6 +41,7 @@ struct PhoneView: View {
                         text: $phoneNumber,
                         descriptions: $descriptions
                     )
+                    .textContentType(.telephoneNumber)
                     .focused($fieldIsFocused)
                     .sensoryFeedback(.selection, trigger: fieldIsFocused)
                 }

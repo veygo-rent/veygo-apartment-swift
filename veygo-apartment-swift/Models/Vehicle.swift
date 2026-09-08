@@ -49,3 +49,27 @@ struct VehicleSnapshot: Identifiable, Equatable, Decodable {
     var dashboard: String?
     var renterId: Int
 }
+
+struct BlockedRange: Decodable, Hashable {
+    var startTime: Date
+    var endTime: Date
+}
+
+struct VehicleWithBlockedDurations: Decodable, Identifiable, Equatable, Hashable {
+    static func == (lhs: VehicleWithBlockedDurations, rhs: VehicleWithBlockedDurations) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    var vehicle: PublishRenterVehicle
+    var blockedDurations: [BlockedRange]
+    var id: PublishRenterVehicle.ID { vehicle.id }
+
+    func isVehicleAvailable(start startTime: Date, end endTime: Date) -> Bool {
+        for blocked in blockedDurations {
+            if startTime < blocked.endTime && endTime > blocked.startTime {
+                return false
+            }
+        }
+        return true
+    }
+}

@@ -12,6 +12,16 @@ enum RootDestination: String, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
+enum HomeDestination: Hashable {
+    case university(apartment: Apartment, startDate: Date, endDate: Date, promo: PublishPromo?)
+    case apartment
+    case vehicleDetails(vehicle: VehicleWithBlockedDurations, location: Location, apartment: Apartment,
+                        rateOffer: RateOffer, taxes: [Tax], startDate: Date, endDate: Date, promo: PublishPromo?)
+    case summary(vehicle: PublishRenterVehicle, location: Location, apartment: Apartment, rateOffer: RateOffer,
+                 mileagePackage: MileagePackage?, promo: PublishPromo?, taxes: [Tax], startDate: Date, endDate: Date)
+    case rentalTerms
+}
+
 enum SettingDestination: Hashable {
     // Legal
     case privacyPolicy
@@ -102,6 +112,9 @@ struct AppView: View {
             }
             .navigationTitle(titleForSelectedTab)
             .navigationBarTitleDisplayMode(.large)
+            .navigationDestination(for: HomeDestination.self) { destination in
+                homeDestination(destination)
+            }
             .navigationDestination(for: SettingDestination.self) { destination in
                 settingDestination(destination)
             }
@@ -110,6 +123,26 @@ struct AppView: View {
             }
         }
         .environment(router)
+    }
+    
+    @ViewBuilder
+    private func homeDestination(_ destination: HomeDestination) -> some View {
+        switch destination {
+        case .apartment:
+            ListCarView()
+        case let .university(apartment, startDate, endDate, promo):
+            FindCarView(apartment: apartment, startDate: startDate, endDate: endDate, promo: promo)
+        case let .vehicleDetails(vehicle, location, apartment, rateOffer, taxes, startDate, endDate, promo):
+            VehicleDetailView(startTime: startDate, endTime: endDate, apartment: apartment,
+                              vehicleWithBlocksAndLocationInfo: (vehicle, location),
+                              taxes: taxes, rateOffer: rateOffer, promo: promo)
+        case let .summary(vehicle, location, apartment, rateOffer, mileagePackage, promo, taxes, startDate, endDate):
+            SummaryView(startDate: startDate, endDate: endDate, vehicle: vehicle, apartment: apartment,
+                        location: location, promo: promo, mileagePackage: mileagePackage,
+                        taxes: taxes, rateOffer: rateOffer)
+        case .rentalTerms:
+            TermsView(term: .rentalAgreement)
+        }
     }
     
     @ViewBuilder

@@ -1,0 +1,14 @@
+//
+//  ListCarView.swift
+//  veygo-apartment-swift
+//
+//  Created by Shenghong Zhou on 9/7/26.
+//
+
+import SwiftUI
+
+struct ListCarView: View {
+    var body: some View {
+        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+    }
+}
