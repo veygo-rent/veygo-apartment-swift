@@ -71,3 +71,7 @@ fastlane/test_output
 # JetBrains
 .idea
 /DerivedData
+
+# Agentic Helper
+*.ai.md
+
