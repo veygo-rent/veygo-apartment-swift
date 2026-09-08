@@ -73,8 +73,6 @@ struct RootView: View {
                     .disabled(isRestoringSession)
                 }
                 .padding(.horizontal, 32)
-            } else if isRestoringSession {
-                ProgressView("Signing you in…")
             }
             Spacer()
         }
