@@ -41,7 +41,7 @@ struct SummaryView: View {
         VeygoPricingStandard(apartment: apartment, vehicle: vehicle)
     }
 
-    // MARK: - Pricing (unchanged)
+    // MARK: - Pricing
 
     private var rawDuration: TimeInterval { max(0, endDate.timeIntervalSince(startDate)) }
 
@@ -128,11 +128,18 @@ struct SummaryView: View {
         return pricingStandard.mileagePackagePrice(for: mileagePackage)
     }
 
-    private var promoDiscount: Decimal { min(promo?.amount.value ?? Decimal.zero, tripSubtotal) }
+    private var discounts: PricingDiscounts {
+        PricingDiscounts(
+            durationSubtotal: tripSubtotal,
+            mileageSubtotal: mileageSubtotal,
+            insuranceSubtotal: insuranceSubtotal,
+            promoAmount: promo?.amount.value ?? .zero
+        )
+    }
 
-    private var durationSubtotalAfterPromo: Decimal { max(Decimal.zero, tripSubtotal - promoDiscount) }
+    private var promoDiscount: Decimal { discounts.promoDiscount }
 
-    private var subtotalBeforeTax: Decimal { durationSubtotalAfterPromo + insuranceSubtotal + mileageSubtotal }
+    private var subtotalBeforeTax: Decimal { discounts.subtotalBeforeTax }
 
     private var billableDaysCount: Int { pricingStandard.billableDaysCount(rawDuration: rawDuration) }
 

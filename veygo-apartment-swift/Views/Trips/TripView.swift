@@ -323,17 +323,21 @@ private struct UpcomingReservationDetailedView: View {
         return pricingStandard.mileagePackagePrice(for: pkg)
     }
 
-    private var subtotalBeforeDiscount: Decimal {
-        tripSubtotal + insuranceSubtotal + mileageSubtotal
+    private var discounts: PricingDiscounts {
+        PricingDiscounts(
+            durationSubtotal: tripSubtotal,
+            mileageSubtotal: mileageSubtotal,
+            insuranceSubtotal: insuranceSubtotal,
+            promoAmount: details?.promo?.amount.value ?? .zero,
+            manualDiscountAmount: details?.agreement.manualDiscount?.value ?? .zero
+        )
     }
 
-    private var promoDiscount: Decimal {
-        min(details?.promo?.amount.value ?? Decimal.zero, subtotalBeforeDiscount)
-    }
+    private var promoDiscount: Decimal { discounts.promoDiscount }
 
-    private var subtotalBeforeTax: Decimal {
-        max(Decimal.zero, subtotalBeforeDiscount - promoDiscount)
-    }
+    private var manualDiscount: Decimal { discounts.manualDiscount }
+
+    private var subtotalBeforeTax: Decimal { discounts.subtotalBeforeTax }
 
     private var applicableTaxes: [Tax] {
         (details?.taxes ?? []).filter { tax in
@@ -573,6 +577,10 @@ private struct UpcomingReservationDetailedView: View {
                         title: "Insurance options",
                         value: formatRate(insuranceSubtotal)
                     )
+                    Divider()
+                }
+                if manualDiscount > 0 {
+                    priceLine(title: "Manual discount", value: "-\(formatRate(manualDiscount))")
                     Divider()
                 }
                 priceLine(title: "Subtotal before tax", value: formatRate(subtotalBeforeTax), weight: .semibold)

@@ -48,7 +48,5 @@ nonisolated public func extractToken(from response: URLResponse?, for purpose: S
         print("Failed to cast response to HTTPURLResponse")
         return nil
     }
-    let token = httpResponse.value(forHTTPHeaderField: "token")
-    print("Extracted token from header: \(token ?? "nil") for \(purpose)\n")
-    return token
+    return httpResponse.value(forHTTPHeaderField: "token")
 }

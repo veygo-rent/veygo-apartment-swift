@@ -16,10 +16,8 @@ struct RootView: View {
     @State private var showDestination = false
     @State private var hasAppearedOnce = false
 
-    @State private var showAlert: Bool = false
-    @State private var alertMessage: String = ""
-    @State private var alertTitle: String = ""
-    @State private var clearUserTriggered: Bool = false
+    @State private var launchError: ErrorResponse?
+    @State private var isRestoringSession = false
 
     var body: some View {
         ZStack {
@@ -63,6 +61,21 @@ struct RootView: View {
                 .opacity(logoOpacity)
                 .animation(.easeInOut(duration: 2), value: logoScale)
                 .animation(.easeInOut(duration: 2), value: logoOpacity)
+            if let launchError {
+                VStack(spacing: 16) {
+                    Text(launchError.title)
+                        .font(.headline)
+                    Text(launchError.message)
+                        .multilineTextAlignment(.center)
+                    PrimaryButton(text: "Retry") {
+                        Task { await decideDestination() }
+                    }
+                    .disabled(isRestoringSession)
+                }
+                .padding(.horizontal, 32)
+            } else if isRestoringSession {
+                ProgressView("Signing you in…")
+            }
             Spacer()
         }
         .frame(maxWidth: .infinity)
@@ -82,12 +95,30 @@ struct RootView: View {
     }
 
     private func decideDestination() async {
+        guard !isRestoringSession, !didLoad else { return }
+        isRestoringSession = true
+        launchError = nil
+        defer { isRestoringSession = false }
+
         if session.isAuthenticated {
             do {
                 let renter = try await fetchCurrentRenter()
+                try Task.checkCancellation()
                 session.setRenter(renter)
+            } catch is CancellationError {
+                return
+            } catch let error as VeygoError {
+                guard !Task.isCancelled else { return }
+                if case .unauthorized = error {
+                    session.clear()
+                } else {
+                    launchError = error.display
+                    return
+                }
             } catch {
-                session.clear()
+                guard !Task.isCancelled else { return }
+                launchError = .E_DEFAULT
+                return
             }
         }
 
@@ -115,10 +146,10 @@ struct RootView: View {
                 
                 return decodedRenter
             } else if httpCode == 401 {
-                let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)
+                let decodedError = (try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)) ?? .E401
                 throw VeygoError.unauthorized(decodedError)
             } else {
-                let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)
+                let decodedError = (try? VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)) ?? .E_DEFAULT
                 throw VeygoError.server(status: httpCode, error: decodedError)
             }
         } catch let error as URLError {
