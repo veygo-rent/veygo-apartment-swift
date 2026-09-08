@@ -60,17 +60,16 @@ struct FilePath: Decodable {
 }
 
 extension PublishRenter {
+    /// True when `studentEmailExpiration` is present, parses as `yyyy-MM-dd`,
+    /// and is still in the future. A missing or malformed date is treated as
+    /// "not valid" rather than crashing.
     func emailIsValid() -> Bool {
-        if let expUnwrapped = self.studentEmailExpiration {
-            let expDate = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: expUnwrapped)!
-            let now = Date()
-            if expDate < now {
-                return false
-            } else {
-                return true
-            }
-        } else {
+        guard
+            let expString = studentEmailExpiration,
+            let expDate = VeygoDatetimeStandard.shared.yyyyMMddDateFormatter.date(from: expString)
+        else {
             return false
         }
+        return expDate >= Date()
     }
 }

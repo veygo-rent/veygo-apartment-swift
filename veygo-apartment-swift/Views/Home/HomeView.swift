@@ -8,7 +8,6 @@
 import SwiftUI
 import MapKit
 import UserNotifications
-import Crisp
 
 enum RentalOption: String, CaseIterable, Identifiable {
     case university, apartment
@@ -171,11 +170,6 @@ struct HomeView: View {
             Button("OK") { }
         } message: {
             Text(alertMessage)
-        }
-        .onAppear {
-            CrispSDK.user.email = user.studentEmail
-            CrispSDK.user.phone = user.phone
-            CrispSDK.user.nickname = user.name
         }
         .task {
             requestPushAuthorization()

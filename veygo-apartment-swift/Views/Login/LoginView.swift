@@ -38,7 +38,6 @@ struct LoginView: View {
     @State private var password: String = ""
 
     @State private var path = NavigationPath()
-    @State private var signup = NewRenter()
 
     @State private var goToResetView = false
 
