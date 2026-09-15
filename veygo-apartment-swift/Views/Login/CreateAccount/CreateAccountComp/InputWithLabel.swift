@@ -12,7 +12,8 @@ struct InputWithLabel: View {
         VStack(alignment: .leading, spacing: 5) {
             if let label = label {
                 Text(label)
-                    .font(.system(size: 14, weight: .semibold, design: .default))
+                    .font(.headline)
+                    .fontWeight(.semibold)
                     .foregroundColor(Color.textBlackPrimary)
             }
 
@@ -21,7 +22,8 @@ struct InputWithLabel: View {
 
             ForEach(descriptions, id: \.0) { item in
                 Text(item.0)
-                    .font(.system(size: 12, weight: !item.1 ? .light : .regular, design: .default))
+                    .font(.subheadline)
+                    .fontWeight(!item.1 ? .light : .regular)
                     .foregroundColor(
                         !item.1
                         ? Color.textBlackSecondary

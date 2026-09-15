@@ -52,6 +52,7 @@ struct EmailView: View {
                     .sensoryFeedback(.selection, trigger: fieldIsFocused)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
+                    .keyboardType(.emailAddress)
                     .textContentType(.emailAddress)
                 }
                 .padding(.horizontal, 32)

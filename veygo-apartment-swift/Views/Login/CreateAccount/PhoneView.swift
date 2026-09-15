@@ -43,6 +43,7 @@ struct PhoneView: View {
                     )
                     .textContentType(.telephoneNumber)
                     .focused($fieldIsFocused)
+                    .keyboardType(.numberPad)
                     .sensoryFeedback(.selection, trigger: fieldIsFocused)
                 }
                 .padding(.horizontal, 32)

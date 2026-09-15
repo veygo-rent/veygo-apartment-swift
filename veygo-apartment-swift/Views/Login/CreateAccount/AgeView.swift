@@ -32,6 +32,7 @@ struct AgeView: View {
                 )
                 .focused($fieldIsFocused)
                 .sensoryFeedback(.selection, trigger: fieldIsFocused)
+                .keyboardType(.numberPad)
                 .padding(.horizontal, 32)
                 .onChange(of: dob, { oldValue, newValue in
                     let digits = newValue.filter { $0.isNumber }
