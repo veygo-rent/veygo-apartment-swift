@@ -13,9 +13,10 @@ struct VeygoAppShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: PastRentalIntent(),
             phrases: [
-                "Show my past car rentals from \(.applicationName)",
-                "Get my past rentals from \(.applicationName)",
-                "Show my rental history in \(.applicationName)"
+                "Get \(.applicationName) history",
+                "Get \(.applicationName) past rental",
+                "View \(.applicationName) history",
+                "View \(.applicationName) past rental",
             ],
             shortTitle: "Past Rentals",
             systemImageName: "car.fill"
@@ -70,7 +71,7 @@ private enum PastRentalService {
         var results: [RentalEntity] = []
         for agreement in agreements {
             try Task.checkCancellation()
-            var entity = RentalEntity(agreement: agreement)
+            let entity = RentalEntity(agreement: agreement)
             do {
                 let details: VehicleDetails = try await request(
                     "/api/v1/agreement/\(agreement.confirmation)", session: session
