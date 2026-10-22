@@ -280,6 +280,7 @@
 				DEVELOPMENT_TEAM = F84843HABV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Configuration/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Veygo;
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera will be utilized to capture credit card information as well as document the condition and any damages of the rental vehicle.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app will use the user’s location to find the nearest vehicle for a better experience.";
@@ -321,6 +322,7 @@
 				DEVELOPMENT_TEAM = F84843HABV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Configuration/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Veygo;
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera will be utilized to capture credit card information as well as document the condition and any damages of the rental vehicle.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app will use the user’s location to find the nearest vehicle for a better experience.";

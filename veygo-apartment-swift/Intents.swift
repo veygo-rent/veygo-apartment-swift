@@ -23,16 +23,22 @@ struct VeygoAppShortcuts: AppShortcutsProvider {
     }
 }
 
-struct PastRentalIntent: AppIntent {
+struct PastRentalIntent: AppIntent, PredictableIntent {
     static var title: LocalizedStringResource = "Get Past Rentals"
     static var description = IntentDescription("Get past rental dates, recorded trip durations, and confirmation numbers.")
+
+    static var predictionConfiguration: some IntentPredictionConfiguration {
+        IntentPrediction {
+            DisplayRepresentation(title: "View past rentals", image: .init(systemName: "car.fill"))
+        }
+    }
 
     @AppDependency private var session: Session
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<[String]> & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ReturnsValue<[RentalEntity]> & ProvidesDialog {
         do {
-            let agreements = try await fetchPastRentals().sorted {
+            let agreements = try await PastRentalService.fetch(session: session).sorted {
                 ($0.actualPickupTime ?? $0.rsvpPickupTime) > ($1.actualPickupTime ?? $1.rsvpPickupTime)
             }
             let summaries = agreements.map { RentalSummary.text(for: $0) }
@@ -43,9 +49,7 @@ struct PastRentalIntent: AppIntent {
             if agreements.count > 3 {
                 spokenSummary += " These are your three most recent records."
             }
-            let results = zip(agreements, summaries).map { agreement, summary in
-                "\(summary) Confirmation: \(agreement.confirmation)."
-            }
+            let results = try await PastRentalService.entities(for: agreements, session: session)
             return .result(value: results, dialog: IntentDialog(stringLiteral: spokenSummary))
         } catch let error as VeygoError {
             // Surface a readable failure to Shortcuts instead of a successful empty result.
@@ -53,8 +57,50 @@ struct PastRentalIntent: AppIntent {
         }
     }
 
+}
+
+private enum PastRentalService {
     @MainActor
-    private func fetchPastRentals() async throws -> [Agreement] {
+    static func fetch(session: Session) async throws -> [Agreement] {
+        try await request("/api/v1/agreement/past", session: session)
+    }
+
+    @MainActor
+    static func entities(for agreements: [Agreement], session: Session) async throws -> [RentalEntity] {
+        var results: [RentalEntity] = []
+        for agreement in agreements {
+            try Task.checkCancellation()
+            var entity = RentalEntity(agreement: agreement)
+            do {
+                let details: VehicleDetails = try await request(
+                    "/api/v1/agreement/\(agreement.confirmation)", session: session
+                )
+                entity.vehicleName = details.vehicle.name
+                entity.vehicleYear = details.vehicle.year
+                entity.vehicleMake = details.vehicle.make
+                entity.vehicleModel = details.vehicle.model
+            } catch let error as VeygoError {
+                if case .unauthorized = error { throw error }
+                if case .network(let underlying) = error, underlying.code == .cancelled { throw error }
+                // Optional enrichment must not hide an otherwise available rental record.
+            }
+            results.append(entity)
+        }
+        return results
+    }
+
+    private struct VehicleDetails: Decodable {
+        let vehicle: Vehicle
+        struct Vehicle: Decodable {
+            let name: String
+            let year: String
+            let make: String
+            let model: String
+        }
+    }
+
+    @MainActor
+    private static func request<Value: Decodable>(_ path: String, session: Session) async throws -> Value {
         let token = session.token
         let userId = session.userId
         guard !token.isEmpty, userId > 0 else {
@@ -62,7 +108,7 @@ struct PastRentalIntent: AppIntent {
         }
 
         let request = veygoCurlRequest(
-            url: "/api/v1/agreement/past",
+            url: path,
             method: .get,
             headers: ["auth": "\(token)$\(userId)"]
         )
@@ -75,7 +121,7 @@ struct PastRentalIntent: AppIntent {
             let httpCode = httpResponse.statusCode
 
             if httpCode == 200 {
-                return try VeygoJsonStandard.shared.decoder.decode([Agreement].self, from: data)
+                return try VeygoJsonStandard.shared.decoder.decode(Value.self, from: data)
             } else if httpCode == 401 {
                 let decodedError = try VeygoJsonStandard.shared.decoder.decode(ErrorResponse.self, from: data)
                 throw VeygoError.unauthorized(decodedError)
@@ -91,6 +137,84 @@ struct PastRentalIntent: AppIntent {
             throw error
         } catch {
             throw VeygoError.unknown
+        }
+    }
+}
+
+struct RentalEntity: AppEntity {
+    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Rental"
+    static var defaultQuery = RentalEntityQuery()
+
+    let id: Int
+    @Property(title: "Confirmation Number") var confirmation: String
+    @Property(title: "Agreement Status") var status: String
+    @Property(title: "Scheduled Pickup") var scheduledPickup: Date
+    @Property(title: "Scheduled Return") var scheduledReturn: Date
+    @Property(title: "Actual Pickup") var actualPickup: Date?
+    @Property(title: "Actual Return") var actualReturn: Date?
+    @Property(title: "Recorded Duration in Minutes") var durationMinutes: Double?
+    @Property(title: "Vehicle Name") var vehicleName: String?
+    @Property(title: "Vehicle Year") var vehicleYear: String?
+    @Property(title: "Vehicle Make") var vehicleMake: String?
+    @Property(title: "Vehicle Model") var vehicleModel: String?
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(
+            title: "\(vehicleName ?? "Rental") — \(confirmation)",
+            subtitle: "\(scheduledPickup.formatted(date: .abbreviated, time: .shortened))",
+            image: .init(systemName: "car.fill")
+        )
+    }
+
+    init(agreement: Agreement) {
+        id = agreement.id
+        confirmation = agreement.confirmation
+        status = agreement.status.rawValue
+        scheduledPickup = agreement.rsvpPickupTime
+        scheduledReturn = agreement.rsvpDropOffTime
+        actualPickup = agreement.actualPickupTime
+        actualReturn = agreement.actualDropOffTime
+        vehicleName = nil
+        vehicleYear = nil
+        vehicleMake = nil
+        vehicleModel = nil
+        if let pickup = agreement.actualPickupTime,
+           let dropOff = agreement.actualDropOffTime, dropOff >= pickup {
+            durationMinutes = dropOff.timeIntervalSince(pickup) / 60
+        } else {
+            durationMinutes = nil
+        }
+    }
+}
+
+struct RentalEntityQuery: EntityQuery {
+    @AppDependency private var session: Session
+
+    @MainActor
+    func entities(for identifiers: [RentalEntity.ID]) async throws -> [RentalEntity] {
+        guard !identifiers.isEmpty else { return [] }
+        let rentals = try await loadRentals(identifiers: Set(identifiers))
+        // Resolve against the currently authenticated account; never return cached account data.
+        return identifiers.compactMap { id in rentals.first { $0.id == id } }
+    }
+
+    @MainActor
+    func suggestedEntities() async throws -> [RentalEntity] {
+        try await loadRentals(limit: 10)
+    }
+
+    @MainActor
+    private func loadRentals(identifiers: Set<Int>? = nil, limit: Int? = nil) async throws -> [RentalEntity] {
+        do {
+            let agreements = try await PastRentalService.fetch(session: session)
+                .sorted {
+                    ($0.actualPickupTime ?? $0.rsvpPickupTime) > ($1.actualPickupTime ?? $1.rsvpPickupTime)
+                }
+            let matching = agreements.filter { identifiers?.contains($0.id) ?? true }
+            let selected = limit.map { Array(matching.prefix($0)) } ?? matching
+            return try await PastRentalService.entities(for: selected, session: session)
+        } catch let error as VeygoError {
+            throw RentalIntentError(message: error.display.message)
         }
     }
 }
