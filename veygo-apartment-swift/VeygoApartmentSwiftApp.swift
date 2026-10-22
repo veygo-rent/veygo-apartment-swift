@@ -11,14 +11,20 @@ import UserNotifications
 
 import Crisp
 @preconcurrency import Stripe
+import AppIntents
 
 @main
 struct VeygoApartmentSwiftApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     
-    @State private var session = Session()
+    @State private var session: Session
     
     init() {
+        let session = Session()
+        _session = State(initialValue: session)
+        
+        AppDependencyManager.shared.add(dependency: session)
+        
         StripeAPI.defaultPublishableKey = "pk_live_51QzCjkL87NN9tQEdbASm7SXLCkcDPiwlEbBpOVQk5wZcjOPISrtTVFfK1SFKIlqyoksRIHusp5UcRYJLvZwkyK0a00kdPmuxhM"
         CrispSDK.configure(websiteID: "11d81aa1-c3e9-4295-a6ca-b207d63f37de")
     }
