@@ -30,7 +30,7 @@ struct PastRentalIntent: AppIntent, PredictableIntent {
 
     static var predictionConfiguration: some IntentPredictionConfiguration {
         IntentPrediction {
-            DisplayRepresentation(title: "View past rentals", image: .init(systemName: "car.fill"))
+            DisplayRepresentation(title: "View past car rentals")
         }
     }
 
