@@ -143,7 +143,7 @@ private enum PastRentalService {
 }
 
 struct RentalEntity: AppEntity {
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Rental"
+    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Rental Reservationz"
     static var defaultQuery = RentalEntityQuery()
 
     let id: Int
