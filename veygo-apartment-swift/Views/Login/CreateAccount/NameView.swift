@@ -35,7 +35,7 @@ struct NameView: View {
                     .textContentType(.name)
                     .onChange(of: fieldIsFocused) { old, _ in
                         if old {
-                            formatName()
+                            fullName = VeygoNameStandard.format(name: fullName)
                         }
                     }
                 }
@@ -64,17 +64,8 @@ struct NameView: View {
             }
         }
         .onTapGesture {
-            formatName()
+            fullName = VeygoNameStandard.format(name: fullName)
             fieldIsFocused = false
         }
-    }
-    
-    func formatName() {
-        let filtered = fullName.filter { $0.isLetter || $0.isWhitespace }
-        let formatted = filtered
-            .split(separator: " ")
-            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
-            .joined(separator: " ")
-        fullName = formatted
     }
 }

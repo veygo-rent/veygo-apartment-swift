@@ -193,3 +193,26 @@ struct VeygoPricingStandard {
     }
 }
 
+struct VeygoNameStandard {
+    static func format(name: String) -> String {
+        let filtered = name.filter {
+            $0.isLetter || $0.isWhitespace || $0 == "-"
+        }
+
+        let formatted = filtered
+            .split(separator: " ")
+            .map { word in
+                word
+                    .split(separator: "-")
+                    .map {
+                        $0.prefix(1).uppercased() +
+                        $0.dropFirst().lowercased()
+                    }
+                    .joined(separator: "-")
+            }
+            .joined(separator: " ")
+        
+        return formatted
+    }
+}
+
