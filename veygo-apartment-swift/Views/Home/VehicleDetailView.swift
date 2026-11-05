@@ -238,7 +238,7 @@ struct VehicleDetailView: View {
         var radius: CGFloat
         var corners: UIRectCorner
 
-        func path(in rect: CGRect) -> Path {
+        nonisolated func path(in rect: CGRect) -> Path {
             let path = UIBezierPath(
                 roundedRect: rect,
                 byRoundingCorners: corners,
@@ -271,10 +271,10 @@ struct VehicleDetailView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title)
                             .font(.callout.weight(.semibold))
-                            .foregroundStyle(Color("TextBlackPrimary"))
+                            .foregroundStyle(Color.textBlackPrimary)
                         Text(subtitle)
                             .font(.footnote)
-                            .foregroundStyle(Color("FootNote"))
+                            .foregroundStyle(Color.footNote)
                     }
                     .padding(.leading, 4)
 
@@ -283,7 +283,7 @@ struct VehicleDetailView: View {
                     if let trailing = trailingText {
                         Text(trailing)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Color("TextBlackPrimary"))
+                            .foregroundStyle(Color.textBlackPrimary)
                     }
                 }
                 .padding(14)
@@ -304,7 +304,7 @@ struct VehicleDetailView: View {
             }()
             return RoundedCornerShape(radius: 18, corners: corners)
                 .stroke(
-                    isSelected ? Color("TextBlackPrimary") : Color("FootNote").opacity(0.3),
+                    isSelected ? Color.textBlackPrimary : Color.footNote.opacity(0.3),
                     lineWidth: isSelected ? 2 : 1
                 )
         }

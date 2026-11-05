@@ -25,8 +25,8 @@ struct VeygoAppShortcuts: AppShortcutsProvider {
 }
 
 struct PastRentalIntent: AppIntent, PredictableIntent {
-    static var title: LocalizedStringResource = "Get Past Rentals"
-    static var description = IntentDescription("Get past rental dates, recorded trip durations, and confirmation numbers.")
+    static let title: LocalizedStringResource = "Get Past Rentals"
+    static let description = IntentDescription("Get past rental dates, recorded trip durations, and confirmation numbers.")
 
     static var predictionConfiguration: some IntentPredictionConfiguration {
         IntentPrediction {
@@ -143,8 +143,8 @@ private enum PastRentalService {
 }
 
 struct RentalEntity: AppEntity {
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Rental Reservationz"
-    static var defaultQuery = RentalEntityQuery()
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Rental Reservationz"
+    static let defaultQuery = RentalEntityQuery()
 
     let id: Int
     @Property(title: "Confirmation Number") var confirmation: String

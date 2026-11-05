@@ -30,7 +30,7 @@ enum VeygoError: Error {
     }
 }
 
-struct ErrorResponse: Equatable, Codable {
+nonisolated struct ErrorResponse: Equatable, Codable {
     var title: String
     var message: String
     
